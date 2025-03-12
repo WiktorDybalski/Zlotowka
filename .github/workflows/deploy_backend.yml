@@ -2,7 +2,7 @@ name: Deploy Backend to Google Cloud
 
 env:
   SERVICE_NAME: zlotowka
-  PROJECT_ID: 621092586366
+  PROJECT_ID: zlotowka
   DOCKER_IMAGE_URL: us-central1-docker.pkg.dev/zlotowka/docker-image-repository/backend-app
 
 on:
