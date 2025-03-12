@@ -1,5 +1,5 @@
 export default async function Home() {
-  const data = await fetch("http://localhost:8080/test")
+  const data = await fetch("https://zlotowka-621092586366.us-central1.run.app/test")
       .then((response) => response.text())
       .catch((error) => console.error(error));
 
