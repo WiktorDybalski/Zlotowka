@@ -1,4 +1,4 @@
-name: Deploy Backend to Cloud Run
+name: Deploy Backend to Google Cloud
 
 env:
   SERVICE_NAME: zlotowka
@@ -6,8 +6,11 @@ env:
   DOCKER_IMAGE_URL: us-central1-docker.pkg.dev/zlotowka/docker-image-repository/backend-app
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
-
+  
 jobs:
   dockerize-and-deploy:
     runs-on: ubuntu-latest
