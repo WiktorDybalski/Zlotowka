@@ -31,7 +31,7 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t ${{ env.DOCKER_IMAGE_URL }}:latest -f zlotowka-backend/Dockerfile.prod zlotowka-backend
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}:latest -f zlotowka-backend/Dockerfile zlotowka-backend
           docker push ${{ env.DOCKER_IMAGE_URL }}:latest
 
       - name: Deploy to Cloud Run
