@@ -4,7 +4,7 @@ export default function Sidebar() {
   const navLinks: string[] = ["Dashboard", "Transakcje", "Marzenia", "Podsumowanie"]
 
   return (
-      <div className="w-full h-full bg-neutral-800 text-neutral-100 flex flex-col py-8 gap-y-6 font-medium select-none">
+      <div className="w-full h-full bg-neutral-800 text-neutral-100 flex flex-col py-8 gap-y-6 font-medium select-none rounded-r-[10px]">
         {/* Avatar */}
         <div className="w-full">
           <div className="flex justify-center gap-4">
