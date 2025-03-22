@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react";
 import {TransactionFormProps} from "@/interfaces/transactions/PopupTransactionsProps";
 import {TransactionData} from "@/interfaces/transactions/TransactionsData";
+import DarkButton from "@/components/DarkButton";
 
-const inputClass = "border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md min-w-76";
+const inputClass = "border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md min-w-76 ";
 
+// TODO: datepicker
 export default function TransactionForm({transaction, onClose, header, submitButtonText, submitButtonIcon}: TransactionFormProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [formData, setFormData] = useState<TransactionData>(transaction || {
@@ -84,7 +86,7 @@ export default function TransactionForm({transaction, onClose, header, submitBut
                 name="frequency"
                 value={formData.frequency}
                 onChange={handleInputChange}
-                className={inputClass}
+                className={inputClass + "bg-neutral-100"}
             >
               <option value="Raz">Raz</option>
               <option value="Codziennie">Codziennie</option>
@@ -131,7 +133,7 @@ export default function TransactionForm({transaction, onClose, header, submitBut
                 name="currency"
                 value={formData.currency}
                 onChange={handleInputChange}
-                className="border-[1px] border-neutral-300 rounded-[5px] px-2 text-md"
+                className="border-[1px] border-neutral-300 rounded-[5px] px-2 text-md bg-neutral-100"
             >
               <option value="PLN">PLN</option>
               <option value="EUR">EUR</option>
@@ -140,13 +142,8 @@ export default function TransactionForm({transaction, onClose, header, submitBut
           </div>
 
           {/* Button */}
-          <div className="mt-7 w-full">
-            <button className="bg-[#262626] rounded-[10px] flex justify-center items-center w-full text-neutral-100 py-2 text-sm gap-x-2 hover:cursor-pointer">
-            <span className="material-symbols-outlined">
-              {submitButtonIcon}
-            </span>
-              <h3>{submitButtonText}</h3>
-            </button>
+          <div className="w-full h-10 mt-7">
+            <DarkButton icon={submitButtonIcon} text={submitButtonText} />
           </div>
         </div>
       </div>
