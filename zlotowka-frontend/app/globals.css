@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 body {
-    font-family: 'Raleway', sans-serif;
+  font-family: "Raleway", sans-serif;
 }
 
 p {
-    padding: 0;
+  padding: 0;
 }

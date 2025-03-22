@@ -1,4 +1,4 @@
-import {TransactionData} from "@/interfaces/transactions/TransactionsData";
+import { TransactionData } from "@/interfaces/transactions/TransactionsData";
 
 export interface AddTransactionProps {
   setShowAddTransaction: React.Dispatch<React.SetStateAction<boolean>>;
@@ -16,4 +16,3 @@ export interface TransactionFormProps {
   submitButtonText: string;
   submitButtonIcon: string;
 }
-
