@@ -17,7 +17,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="bg-orange-300 h-[200vh] flex flex-col justify-center items-center">
+    <div className="h-[200vh] flex flex-col justify-center items-center">
       <h1 className="text-4xl -mt-36 mb-4">Scrollable Hello World</h1>
 
       {/* temporary stuff */}
