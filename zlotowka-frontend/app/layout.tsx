@@ -22,11 +22,11 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="flex min-h-screen ">
-        <div className="w-96 h-screen sticky left-0 top-0">
+      <body className="flex flex-col min-h-screen">
+        <div className="w-full left-0 top-0 lg:w-80 lg:h-screen">
           <Sidebar />
         </div>
-        <div className="w-full">{children}</div>
+        {/*<div className="w-full">{children}</div>*/}
       </body>
     </html>
   );
