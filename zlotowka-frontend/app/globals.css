@@ -5,16 +5,22 @@ p {
 }
 
 :root {
-  --font-family-symbols: 'Material Symbols Rounded';
+  --font-family-symbols: "Material Symbols Rounded";
+}
+
+@theme {
+  /* Tailwind CSS zmienne*/
+  --color-accent: #262626;
+  --color-lightAccent: #f2f2f7;
+  --color-money: #fbd38d;
+  --color-background: #ffffff;
+  --color-backgroundDark: #3a3a3a;
+  --color-backgroundLightDark: #8e8e93;
 }
 
 .material-symbols {
   font-family: var(--font-family-symbols);
-  font-variation-settings:
-          'FILL' 0,
-          'wght' 400,
-          'GRAD' 0,
-          'opsz' 48;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 48;
   font-size: 24px;
   display: inline-block;
   line-height: 1;
