@@ -1,19 +1,20 @@
 "use client";
 
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import AddTransaction from "@/components/transactions/AddTransaction";
 import EditTransaction from "@/components/transactions/EditTransaction";
 import { sampleTransaction } from "@/mocks/SampleTransaction";
 
 export default function Home() {
   const [showAddTransaction, setShowAddTransaction] = useState<boolean>(false);
-  const [showEditTransaction, setShowEditTransaction] = useState<boolean>(false);
+  const [showEditTransaction, setShowEditTransaction] =
+    useState<boolean>(false);
 
   useEffect(() => {
     fetch("https://zlotowka-621092586366.us-central1.run.app/test")
-        .then(response => response.text())
-        .then(result => console.log(result))
-        .catch(error => console.error("Błąd:", error));
+      .then((response) => response.text())
+      .then((result) => console.log(result))
+      .catch((error) => console.error("Błąd:", error));
   }, []);
 
   return (

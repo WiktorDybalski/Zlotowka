@@ -1,5 +1,5 @@
 import "./globals.css";
-import Sidebar from "@/components/Sidebar";
+import Navigation from "@/components/navigation/Navigation";
 
 export default function RootLayout({
   children,
@@ -24,7 +24,7 @@ export default function RootLayout({
       </head>
       <body className="flex flex-col min-h-screen lg:flex-row">
         <div className="w-full min-h-20 left-0 top-0 font-medium text-neutral-100 lg:w-96 lg:h-screen lg:sticky">
-          <Sidebar />
+          <Navigation />
         </div>
         <div className="w-full">{children}</div>
       </body>
