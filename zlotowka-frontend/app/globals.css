@@ -1,9 +1,21 @@
 @import "tailwindcss";
 
-body {
-  font-family: "Raleway", sans-serif;
-}
-
 p {
   padding: 0;
+}
+
+:root {
+  --font-family-symbols: 'Material Symbols Rounded';
+}
+
+.material-symbols {
+  font-family: var(--font-family-symbols);
+  font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 48;
+  font-size: 24px;
+  display: inline-block;
+  line-height: 1;
 }
