@@ -2,6 +2,7 @@ import Image from "next/image";
 import Waves from "@/components/main_page/AbsoluteWaves";
 import Link from "next/link";
 import RegisterButton from "@/components/general/ButtonWithBackground";
+import LightLink from "@/components/general/LightLink";
 
 function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -48,16 +49,11 @@ export default function Home() {
 
           <div className="flex flex-col items-center space-y-4">
             <RegisterButton>
-              <Link className="block" href="/register">
+              <Link className="block" href="/login/register">
                 Zarejestruj się!
               </Link>
             </RegisterButton>
-            <Link
-              href="/login"
-              className="text-backgroundLightDark hover:underline"
-            >
-              Mam już konto
-            </Link>
+            <LightLink href="/login">Mam już konto</LightLink>
           </div>
         </figure>
       </section>

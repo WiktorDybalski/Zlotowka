@@ -7,12 +7,14 @@ interface RegisterButtonProps {
   onClick?: () => void;
   className?: string;
   children?: React.ReactNode;
+  type?: "submit" | "button";
 }
 
 export default function RegisterButton({
   onClick,
   className,
   children,
+  type,
 }: RegisterButtonProps) {
   return (
     <Button
@@ -21,6 +23,7 @@ export default function RegisterButton({
         className
       )}
       onClick={onClick}
+      type={type}
     >
       {children}
     </Button>
