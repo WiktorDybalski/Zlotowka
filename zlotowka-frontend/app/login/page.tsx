@@ -2,8 +2,14 @@
 
 import LoginForm from "@/components/login_pages/RegistrationForm";
 
+interface FormData {
+  email: string;
+  password: string;
+}
+
 export default function LoginPage() {
   const handleFormSubmit = (formData: Record<string, string>) => {
+    formData as unknown as FormData; //for type checking, TS do not kill me
     console.log("Submitted data:", formData);
     alert("Submitted data:" + JSON.stringify(formData));
   };

@@ -16,6 +16,7 @@ p {
   --color-background: #ffffff;
   --color-backgroundDark: #3a3a3a;
   --color-backgroundLightDark: #8e8e93;
+  --color-error: #fb2c36;
 }
 
 .material-symbols {

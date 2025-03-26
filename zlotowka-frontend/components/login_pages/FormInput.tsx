@@ -9,6 +9,7 @@ interface FormInputProps {
   inputLeftElement?: React.ReactNode; // Element po lewej stronie inputa
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   required?: boolean;
+  errorMessage?: string; // Jeśli jest zapala na czerwono
 }
 
 export default function FormInput({
@@ -20,34 +21,51 @@ export default function FormInput({
   inputLeftElement,
   onChange,
   required = true,
+  errorMessage,
 }: FormInputProps) {
   return (
-    <div className="flex flex-col space-y-2 w-full">
-      {label && (
-        <label htmlFor={id} className="text-sm font-medium text-gray-700">
-          {label}
-        </label>
-      )}
-      <div className="relative flex items-center">
-        {inputLeftElement && (
-          <div className="absolute left-3 text-gray-500">
-            {inputLeftElement}
-          </div>
+    (label = errorMessage ? errorMessage : label), //podmiana label na errorMessage
+    (
+      <div className="flex flex-col space-y-2 w-full">
+        {label && (
+          <label
+            htmlFor={id}
+            className={clsx(
+              "text-sm font-medium",
+              errorMessage ? "text-error" : "text-gray-700" // Zmiana koloru w zależności od błędu
+            )}
+          >
+            {label}
+          </label>
         )}
-        <input
-          id={id}
-          type={type}
-          placeholder={placeholder}
-          onChange={onChange}
-          required={required}
-          className={clsx(
-            `w-full border border-lightAccent text-backgroundLightDark rounded-md ${
-              inputLeftElement ? "pl-10" : ""
-            } py-2 px-3 focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent`,
-            className
+        <div className="relative flex items-center">
+          {inputLeftElement && (
+            <div
+              className={clsx(
+                "absolute left-3",
+                errorMessage ? "text-error" : "text-gray-500" // Zmiana koloru w zależności od błędu
+              )}
+            >
+              {inputLeftElement}
+            </div>
           )}
-        />
+          <input
+            id={id}
+            type={type}
+            placeholder={placeholder}
+            onChange={onChange}
+            required={required}
+            className={clsx(
+              "w-full border rounded-md py-2 px-3 focus:outline-none focus:ring-2",
+              inputLeftElement ? "pl-10" : "",
+              errorMessage
+                ? "border-error focus:ring-error"
+                : "border-lightAccent focus:ring-accent",
+              className
+            )}
+          />
+        </div>
       </div>
-    </div>
+    )
   );
 }

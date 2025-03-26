@@ -33,13 +33,35 @@ export default function RegistrationForm({
   links,
 }: RegistrationFormProps) {
   const [formData, setFormData] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange = (id: string, value: string) => {
     setFormData((prev) => ({ ...prev, [id]: value }));
+    setErrors((prev) => ({ ...prev, [id]: "" })); // Resetuj błąd przy zmianie wartości
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const newErrors: Record<string, string> = {};
+
+    // Walidacja danych
+    inputs.forEach((input) => {
+      if (!formData[input.id] || formData[input.id].trim() === "") {
+        newErrors[input.id] = "To pole jest wymagane.";
+      } else if (
+        input.id === "email" &&
+        !/\S+@\S+\.\S+/.test(formData[input.id])
+      ) {
+        newErrors[input.id] = "Podaj poprawny adres email.";
+      }
+    });
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     if (onSubmit) {
       onSubmit(formData); // Przekazanie danych do funkcji onSubmit
     }
@@ -68,6 +90,7 @@ export default function RegistrationForm({
             inputLeftElement={input.inputLeftElement}
             className="w-full"
             onChange={(e) => handleChange(input.id, e.target.value)}
+            errorMessage={errors[input.id]}
           />
         ))}
 
