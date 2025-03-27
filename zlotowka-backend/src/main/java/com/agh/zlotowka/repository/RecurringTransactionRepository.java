@@ -16,5 +16,5 @@ public interface RecurringTransactionRepository extends JpaRepository<RecurringT
             "WHERE FUNCTION('DATE_ADD', rt.lastPaymentDate, rt.interval, 'DAY') <= CURRENT_DATE")
     List<RecurringTransaction> findDueRecurringTransactions();
 
-    List<RecurringTransaction> getTransactionsByUser(int userId);
+    List<RecurringTransaction> getActiveTransactionsByUser(int userId, LocalDate startDate, LocalDate endDate);
 }
