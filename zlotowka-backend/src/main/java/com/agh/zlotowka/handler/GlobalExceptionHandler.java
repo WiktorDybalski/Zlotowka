@@ -32,12 +32,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
     }
 
-    @ExceptionHandler(IOException.class)
-    public ResponseEntity<String> handleIOException(IOException e) {
-        log.error("I/O error occurred", e);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error occurred during I/O operation.");
-    }
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGeneralException(Exception e) {
         log.error("Internal server error", e);
