@@ -2,6 +2,7 @@ package com.agh.zlotowka.service;
 
 import com.agh.zlotowka.dto.RecurringTransactionRequest;
 import com.agh.zlotowka.model.Currency;
+import com.agh.zlotowka.model.PeriodEnum;
 import com.agh.zlotowka.model.RecurringTransaction;
 import com.agh.zlotowka.model.User;
 import lombok.extern.slf4j.Slf4j;
@@ -36,9 +37,11 @@ public class RecurringTransactionTempService {
                 .name(request.name())
                 .amount(request.amount())
                 .currency(currency)
-                .income(request.income())
-                .startPaymentDate(request.firstPaymentDate())
-                .lastPaymentDate(request.lastPaymentDate())
+                .isIncome(request.isIncome())
+                .firstPaymentDate(request.firstPaymentDate())
+                .finalPaymentDate(request.lastPaymentDate())
+                .interval(PeriodEnum.fromPeriod(request.interval()))
+                .nextPaymentDate(PeriodEnum.fromPeriod(request.interval()).addToDate(request.firstPaymentDate()))
                 .description(request.description())
                 .build();
     }
@@ -60,9 +63,10 @@ public class RecurringTransactionTempService {
                 .name("Przykładowa transakcja")
                 .amount(new BigDecimal(1000))
                 .currency(currency)
-                .income(false)
-                .startPaymentDate(LocalDate.of(2023, 11, 10))
-                .lastPaymentDate(LocalDate.of(2023, 12, 15))
+                .isIncome(false)
+                .firstPaymentDate(LocalDate.of(2023, 11, 10))
+                .nextPaymentDate(LocalDate.of(2023, 11, 12))
+                .finalPaymentDate(LocalDate.of(2023, 12, 15))
                 .description("Kamilek kupił kebaba w hamisie i był dobry")
                 .build();
     }
@@ -85,10 +89,10 @@ public class RecurringTransactionTempService {
                 .name(request.name())
                 .amount(request.amount())
                 .currency(currency)
-                .income(request.income())
-                .startPaymentDate(request.firstPaymentDate())
-                .interval(Duration.from(request.interval()))
-                .lastPaymentDate(request.lastPaymentDate())
+                .isIncome(false)
+                .finalPaymentDate(request.firstPaymentDate())
+                .interval(PeriodEnum.DAILY)
+                .finalPaymentDate(request.lastPaymentDate())
                 .description(request.description())
                 .build();
     }
@@ -98,7 +102,7 @@ public class RecurringTransactionTempService {
 
     }
 
-    public List<RecurringTransaction> getAllTransactions(int userId) {
+    public List<RecurringTransaction> getAllRecurringTransactions(int userId) {
 
         User user = User.builder()
                 .userId(userId)
@@ -114,8 +118,11 @@ public class RecurringTransactionTempService {
                 .user(user)
                 .name("Transakcja 1")
                 .amount(new BigDecimal(3000))
+                .firstPaymentDate(LocalDate.of(2023, 12, 25))
+                .finalPaymentDate(LocalDate.of(2025, 12, 25))
+                .nextPaymentDate(LocalDate.of(2024, 12, 25))
                 .currency(currency)
-                .income(false)
+                .isIncome(false)
                 .description("Rachunki domowe")
                 .build();
 
@@ -125,7 +132,10 @@ public class RecurringTransactionTempService {
                 .name("Przykładowa transakcja")
                 .amount(new BigDecimal(1000))
                 .currency(currency)
-                .income(false)
+                .firstPaymentDate(LocalDate.of(2023, 12, 25))
+                .finalPaymentDate(LocalDate.of(2025, 12, 25))
+                .nextPaymentDate(LocalDate.of(2024, 12, 25))
+                .isIncome(false)
                 .description("Kamilek kupił kebaba w hamisie i był dobry2")
                 .build();
 

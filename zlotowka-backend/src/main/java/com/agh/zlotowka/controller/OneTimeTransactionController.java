@@ -38,7 +38,7 @@ public class OneTimeTransactionController {
 
     @PutMapping("/{id}")
     public ResponseEntity<OneTimeTransaction> updateOneTimeTransaction(@Valid @RequestBody OneTimeTransactionRequest request) {
-        OneTimeTransaction updatedTransaction = oneTimeTransactionService.updateTransaction(request);
+        OneTimeTransaction updatedTransaction = oneTimeTransactionService.updateOneTimeTransaction(request);
         return ResponseEntity.ok(updatedTransaction);
     }
 

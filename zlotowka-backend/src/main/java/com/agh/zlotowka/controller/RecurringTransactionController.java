@@ -49,10 +49,4 @@ public class RecurringTransactionController {
         recurringTransactionService.deleteTransaction(id);
         return ResponseEntity.noContent().build();
     }
-
-    @GetMapping("/all")
-    public ResponseEntity<List<RecurringTransaction>> getAllOneTimeTransactions(Integer userId) {
-        List<RecurringTransaction> recurringTransactions = recurringTransactionService.getAllTransactions(userId);
-        return ResponseEntity.ok(recurringTransactions);
-    }
 }

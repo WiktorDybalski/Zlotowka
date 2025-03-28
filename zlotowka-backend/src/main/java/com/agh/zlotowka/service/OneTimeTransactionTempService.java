@@ -37,7 +37,7 @@ public class OneTimeTransactionTempService {
                 .name(request.name())
                 .amount(request.amount())
                 .currency(currency)
-                .income(request.income())
+                .isIncome(request.isIncome())
                 .date(request.date())
                 .description(request.description())
                 .build();
@@ -60,14 +60,14 @@ public class OneTimeTransactionTempService {
                 .name("Przykładowa transakcja")
                 .amount(new BigDecimal(1000))
                 .currency(currency)
-                .income(false)
+                .isIncome(false)
                 .date(LocalDate.of(2023, 12, 15))
                 .description("Kamilek kupił kebaba w hamisie i był dobry")
                 .build();
     }
 
     @Transactional
-    public OneTimeTransaction updateTransaction(OneTimeTransactionRequest request) {
+    public OneTimeTransaction updateOneTimeTransaction(OneTimeTransactionRequest request) {
         log.info("Updating transaction with request: {}", request);
 
         User user = User.builder()
@@ -85,7 +85,7 @@ public class OneTimeTransactionTempService {
                 .name("Przykładowa transakcja")
                 .amount(new BigDecimal(1000))
                 .currency(currency)
-                .income(false)
+                .isIncome(false)
                 .date(LocalDate.of(2023, 12, 15))
                 .description("Kamilek kupił kebaba w hamisie i był dobry")
                 .build();
@@ -113,7 +113,7 @@ public class OneTimeTransactionTempService {
                 .name("Tranzakcja 1")
                 .amount(new BigDecimal(3000))
                 .currency(currency)
-                .income(false)
+                .isIncome(false)
                 .date(LocalDate.of(2023, 11, 10))
                 .description("Rachunki domowe")
                 .build();
@@ -124,7 +124,7 @@ public class OneTimeTransactionTempService {
                 .name("Przykładowa transakcja")
                 .amount(new BigDecimal(1000))
                 .currency(currency)
-                .income(false)
+                .isIncome(false)
                 .date(LocalDate.of(2023, 12, 15))
                 .description("Kamilek kupił kebaba w hamisie i był dobry")
                 .build();
