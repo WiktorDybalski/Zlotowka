@@ -28,7 +28,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-@EnableScheduling
+//@EnableScheduling
 @RequiredArgsConstructor
 public class GeneralTransactionService {
     private final RecurringTransactionRepository recurringTransactionRepository;
@@ -38,7 +38,7 @@ public class GeneralTransactionService {
     private final UserService userService;
 
     // TODO Add oneTimeTransaction in scheduled task
-    @Scheduled(cron = "0 0 19 * * ?") // Everyday at 19:00
+//    @Scheduled(cron = "0 0 19 * * ?") // Everyday at 19:00
     public void addRecurringTransactions() {
         log.info("Adding transactions using sheduled task...");
         List<RecurringTransaction> recurringTransactions = recurringTransactionRepository.findDueRecurringTransactions();
