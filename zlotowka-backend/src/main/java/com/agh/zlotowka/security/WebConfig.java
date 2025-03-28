@@ -10,10 +10,10 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("https://zlotowka.vercel.app/", "http://localhost:3000")
-                .allowedMethods("GET", "POST", "PUT", "DELETE")
-                .allowedHeaders("*")
-                .allowCredentials(true)
+                .allowedOrigins("*")  // Wszystkie originy
+                .allowedMethods("*")  // Wszystkie metody HTTP
+                .allowedHeaders("*")  // Wszystkie nagłówki
+                .allowCredentials(false)  // Musi być false gdy allowedOrigins("*")
                 .maxAge(3600);
     }
 }

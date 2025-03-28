@@ -20,4 +20,10 @@ public interface OneTimeTransactionRepository extends JpaRepository<OneTimeTrans
 
     @Query("SELECT t FROM OneTimeTransaction t WHERE t.user.userId = :userId AND t.date >= :now ORDER BY t.date ASC LIMIT 1")
     Optional<OneTimeTransaction> getNextOneTimeTransactionByUser(@Param("userId") int userId, @Param("now") LocalDate now);
+
+    @Query("SELECT t FROM OneTimeTransaction t WHERE t.date = CURRENT_DATE")
+    List<OneTimeTransaction> findTransactionsToday();
+
+    @Query("SELECT t FROM OneTimeTransaction t WHERE t.user.userId = :userId")
+    List<OneTimeTransaction> findAllByUser(@Param("userId") Integer userId);
 }

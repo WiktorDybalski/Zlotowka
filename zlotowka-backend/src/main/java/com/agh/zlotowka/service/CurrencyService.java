@@ -23,30 +23,29 @@ public class CurrencyService {
     private static String API_URL;
 
     public BigDecimal convertCurrency(BigDecimal amount, String fromCurrency, String toCurrency) throws Exception {
-        if (fromCurrency.equals(toCurrency))
-            return amount;
+        if (fromCurrency.equals(toCurrency)) return amount;
         try {
-
-            String urlString = String.format("%s/%s.json", API_URL, fromCurrency);
-            URL url = new URL(urlString);
-
-            HttpURLConnection connection = getHttpURLConnection(url);
-
-            JSONObject fromCurrencyData = getJsonObject(fromCurrency, connection);
-
-            if (fromCurrencyData != null && fromCurrencyData.has(toCurrency)) {
-                Object exchangeRateObj = fromCurrencyData.get(toCurrency);
-                BigDecimal exchangeRate = BigDecimal.valueOf(((Number) exchangeRateObj).doubleValue());
-
-                return amount.multiply(exchangeRate);
-            } else {
-                log.error("CurrencyService: No currencies available");
-                throw new CurrencyConversionException("CurrencyService: No such currency available");
-            }
-
+            BigDecimal exchangeRate = fetchExchangeRate(amount, fromCurrency, toCurrency);
+            return amount.multiply(exchangeRate);
         } catch (IOException e) {
             log.error("CurrencyService: Currency conversion failed: ", e);
             throw new IOException("CurrencyService: Currency conversion failed", e);
+        }
+    }
+
+    private BigDecimal fetchExchangeRate(BigDecimal amount, String fromCurrency, String toCurrency) throws IOException, CurrencyConversionException {
+        String urlString = String.format("%s/%s.json", API_URL, fromCurrency);
+        URL url = new URL(urlString);
+        HttpURLConnection connection = getHttpURLConnection(url);
+        JSONObject fromCurrencyData = getJsonObject(fromCurrency, connection);
+        if (fromCurrencyData != null && fromCurrencyData.has(toCurrency)) {
+            Object exchangeRateObj = fromCurrencyData.get(toCurrency);
+            BigDecimal exchangeRate = BigDecimal.valueOf(((Number) exchangeRateObj).doubleValue());
+
+            return amount.multiply(exchangeRate);
+        } else {
+            log.error("CurrencyService: No currencies available");
+            throw new CurrencyConversionException("CurrencyService: No such currency available");
         }
     }
 
@@ -61,8 +60,7 @@ public class CurrencyService {
         in.close();
 
         JSONObject jsonResponse = new JSONObject(response.toString());
-        JSONObject fromCurrencyData = jsonResponse.optJSONObject(fromCurrency);
-        return fromCurrencyData;
+        return jsonResponse.optJSONObject(fromCurrency);
     }
 
     private static HttpURLConnection getHttpURLConnection(URL url) throws IOException {

@@ -35,20 +35,20 @@ public class RecurringTransaction {
     @JoinColumn(name = "currency_id", referencedColumnName = "currency_id")
     private Currency currency;
 
-    @Column(name = "income")
+    @Column(name = "isIncome")
     private Boolean isIncome;
 
     @Column(name = "start_payment_date")
     private LocalDate firstPaymentDate;
+
+    @Column(name = "next_payment_date", nullable = false)
+    private LocalDate nextPaymentDate;
 
     @Column(name = "final_payment_date")
     private LocalDate finalPaymentDate;
 
     @Enumerated(EnumType.STRING)
     private PeriodEnum interval;
-
-    @Column(name = "next_payment_date", nullable = false)
-    private LocalDate nextPaymentDate;
 
     @Column(name = "description", length = 512)
     private String description;

@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.List;
 
 @Slf4j
@@ -40,8 +41,8 @@ public class RecurringTransactionTempService {
                 .isIncome(request.isIncome())
                 .firstPaymentDate(request.firstPaymentDate())
                 .finalPaymentDate(request.lastPaymentDate())
-                .interval(PeriodEnum.fromPeriod(request.interval()))
-                .nextPaymentDate(PeriodEnum.fromPeriod(request.interval()).addToDate(request.firstPaymentDate()))
+                .interval(PeriodEnum.fromPeriod(Period.parse(request.interval())))
+                .nextPaymentDate(PeriodEnum.fromPeriod(Period.parse(request.interval())).addToDate(request.firstPaymentDate()))
                 .description(request.description())
                 .build();
     }

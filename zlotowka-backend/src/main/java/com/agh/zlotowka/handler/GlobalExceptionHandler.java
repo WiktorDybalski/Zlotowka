@@ -26,6 +26,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errors);
     }
 
+    @ExceptionHandler
+    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
+        log.error("Illegal Argument Error", e);
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<String> handleEntityNotFoundExceptions(EntityNotFoundException e) {
         log.error("Entity Not Found Error", e);

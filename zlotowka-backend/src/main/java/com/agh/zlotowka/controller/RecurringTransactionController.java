@@ -23,8 +23,8 @@ import java.util.List;
 @RequestMapping("/recurringtransaction")
 @RequiredArgsConstructor
 public class RecurringTransactionController {
-    //    private final RecurringTransactionTempService recurringTransactionService;
-    private final RecurringTransactionTempService recurringTransactionService;
+        private final RecurringTransactionService recurringTransactionService;
+//    private final RecurringTransactionTempService recurringTransactionService;
 
     @PostMapping
     public ResponseEntity<RecurringTransaction> addRecurringTransaction(@Valid @RequestBody RecurringTransactionRequest request) {
@@ -39,8 +39,8 @@ public class RecurringTransactionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<RecurringTransaction> updateRecurringTransaction(@Valid @RequestBody RecurringTransactionRequest request) {
-        RecurringTransaction updatedTransaction = recurringTransactionService.updateTransaction(request);
+    public ResponseEntity<RecurringTransaction> updateRecurringTransaction(@Valid @RequestBody RecurringTransactionRequest request, @PathVariable Integer id) {
+        RecurringTransaction updatedTransaction = recurringTransactionService.updateTransaction(request, id);
         return ResponseEntity.ok(updatedTransaction);
     }
 

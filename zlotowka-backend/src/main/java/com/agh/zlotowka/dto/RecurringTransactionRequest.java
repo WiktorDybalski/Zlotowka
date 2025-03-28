@@ -9,10 +9,6 @@ import java.time.LocalDate;
 import java.time.Period;
 
 public record RecurringTransactionRequest(
-        @NotNull(message = "Transaction ID cannot be null")
-        @Positive(message = "Transaction ID must be positive")
-        Integer transactionId,
-
         @NotNull(message = "User ID cannot be null")
         @Positive(message = "User ID must be positive")
         Integer userId,
@@ -32,18 +28,16 @@ public record RecurringTransactionRequest(
         Boolean isIncome,
 
         @NotBlank(message = "Interval cannot be blank")
-        Period interval,
+                String interval,
 
         @NotNull(message = "First payment date cannot be null")
         LocalDate firstPaymentDate,
 
-        @NotNull(message = "Next payment date cannot be null")
         LocalDate nextPaymentDate,
 
         @NotNull(message = "Last payment date cannot be null")
         LocalDate lastPaymentDate,
 
-        @NotBlank(message = "Description cannot be blank")
         String description
 ) {
 }

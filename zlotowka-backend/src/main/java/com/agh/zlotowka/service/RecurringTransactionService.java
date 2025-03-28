@@ -9,14 +9,11 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.time.Period;
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -26,6 +23,7 @@ public class RecurringTransactionService {
     private final UserRepository userRepository;
     private final CurrencyRepository currencyRepository;
 
+    @Transactional
     public RecurringTransaction createTransaction(RecurringTransactionRequest request) {
         log.info("Creating transaction with request: {}", request);
         User user = userRepository.findById(request.userId())
@@ -39,9 +37,9 @@ public class RecurringTransactionService {
                 .amount(request.amount())
                 .currency(currency)
                 .isIncome(request.isIncome())
-                .interval(PeriodEnum.fromPeriod(request.interval()))
+                .interval(PeriodEnum.fromPeriod(Period.parse(request.interval())))
                 .finalPaymentDate(request.firstPaymentDate())
-                .nextPaymentDate(PeriodEnum.fromPeriod(request.interval()).addToDate(request.firstPaymentDate()))
+                .nextPaymentDate(PeriodEnum.fromPeriod(Period.parse(request.interval())).addToDate(request.firstPaymentDate()))
                 .finalPaymentDate(request.firstPaymentDate())
                 .description(request.description())
                 .build();
@@ -56,26 +54,38 @@ public class RecurringTransactionService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Transaction with Id %d not found", id)));
     }
 
-    public RecurringTransaction updateTransaction(RecurringTransactionRequest request) {
-        log.info("Updating transaction with transactionId {}", request.transactionId());
+    @Transactional
+    public RecurringTransaction updateTransaction(RecurringTransactionRequest request, int transactionId) {
+        log.info("Updating recurring transaction with transactionId {}", transactionId);
 
-        RecurringTransaction transaction = recurringTransactionRepository.findById(request.transactionId())
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Transaction with Id %d not found", request.transactionId())));
+        RecurringTransaction transaction = recurringTransactionRepository.findById(transactionId)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Transaction with Id %d not found", transactionId)));
 
-        if (!Objects.equals(request.currencyId(), transaction.getCurrency().getCurrencyId())) {
-            Currency currency = currencyRepository.findById(request.currencyId())
-                    .orElseThrow(() -> new EntityNotFoundException("Currency not found with ID: " + request.currencyId()));
-
-            transaction.setCurrency(currency);
+        if (request.isIncome() != transaction.getIsIncome()) {
+            throw new IllegalArgumentException("Cannot change transaction type");
         }
 
+        if (transaction.getFirstPaymentDate().isBefore(LocalDate.now()) && request.firstPaymentDate() != transaction.getFirstPaymentDate()) {
+            throw new IllegalArgumentException("Cannot change first payment date of transaction that has already started");
+        }
+
+        if (!request.currencyId().equals(transaction.getCurrency().getCurrencyId())) {
+            Currency currency = currencyRepository.findById(request.currencyId())
+                    .orElseThrow(() -> new EntityNotFoundException("Currency not found with ID: " + request.currencyId()));
+            transaction.setCurrency(currency);
+        }
         transaction.setName(request.name());
-        transaction.setAmount(request.amount());
+        transaction.setAmount(request.amount());;
+        transaction.setNextPaymentDate(request.nextPaymentDate());
+        transaction.setFinalPaymentDate(request.firstPaymentDate());
+        transaction.setInterval(PeriodEnum.fromPeriod(Period.parse(request.interval())));
+        transaction.setDescription(request.description());
 
         recurringTransactionRepository.save(transaction);
         return transaction;
     }
 
+    @Transactional
     public void deleteTransaction(Integer id) {
         log.info("Deleting transaction with transactionId {}", id);
         RecurringTransaction transaction = getTransaction(id);

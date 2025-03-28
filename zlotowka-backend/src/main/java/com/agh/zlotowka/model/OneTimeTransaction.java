@@ -42,7 +42,7 @@ public class OneTimeTransaction {
     @JoinColumn(name = "currency_id", referencedColumnName = "currency_id")
     private Currency currency;
 
-    @Column(name = "income")
+    @Column(name = "isIncome")
     private Boolean isIncome;
 
     @Column(name = "date")

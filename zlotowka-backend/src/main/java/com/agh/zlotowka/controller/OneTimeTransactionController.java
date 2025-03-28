@@ -2,7 +2,7 @@ package com.agh.zlotowka.controller;
 
 import com.agh.zlotowka.dto.OneTimeTransactionRequest;
 import com.agh.zlotowka.model.OneTimeTransaction;
-import com.agh.zlotowka.service.OneTimeTransactionTempService;
+import com.agh.zlotowka.service.OneTimeTransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,11 +21,11 @@ import java.util.List;
 @RequestMapping("/onetimetransactions")
 @RequiredArgsConstructor
 public class OneTimeTransactionController {
-//    private final OneTimeTransactionService oneTimeTransactionService;
-    private final OneTimeTransactionTempService oneTimeTransactionService;
+    private final OneTimeTransactionService oneTimeTransactionService;
+//    private final OneTimeTransactionTempService oneTimeTransactionService;
 
     @PostMapping
-    public ResponseEntity<OneTimeTransaction> addOneTimeTransaction(@Valid @RequestBody OneTimeTransactionRequest request) {
+    public ResponseEntity<OneTimeTransaction> createOneTimeTransaction(@Valid @RequestBody OneTimeTransactionRequest request) {
         OneTimeTransaction oneTimeTransaction = oneTimeTransactionService.createTransaction(request);
         return ResponseEntity.ok(oneTimeTransaction);
     }
@@ -37,8 +37,8 @@ public class OneTimeTransactionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<OneTimeTransaction> updateOneTimeTransaction(@Valid @RequestBody OneTimeTransactionRequest request) {
-        OneTimeTransaction updatedTransaction = oneTimeTransactionService.updateOneTimeTransaction(request);
+    public ResponseEntity<OneTimeTransaction> updateOneTimeTransaction(@PathVariable Integer id, @Valid @RequestBody OneTimeTransactionRequest request) {
+        OneTimeTransaction updatedTransaction = oneTimeTransactionService.updateOneTimeTransaction(request, id);
         return ResponseEntity.ok(updatedTransaction);
     }
 
@@ -48,9 +48,9 @@ public class OneTimeTransactionController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<List<OneTimeTransaction>> getAllOneTimeTransactions(Integer userId) {
-        List<OneTimeTransaction> oneTimeTransactions = oneTimeTransactionService.getAllTransactions(userId);
+    @GetMapping("/all/{userId}")
+    public ResponseEntity<List<OneTimeTransaction>> getAllOneTimeTransactions(@PathVariable Integer userId) {
+        List<OneTimeTransaction> oneTimeTransactions = oneTimeTransactionService.getAllTransactionsByUserId(userId);
         return ResponseEntity.ok(oneTimeTransactions);
     }
 }

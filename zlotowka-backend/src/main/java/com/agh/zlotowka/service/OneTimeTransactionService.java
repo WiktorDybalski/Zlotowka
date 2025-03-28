@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Objects;
 
 @Slf4j
@@ -35,7 +36,9 @@ public class OneTimeTransactionService {
         Currency currency = currencyRepository.findById(request.currencyId())
                 .orElseThrow(() -> new EntityNotFoundException("Currency not found with ID: " + request.currencyId()));
 
-
+        if (request.date().isBefore(LocalDate.now())) {
+            userService.addTransactionAmountToBudget(request.currencyId(), request.amount(), request.isIncome(), user);
+        }
         OneTimeTransaction transaction = OneTimeTransaction.builder()
                 .user(user)
                 .name(request.name())
@@ -45,10 +48,6 @@ public class OneTimeTransactionService {
                 .date(request.date())
                 .description(request.description())
                 .build();
-
-        if (request.date().isBefore(LocalDate.now())) {
-            userService.updateBudget(request, transaction);
-        }
 
         oneTimeTransactionRepository.save((transaction));
         log.info("Created new transaction successfully");
@@ -62,15 +61,36 @@ public class OneTimeTransactionService {
     }
 
     @Transactional
-    public OneTimeTransaction updateOneTimeTransaction(OneTimeTransactionRequest request) {
+    public OneTimeTransaction updateOneTimeTransaction(OneTimeTransactionRequest request, int transactionId) {
         log.info("Updating transaction with request: {}", request);
-        OneTimeTransaction transaction = getTransaction(request.transactionId());
+        OneTimeTransaction transaction = getTransaction(transactionId);
 
         if (request.date().isBefore(LocalDate.now()))
             updateTransactionBeforeCurrentTime(request, transaction);
         else {
-            updateTransactionAfterCurrentTime(request, transaction);
+            updateTransactionAfterCurrentTime(transaction);
         }
+        return updateTransaction(request, transaction);
+    }
+
+    private void updateTransactionBeforeCurrentTime(OneTimeTransactionRequest request, OneTimeTransaction transaction) {
+        if (transaction.getDate().isBefore(LocalDate.now())) {
+            if ((!request.amount().equals(transaction.getAmount()) || request.currencyId().equals(transaction.getCurrency().getCurrencyId()))) {
+                userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), request.isIncome(), transaction.getUser());
+                userService.addTransactionAmountToBudget(request.currencyId(), request.amount(), request.isIncome(), transaction.getUser());
+            }
+        } else {
+            userService.addTransactionAmountToBudget(request.currencyId(), request.amount(), request.isIncome(), transaction.getUser());
+        }
+    }
+
+    private void updateTransactionAfterCurrentTime(OneTimeTransaction transaction) {
+        if (transaction.getDate().isBefore(LocalDate.now())) {
+            userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
+        }
+    }
+
+    OneTimeTransaction updateTransaction(OneTimeTransactionRequest request, OneTimeTransaction transaction) {
         if (!Objects.equals(request.currencyId(), transaction.getCurrency().getCurrencyId())) {
             Currency currency = currencyRepository.findById(request.currencyId())
                     .orElseThrow(() -> new EntityNotFoundException("Currency not found with ID: " + request.currencyId()));
@@ -84,25 +104,8 @@ public class OneTimeTransactionService {
         transaction.setIsIncome(request.isIncome());
         transaction.setDescription(request.description());
 
-        oneTimeTransactionRepository.save((transaction));
+        oneTimeTransactionRepository.save(transaction);
         return transaction;
-    }
-
-
-    private void updateTransactionBeforeCurrentTime(OneTimeTransactionRequest request, OneTimeTransaction transaction) {
-        if (transaction.getDate().isBefore(LocalDate.now())) {
-            if (!request.amount().equals(transaction.getAmount()) || request.currencyId().equals(transaction.getCurrency().getCurrencyId())) {
-                userService.updateBudget(request, transaction);
-            }
-        }
-    }
-
-    private void updateTransactionAfterCurrentTime(OneTimeTransactionRequest request, OneTimeTransaction transaction) {
-        if (transaction.getDate().isAfter(LocalDate.now())) {
-            if (!request.amount().equals(transaction.getAmount()) || request.currencyId().equals(transaction.getCurrency().getCurrencyId())) {
-                userService.updateBudget(request, transaction);
-            }
-        }
     }
 
     @Transactional
@@ -111,8 +114,12 @@ public class OneTimeTransactionService {
         OneTimeTransaction transaction = this.getTransaction(id);
 
         if (transaction.getDate().isBefore(LocalDate.now())) {
-            userService.updateBudget(transaction);
+            userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
         }
         oneTimeTransactionRepository.delete(transaction);
+    }
+
+    public List<OneTimeTransaction> getAllTransactionsByUserId(Integer userId) {
+        return oneTimeTransactionRepository.findAllByUser(userId);
     }
 }

@@ -10,10 +10,6 @@ import java.time.LocalDate;
 public record OneTimeTransactionRequest(
         @NotNull(message = "User ID cannot be null")
         @Positive(message = "User ID must be positive")
-        Integer transactionId,
-
-        @NotNull(message = "User ID cannot be null")
-        @Positive(message = "User ID must be positive")
         Integer userId,
 
         @NotBlank(message = "Name cannot be blank")
@@ -31,7 +27,6 @@ public record OneTimeTransactionRequest(
         @NotNull(message = "Amount cannot be null")
         LocalDate date,
 
-        @NotNull(message = "Amount cannot be null")
         String description
 ) {
 }

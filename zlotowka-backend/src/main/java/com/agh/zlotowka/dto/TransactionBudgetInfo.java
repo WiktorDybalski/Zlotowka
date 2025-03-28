@@ -7,6 +7,7 @@ public record TransactionBudgetInfo(
         String transactionName,
         LocalDate date,
         BigDecimal amount,
+        boolean isIncome,
         String currencyIsoCode
 ) {
 }
