@@ -8,13 +8,27 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RecurringTransactionRepository extends JpaRepository<RecurringTransaction, Integer> {
 
     @Query("SELECT rt FROM RecurringTransaction rt " +
-            "WHERE FUNCTION('DATE_ADD', rt.lastPaymentDate, rt.interval, 'DAY') <= CURRENT_DATE")
+            "WHERE rt.nextPaymentDate IS NULL OR rt.nextPaymentDate <= CURRENT_DATE")
     List<RecurringTransaction> findDueRecurringTransactions();
 
-    List<RecurringTransaction> getActiveTransactionsByUser(int userId, LocalDate startDate, LocalDate endDate);
+    @Query("SELECT rt FROM RecurringTransaction rt " +
+            "WHERE rt.user.userId = :userId AND rt.nextPaymentDate >= :now " +
+            "ORDER BY rt.nextPaymentDate ASC " +
+            "LIMIT 1")
+    Optional<RecurringTransaction> getNextRecurringTransactionByUser(
+            @Param("userId") int userId,
+            @Param("now") LocalDate now
+    );
+
+    @Query("SELECT rt FROM RecurringTransaction rt WHERE rt.user.userId = :userId AND rt.nextPaymentDate >= :startDate AND rt.nextPaymentDate <= :endDate")
+    List<RecurringTransaction> getActiveTransactionsByUser(
+            @Param("userId") int userId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate);
 }
