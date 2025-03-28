@@ -26,7 +26,7 @@ public record OneTimeTransactionRequest(
         Integer currencyId,
 
         @NotNull(message = "Amount cannot be null")
-        Boolean income,
+        Boolean isIncome,
 
         @NotNull(message = "Amount cannot be null")
         LocalDate date,

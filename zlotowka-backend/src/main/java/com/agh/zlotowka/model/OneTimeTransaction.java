@@ -43,7 +43,7 @@ public class OneTimeTransaction {
     private Currency currency;
 
     @Column(name = "income")
-    private Boolean income;
+    private Boolean isIncome;
 
     @Column(name = "date")
     private LocalDate date;

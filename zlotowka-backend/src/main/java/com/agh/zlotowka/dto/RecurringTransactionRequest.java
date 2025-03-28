@@ -29,13 +29,16 @@ public record RecurringTransactionRequest(
         Integer currencyId,
 
         @NotNull(message = "Income flag cannot be null")
-        Boolean income,
+        Boolean isIncome,
+
+        @NotBlank(message = "Interval cannot be blank")
+        Period interval,
 
         @NotNull(message = "First payment date cannot be null")
         LocalDate firstPaymentDate,
 
-        @NotBlank(message = "Interval cannot be blank")
-        Period interval,
+        @NotNull(message = "Next payment date cannot be null")
+        LocalDate nextPaymentDate,
 
         @NotNull(message = "Last payment date cannot be null")
         LocalDate lastPaymentDate,

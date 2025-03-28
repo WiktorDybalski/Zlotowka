@@ -1,20 +1,12 @@
 package com.agh.zlotowka.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
-import java.time.Duration;
 import java.time.LocalDate;
 
 @Data
@@ -44,19 +36,19 @@ public class RecurringTransaction {
     private Currency currency;
 
     @Column(name = "income")
-    private Boolean income;
+    private Boolean isIncome;
 
     @Column(name = "start_payment_date")
-    private LocalDate startPaymentDate;
+    private LocalDate firstPaymentDate;
 
-    @Column(name = "end_payment_date")
-    private LocalDate endPaymentDate;
+    @Column(name = "final_payment_date")
+    private LocalDate finalPaymentDate;
 
-    @Column(name = "interval_col", nullable = false)
-    private Duration interval;
+    @Enumerated(EnumType.STRING)
+    private PeriodEnum interval;
 
-    @Column(name = "last_payment_date")
-    private LocalDate lastPaymentDate;
+    @Column(name = "next_payment_date", nullable = false)
+    private LocalDate nextPaymentDate;
 
     @Column(name = "description", length = 512)
     private String description;

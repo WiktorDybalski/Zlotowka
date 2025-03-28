@@ -6,6 +6,7 @@ import java.time.LocalDate;
 public record TransactionBudgetInfo(
         String transactionName,
         LocalDate date,
-        BigDecimal amount
+        BigDecimal amount,
+        String currencyIsoCode
 ) {
 }
