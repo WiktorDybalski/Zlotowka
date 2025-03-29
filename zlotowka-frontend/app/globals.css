@@ -12,8 +12,9 @@ p {
   /* Tailwind CSS zmienne*/
   --color-accent: #262626;
   --color-lightAccent: #f2f2f7;
+  --color-lightAccentDark: #303031;
   --color-money: #fbd38d;
-  --color-background: #ffffff;
+  --color-background: #fafafa;
   --color-backgroundDark: #3a3a3a;
   --color-backgroundLightDark: #8e8e93;
   --color-error: #fb2c36;

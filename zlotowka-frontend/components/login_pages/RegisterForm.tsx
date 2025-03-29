@@ -1,9 +1,9 @@
 "use client";
 import { useState } from "react";
-import RegisterButton from "@/components/general/ButtonWithBackground";
 import Hstack from "@/components/general/Hstack";
 import LightLink from "@/components/general/LightLink";
 import FormInput from "@/components/login_pages/FormInput";
+import RegisterButton from "@/components/general/Button";
 
 interface FormInputData {
   id: string;
@@ -94,8 +94,7 @@ export default function RegistrationForm({
           />
         ))}
 
-        {/* Przycisk rejestracji */}
-        <RegisterButton className="font-semibold mt-4" type="submit">
+        <RegisterButton variant="accent" type="submit">
           {registerButtonText}
         </RegisterButton>
 

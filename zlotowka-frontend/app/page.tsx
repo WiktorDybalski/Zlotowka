@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Waves from "@/components/main_page/AbsoluteWaves";
 import Link from "next/link";
-import RegisterButton from "@/components/general/ButtonWithBackground";
+import RegisterButton from "@/components/general/Button";
 import LightLink from "@/components/general/LightLink";
+import routes from "@/routes";
 
 function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -10,7 +11,7 @@ function getRandomInt(min: number, max: number) {
 
 export default function Home() {
   return (
-    <main className="min-h-screen overflow-hidden bg-white relative">
+    <main className="min-h-screen overflow-hidden relative">
       <Waves>
         {/* Coins scattered randomly*/}
         <section>
@@ -31,6 +32,8 @@ export default function Home() {
                   top: `${y}vh`,
                   left: `${x}vw`,
                   transform: `rotate(${rotation}deg)`,
+                  height: `${size}px`,
+                  width: `${size}px`,
                 }}
               />
             );
@@ -43,17 +46,17 @@ export default function Home() {
         <figure className="p-4 bg-background/70 rounded-lg">
           <div className="text-center mb-10">
             <h1 className="text-4xl md:text-6xl font-bold text-accent mb-2">
-              Money Management <br /> App
+              Złotówka
             </h1>
           </div>
 
           <div className="flex flex-col items-center space-y-4">
             <RegisterButton>
-              <Link className="block" href="/login/register">
+              <Link className="block" href={routes.register.pathname}>
                 Zarejestruj się!
               </Link>
             </RegisterButton>
-            <LightLink href="/login">Mam już konto</LightLink>
+            <LightLink href={routes.login.pathname}>Mam już konto</LightLink>
           </div>
         </figure>
       </section>

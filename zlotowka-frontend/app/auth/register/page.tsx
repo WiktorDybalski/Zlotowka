@@ -1,13 +1,15 @@
 "use client";
 
-import LoginForm from "@/components/login_pages/RegistrationForm";
+import RegistrationForm from "@/components/login_pages/RegisterForm";
+import routes from "@/routes";
 
 interface FormData {
+  username: string;
   email: string;
   password: string;
 }
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const handleFormSubmit = (formData: Record<string, string>) => {
     formData as unknown as FormData; //for type checking, TS do not kill me
     console.log("Submitted data:", formData);
@@ -15,11 +17,12 @@ export default function LoginPage() {
   };
 
   return (
-    <LoginForm
+    <RegistrationForm
+      title="Zarejestruj się"
       inputs={[
+        { id: "username", placeholder: "Nazwa użytkownika" },
         {
           id: "email",
-          type: "email",
           placeholder: "Email",
           inputLeftElement: "@",
         },
@@ -31,10 +34,9 @@ export default function LoginPage() {
         },
       ]}
       links={[
-        { href: "/login/register", text: "Nie masz konta? Utwórz je!" },
-        { href: "/login/forgot-password", text: "Zapomniałeś hasła?" }, //TODO: change link in the future
+        { href: routes.login.pathname, text: "Masz już konto? Zaloguj się!" },
       ]}
-      registerButtonText="Zaloguj się!"
+      registerButtonText="Zarejestruj się!"
       onSubmit={handleFormSubmit}
     />
   );

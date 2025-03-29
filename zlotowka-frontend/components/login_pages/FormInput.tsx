@@ -42,7 +42,7 @@ export default function FormInput({
           {inputLeftElement && (
             <div
               className={clsx(
-                "absolute left-3",
+                "absolute left-3 flex items-center h-full", // Wyśrodkowanie elementu
                 errorMessage ? "text-error" : "text-gray-500" // Zmiana koloru w zależności od błędu
               )}
             >

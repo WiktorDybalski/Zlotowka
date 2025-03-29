@@ -32,7 +32,7 @@ export default function RootLayout({
   return (
     <html lang="pl">
       <body
-        className={`${lato.className} ${raleway.className} ${materialSymbols.variable}`}
+        className={`${lato.className} ${raleway.className} ${materialSymbols.variable} bg-background`}
       >
         {children}
       </body>
