@@ -3,11 +3,12 @@
 
 import GenericCard from "@/components/cards/GenericCard";
 import ThreeElementsCard from "@/components/cards/ThreeElementsCard";
+import {BarChart} from "@/app/dashboard/BarChart";
 
 export default function Dashboard() {
 
   return (
-     <div className="w-full min-h-screen grid-rows-[200px_600px_300px] grid grid-cols-3 gap-6 px-24 py-12">
+     <div className="w-full min-h-screen grid-rows-[200px_600px_450px] grid grid-cols-3 gap-6 px-24 py-12">
        <ThreeElementsCard
            top={<p>Następny wydatek</p>}
            middle={<p>29 500.50zł</p>}
@@ -44,7 +45,11 @@ export default function Dashboard() {
 
 
        <GenericCard className="col-span-2">Transactions</GenericCard>
-       <GenericCard>Round chart</GenericCard>
+       <GenericCard>
+         <div className="w-full h-full">
+           <BarChart />
+         </div>
+       </GenericCard>
      </div>
   );
 }
