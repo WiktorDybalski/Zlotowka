@@ -1,5 +1,6 @@
 package com.agh.zlotowka.service;
 
+import com.agh.zlotowka.dto.RecurringTransactionDTO;
 import com.agh.zlotowka.dto.RecurringTransactionRequest;
 import com.agh.zlotowka.model.*;
 import com.agh.zlotowka.repository.CurrencyRepository;
@@ -24,7 +25,7 @@ public class RecurringTransactionService {
     private final CurrencyRepository currencyRepository;
 
     @Transactional
-    public RecurringTransaction createTransaction(RecurringTransactionRequest request) {
+    public RecurringTransactionDTO createTransaction(RecurringTransactionRequest request) {
         log.info("Creating transaction with request: {}", request);
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", request.userId())));
@@ -38,24 +39,40 @@ public class RecurringTransactionService {
                 .currency(currency)
                 .isIncome(request.isIncome())
                 .interval(PeriodEnum.fromPeriod(Period.parse(request.interval())))
-                .finalPaymentDate(request.firstPaymentDate())
-                .nextPaymentDate(PeriodEnum.fromPeriod(Period.parse(request.interval())).addToDate(request.firstPaymentDate()))
-                .finalPaymentDate(request.firstPaymentDate())
+                .firstPaymentDate(request.firstPaymentDate())
+                .nextPaymentDate(request.firstPaymentDate())
+                .finalPaymentDate(request.lastPaymentDate())
                 .description(request.description())
                 .build();
 
         recurringTransactionRepository.save(transaction);
         log.info("New transaction with Id {} has been created", transaction.getTransactionId());
-        return transaction;
+        return getRecurringTransactionDTO(transaction);
     }
 
-    public RecurringTransaction getTransaction(Integer id) {
-        return recurringTransactionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Transaction with Id %d not found", id)));
+    private RecurringTransactionDTO getRecurringTransactionDTO(RecurringTransaction transaction) {
+        return RecurringTransactionDTO.builder()
+                .transactionId(transaction.getTransactionId())
+                .userId(transaction.getUser().getUserId())
+                .name(transaction.getName())
+                .amount(transaction.getAmount())
+                .currency(transaction.getCurrency())
+                .isIncome(transaction.getIsIncome())
+                .firstPaymentDate(transaction.getFirstPaymentDate())
+                .nextPaymentDate(transaction.getNextPaymentDate())
+                .finalPaymentDate(transaction.getFinalPaymentDate())
+                .interval(transaction.getInterval())
+                .description(transaction.getDescription())
+                .build();
+    }
+
+    public RecurringTransactionDTO getTransaction(Integer id) {
+        return getRecurringTransactionDTO(recurringTransactionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Transaction with Id %d not found", id))));
     }
 
     @Transactional
-    public RecurringTransaction updateTransaction(RecurringTransactionRequest request, int transactionId) {
+    public RecurringTransactionDTO updateTransaction(RecurringTransactionRequest request, int transactionId) {
         log.info("Updating recurring transaction with transactionId {}", transactionId);
 
         RecurringTransaction transaction = recurringTransactionRepository.findById(transactionId)
@@ -82,13 +99,15 @@ public class RecurringTransactionService {
         transaction.setDescription(request.description());
 
         recurringTransactionRepository.save(transaction);
-        return transaction;
+        return getRecurringTransactionDTO(transaction);
     }
 
     @Transactional
     public void deleteTransaction(Integer id) {
         log.info("Deleting transaction with transactionId {}", id);
-        RecurringTransaction transaction = getTransaction(id);
+        RecurringTransaction transaction = recurringTransactionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Transaction with Id %d not found", id)));
+
         recurringTransactionRepository.delete(transaction);
     }
 }

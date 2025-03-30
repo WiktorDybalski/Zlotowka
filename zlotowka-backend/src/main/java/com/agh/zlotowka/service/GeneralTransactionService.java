@@ -81,7 +81,7 @@ public class GeneralTransactionService {
     private void updateRecurringTransaction(RecurringTransaction recurringTransaction) {
         log.info("Updating recurring transaction...");
         PeriodEnum interval = recurringTransaction.getInterval();
-        LocalDate newPaymentDate = interval.addToDate(recurringTransaction.getNextPaymentDate());
+        LocalDate newPaymentDate = interval.addToDate(recurringTransaction.getNextPaymentDate(), recurringTransaction.getFirstPaymentDate());
 
         if (newPaymentDate.isBefore(recurringTransaction.getFinalPaymentDate()))
             recurringTransaction.setNextPaymentDate(newPaymentDate);
@@ -161,12 +161,11 @@ public class GeneralTransactionService {
 
         allTransactions.sort(Comparator.comparing(TransactionBudgetInfo::date));
         List<TransactionBudgetInfo> transactionBudgetInfoList = new ArrayList<>();
-
-        transactionBudgetInfoList.add(new TransactionBudgetInfo("", request.startDate(), budget, true, userCurrency));
+        BigDecimal updatedBudget = budget;
 
         for (TransactionBudgetInfo transaction : allTransactions) {
-            BigDecimal updateBudget = budget.add(transaction.amount());
-            transactionBudgetInfoList.add(new TransactionBudgetInfo(transaction.transactionName(), transaction.date(), updateBudget, transaction.isIncome(), userCurrency));
+            updatedBudget = updatedBudget.add(transaction.amount());
+            transactionBudgetInfoList.add(new TransactionBudgetInfo(transaction.transactionName(), transaction.date(), updatedBudget, transaction.isIncome(), userCurrency));
         }
         return transactionBudgetInfoList;
     }
@@ -177,11 +176,11 @@ public class GeneralTransactionService {
         for (RecurringTransaction recurringTransaction : rucurringTransactionsList) {
 
             PeriodEnum period = recurringTransaction.getInterval();
-            LocalDate nextPaymentDate = period.addToDate(recurringTransaction.getNextPaymentDate());
+            LocalDate nextPaymentDate = period.addToDate(recurringTransaction.getNextPaymentDate(), recurringTransaction.getFirstPaymentDate());
             String transactionCurrency = recurringTransaction.getCurrency().getIsoCode();
             BigDecimal transactionAmount;
 
-            while (nextPaymentDate.isBefore(endDate)) {
+            while (nextPaymentDate.isBefore(endDate) && nextPaymentDate.isBefore(recurringTransaction.getFinalPaymentDate())) {
                 try {
                     transactionAmount = currencyService.convertCurrency(recurringTransaction.getAmount(), transactionCurrency, userCurrency);
 
@@ -198,7 +197,7 @@ public class GeneralTransactionService {
                     log.error("Unexpected error from CurrencyService", e);
                 }
 
-                nextPaymentDate = period.addToDate(nextPaymentDate);
+                nextPaymentDate = period.addToDate(nextPaymentDate,recurringTransaction.getFirstPaymentDate());
             }
         }
     }

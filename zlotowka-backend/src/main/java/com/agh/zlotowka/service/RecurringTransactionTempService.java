@@ -42,7 +42,7 @@ public class RecurringTransactionTempService {
                 .firstPaymentDate(request.firstPaymentDate())
                 .finalPaymentDate(request.lastPaymentDate())
                 .interval(PeriodEnum.fromPeriod(Period.parse(request.interval())))
-                .nextPaymentDate(PeriodEnum.fromPeriod(Period.parse(request.interval())).addToDate(request.firstPaymentDate()))
+                .nextPaymentDate(PeriodEnum.fromPeriod(Period.parse(request.interval())).addToDate(request.firstPaymentDate(), request.firstPaymentDate()))
                 .description(request.description())
                 .build();
     }

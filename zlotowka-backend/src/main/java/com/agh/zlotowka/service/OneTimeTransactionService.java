@@ -1,8 +1,11 @@
 package com.agh.zlotowka.service;
 
+import com.agh.zlotowka.dto.OneTimeTransactionDTO;
 import com.agh.zlotowka.dto.OneTimeTransactionRequest;
+import com.agh.zlotowka.dto.RecurringTransactionDTO;
 import com.agh.zlotowka.model.Currency;
 import com.agh.zlotowka.model.OneTimeTransaction;
+import com.agh.zlotowka.model.RecurringTransaction;
 import com.agh.zlotowka.model.User;
 import com.agh.zlotowka.repository.CurrencyRepository;
 import com.agh.zlotowka.repository.OneTimeTransactionRepository;
@@ -16,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -27,7 +31,7 @@ public class OneTimeTransactionService {
     private final CurrencyRepository currencyRepository;
 
     @Transactional
-    public OneTimeTransaction createTransaction(OneTimeTransactionRequest request) {
+    public OneTimeTransactionDTO createTransaction(OneTimeTransactionRequest request) {
         log.info("Creating transaction with request: {}", request);
 
         User user = userRepository.findById(request.userId())
@@ -52,18 +56,32 @@ public class OneTimeTransactionService {
         oneTimeTransactionRepository.save((transaction));
         log.info("Created new transaction successfully");
 
-        return transaction;
+        return getOneTimeTransactionDTO(transaction);
     }
 
-    public OneTimeTransaction getTransaction(Integer id) {
-        return oneTimeTransactionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Transaction not found with ID: " + id));
+    private OneTimeTransactionDTO getOneTimeTransactionDTO(OneTimeTransaction transaction) {
+        return OneTimeTransactionDTO.builder()
+                .transactionId(transaction.getTransactionId())
+                .userId(transaction.getUser().getUserId())
+                .name(transaction.getName())
+                .amount(transaction.getAmount())
+                .currency(transaction.getCurrency())
+                .isIncome(transaction.getIsIncome())
+                .date(transaction.getDate())
+                .description(transaction.getDescription())
+                .build();
+    }
+
+    public OneTimeTransactionDTO getTransaction(Integer id) {
+        return getOneTimeTransactionDTO(oneTimeTransactionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Transaction not found with ID: " + id)));
     }
 
     @Transactional
-    public OneTimeTransaction updateOneTimeTransaction(OneTimeTransactionRequest request, int transactionId) {
+    public OneTimeTransactionDTO updateOneTimeTransaction(OneTimeTransactionRequest request, int transactionId) {
         log.info("Updating transaction with request: {}", request);
-        OneTimeTransaction transaction = getTransaction(transactionId);
+        OneTimeTransaction transaction = oneTimeTransactionRepository.findById(transactionId)
+                .orElseThrow(() -> new EntityNotFoundException("Transaction not found with ID: " + transactionId));
 
         if (request.date().isBefore(LocalDate.now()))
             updateTransactionBeforeCurrentTime(request, transaction);
@@ -90,7 +108,7 @@ public class OneTimeTransactionService {
         }
     }
 
-    OneTimeTransaction updateTransaction(OneTimeTransactionRequest request, OneTimeTransaction transaction) {
+    private OneTimeTransactionDTO updateTransaction(OneTimeTransactionRequest request, OneTimeTransaction transaction) {
         if (!Objects.equals(request.currencyId(), transaction.getCurrency().getCurrencyId())) {
             Currency currency = currencyRepository.findById(request.currencyId())
                     .orElseThrow(() -> new EntityNotFoundException("Currency not found with ID: " + request.currencyId()));
@@ -105,13 +123,14 @@ public class OneTimeTransactionService {
         transaction.setDescription(request.description());
 
         oneTimeTransactionRepository.save(transaction);
-        return transaction;
+        return getOneTimeTransactionDTO(transaction);
     }
 
     @Transactional
     public void deleteTransaction(Integer id) {
         log.info("Deleting transaction with Id {}", id);
-        OneTimeTransaction transaction = this.getTransaction(id);
+        OneTimeTransaction transaction = oneTimeTransactionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Transaction not found with ID: " + id));
 
         if (transaction.getDate().isBefore(LocalDate.now())) {
             userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
@@ -119,7 +138,10 @@ public class OneTimeTransactionService {
         oneTimeTransactionRepository.delete(transaction);
     }
 
-    public List<OneTimeTransaction> getAllTransactionsByUserId(Integer userId) {
-        return oneTimeTransactionRepository.findAllByUser(userId);
-    }
+    public List<OneTimeTransactionDTO> getAllTransactionsByUserId(Integer userId) {
+        List<OneTimeTransaction> transactions = oneTimeTransactionRepository.findAllByUser(userId);
+
+        return transactions.stream()
+                .map(this::getOneTimeTransactionDTO)
+                .collect(Collectors.toList());     }
 }

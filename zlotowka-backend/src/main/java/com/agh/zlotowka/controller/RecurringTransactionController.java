@@ -1,5 +1,6 @@
 package com.agh.zlotowka.controller;
 
+import com.agh.zlotowka.dto.RecurringTransactionDTO;
 import com.agh.zlotowka.dto.RecurringTransactionRequest;
 import com.agh.zlotowka.model.OneTimeTransaction;
 import com.agh.zlotowka.model.RecurringTransaction;
@@ -23,24 +24,24 @@ import java.util.List;
 @RequestMapping("/recurringtransaction")
 @RequiredArgsConstructor
 public class RecurringTransactionController {
-        private final RecurringTransactionService recurringTransactionService;
+    private final RecurringTransactionService recurringTransactionService;
 //    private final RecurringTransactionTempService recurringTransactionService;
 
     @PostMapping
-    public ResponseEntity<RecurringTransaction> addRecurringTransaction(@Valid @RequestBody RecurringTransactionRequest request) {
-        RecurringTransaction transaction = recurringTransactionService.createTransaction(request);
+    public ResponseEntity<RecurringTransactionDTO> addRecurringTransaction(@Valid @RequestBody RecurringTransactionRequest request) {
+        RecurringTransactionDTO transaction = recurringTransactionService.createTransaction(request);
         return ResponseEntity.ok(transaction);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<RecurringTransaction> getRecurringTransactions(@PathVariable Integer id) {
-        RecurringTransaction oneTimeTransaction = recurringTransactionService.getTransaction(id);
+    public ResponseEntity<RecurringTransactionDTO> getRecurringTransactions(@PathVariable Integer id) {
+        RecurringTransactionDTO oneTimeTransaction = recurringTransactionService.getTransaction(id);
         return ResponseEntity.ok(oneTimeTransaction);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<RecurringTransaction> updateRecurringTransaction(@Valid @RequestBody RecurringTransactionRequest request, @PathVariable Integer id) {
-        RecurringTransaction updatedTransaction = recurringTransactionService.updateTransaction(request, id);
+    public ResponseEntity<RecurringTransactionDTO> updateRecurringTransaction(@Valid @RequestBody RecurringTransactionRequest request, @PathVariable Integer id) {
+        RecurringTransactionDTO updatedTransaction = recurringTransactionService.updateTransaction(request, id);
         return ResponseEntity.ok(updatedTransaction);
     }
 

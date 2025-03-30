@@ -14,6 +14,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT u.currentBudget FROM User u WHERE u.userId = :userId")
     Optional<BigDecimal> getUserBudget(@Param("userId") int userId);
 
-    @Query("SELECT u.currency FROM User u WHERE u.userId = :userId")
+    @Query("SELECT u.currency.isoCode FROM User u WHERE u.userId = :userId")
     Optional<String> getUserCurrencyName(@Param("userId") int userId);
 }

@@ -4,12 +4,10 @@ import com.agh.zlotowka.dto.RevenuesAndExpensesResponse;
 import com.agh.zlotowka.dto.TransactionBudgetInfo;
 import com.agh.zlotowka.dto.UserDataInDateRangeRequest;
 import com.agh.zlotowka.service.GeneralTransactionService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -20,8 +18,8 @@ import java.util.List;
 public class GeneralTransactionController {
     private final GeneralTransactionService generalTransactionService;
 
-    @GetMapping("/plot")
-    public ResponseEntity<List<TransactionBudgetInfo>> getUserBudgetInDateRange(UserDataInDateRangeRequest request) {
+    @PostMapping("/plotData")
+    public ResponseEntity<List<TransactionBudgetInfo>> getUserBudgetInDateRange(@Valid @RequestBody UserDataInDateRangeRequest request) {
         List<TransactionBudgetInfo> budgetList = generalTransactionService.getEstimatedBudgetInDateRange(request);
         return ResponseEntity.ok(budgetList);
     }
@@ -38,8 +36,8 @@ public class GeneralTransactionController {
         return ResponseEntity.ok(estimatedBalance);
     }
 
-    @GetMapping("/revenuesAndExpensesInRange")
-    public ResponseEntity<RevenuesAndExpensesResponse> getRevenuesAndExpensesInRange(UserDataInDateRangeRequest request) {
+    @PostMapping("/revenuesAndExpensesInRange")
+    public ResponseEntity<RevenuesAndExpensesResponse> getRevenuesAndExpensesInRange(@Valid @RequestBody UserDataInDateRangeRequest request) {
         RevenuesAndExpensesResponse expensesAndRevenuesResponse = generalTransactionService.getRevenuesAndExpensesInRange(request);
         return ResponseEntity.ok(expensesAndRevenuesResponse);
     }

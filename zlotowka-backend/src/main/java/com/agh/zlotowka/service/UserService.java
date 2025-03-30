@@ -25,17 +25,27 @@ public class UserService {
 
     @Transactional
     public User createUser() {
-        Currency currency = Currency.builder()
+        Currency currency1 = Currency.builder()
                 .isoCode("PLN")
                 .build();
-        currencyRepository.save(currency);
+
+        Currency currency2 = Currency.builder()
+                .isoCode("USD")
+                .build();
+
+        Currency currency3 = Currency.builder()
+                .isoCode("EUR")
+                .build();
+        currencyRepository.save(currency1);
+        currencyRepository.save(currency2);
+        currencyRepository.save(currency3);
 
         User user = User.builder()
                 .firstName("Kamilek")
                 .lastName("Rudy")
                 .email("kamilek.pl")
-                .currency(currency)
-                .currentBudget(new BigDecimal(1000)) // Użyj istniejącej encji
+                .currency(currency1)
+                .currentBudget(new BigDecimal(1000))
                 .darkMode(false)
                 .build();
 

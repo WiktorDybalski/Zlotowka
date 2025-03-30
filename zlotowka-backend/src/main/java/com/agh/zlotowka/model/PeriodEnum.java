@@ -32,7 +32,13 @@ public enum PeriodEnum {
     }
 
 
-    public LocalDate addToDate(LocalDate date) {
-        return date.plus(period);
+    public LocalDate addToDate(LocalDate previousDate, LocalDate startDate) {
+        LocalDate newDate = previousDate.plus(period);
+
+        if (this == MONTHLY && newDate.getDayOfMonth() < startDate.getDayOfMonth()) {
+            newDate = newDate.withDayOfMonth(Math.min(newDate.lengthOfMonth(), startDate.getDayOfMonth()));
+        }
+
+        return newDate;
     }
 }

@@ -1,6 +1,10 @@
 package com.agh.zlotowka.service;
 
 import com.agh.zlotowka.exception.CurrencyConversionException;
+import com.agh.zlotowka.model.Currency;
+import com.agh.zlotowka.model.User;
+import com.agh.zlotowka.repository.CurrencyRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,6 +17,7 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -21,6 +26,11 @@ public class CurrencyService {
 
     @Value("${CURRENCY_API_URL}")
     private static String API_URL;
+    private final CurrencyRepository currencyRepository;
+
+    public List<Currency> getAllCurrencies() {
+        return currencyRepository.findAll();
+    }
 
     public BigDecimal convertCurrency(BigDecimal amount, String fromCurrency, String toCurrency) throws Exception {
         if (fromCurrency.equals(toCurrency)) return amount;
