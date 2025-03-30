@@ -7,6 +7,7 @@ import {BarChart} from "@/app/dashboard/BarChart";
 import AddTransaction from "@/components/transactions/AddTransaction";
 import {useState} from "react";
 import DarkButton from "@/components/DarkButton";
+import {MainChart} from "@/app/dashboard/MainChart";
 
 export default function Dashboard() {
   const [showAddTransactions, setShowAddTransactions] = useState(false);
@@ -44,7 +45,9 @@ export default function Dashboard() {
           />
 
           <GenericCard className="col-span-3">
-            Full chart
+            <div className="w-full h-full">
+              <MainChart />
+            </div>
           </GenericCard>
 
           <GenericCard className="col-span-2">Transactions</GenericCard>

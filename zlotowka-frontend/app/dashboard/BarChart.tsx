@@ -26,7 +26,7 @@ const chartConfig = {
 
 export function BarChart() {
   return (
-      <Card className="flex flex-col w-full h-full bg-transparent z-10"> {/* Z-index ustawiony na wykresie */}
+      <Card className="flex flex-col w-full h-full bg-transparent z-10">
         <CardHeader className="items-center pb-0">
           <CardTitle className="text-xl">Podsumowanie miesiąca</CardTitle>
         </CardHeader>
@@ -72,7 +72,7 @@ export function BarChart() {
         <CardFooter className="w-full flex flex-wrap justify-center gap-x-8 gap-y-2 px-4">
           {chartData.map((item) => (
               <div key={item.category} className="flex items-center gap-2">
-                <span className="w-5 h-3" style={{ backgroundColor: item.fill }}></span>
+                <span className="w-5 h-2" style={{ backgroundColor: item.fill }}></span>
                 <span className="text-sm text-muted-foreground">{item.category}</span>
               </div>
           ))}
