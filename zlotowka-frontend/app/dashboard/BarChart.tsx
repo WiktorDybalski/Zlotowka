@@ -20,13 +20,13 @@ const chartConfig = {
   },
   Expenses: {
     label: "Expenses",
-    color: "#e5e5e5",
+    color: "#e9e9e9",
   },
 } satisfies ChartConfig;
 
 export function BarChart() {
   return (
-      <Card className="flex flex-col w-full h-full bg-transparent">
+      <Card className="flex flex-col w-full h-full bg-transparent z-10"> {/* Z-index ustawiony na wykresie */}
         <CardHeader className="items-center pb-0">
           <CardTitle className="text-xl">Podsumowanie miesiąca</CardTitle>
         </CardHeader>
@@ -51,10 +51,10 @@ export function BarChart() {
                         if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                           return (
                               <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
-                                <tspan x={viewBox.cx} y={viewBox.cy} className="fill-foreground text-xl sm:text-2xl md:text-3xl">
+                                <tspan x={viewBox.cx} y={viewBox.cy} className="text-xl sm:text-2xl md:text-3xl font-lato">
                                   6 500 PLN
                                 </tspan>
-                                <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 24} className="fill-muted-foreground text-sm">
+                                <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 24} className="text-sm">
                                   Total
                                 </tspan>
                               </text>
