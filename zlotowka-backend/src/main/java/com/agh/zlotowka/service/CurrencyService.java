@@ -25,7 +25,7 @@ import java.util.List;
 public class CurrencyService {
 
     @Value("${CURRENCY_API_URL}")
-    private static String API_URL;
+    private String API_URL;
     private final CurrencyRepository currencyRepository;
 
     public List<Currency> getAllCurrencies() {
@@ -44,6 +44,8 @@ public class CurrencyService {
     }
 
     private BigDecimal fetchExchangeRate(BigDecimal amount, String fromCurrency, String toCurrency) throws IOException, CurrencyConversionException {
+        toCurrency = toCurrency.toLowerCase();
+        fromCurrency = fromCurrency.toLowerCase();
         String urlString = String.format("%s/%s.json", API_URL, fromCurrency);
         URL url = new URL(urlString);
         HttpURLConnection connection = getHttpURLConnection(url);
