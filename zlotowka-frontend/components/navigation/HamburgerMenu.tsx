@@ -6,7 +6,7 @@ export default function HamburgerMenu({ isOpen, onClick }: HamburgerMenuProps) {
       aria-label={isOpen ? "Zamknij menu" : "Otwórz menu"}
       aria-expanded={isOpen}
       onClick={onClick}
-      className="lg:hidden"
+      className="xl:hidden"
     >
       <svg
         width="32"

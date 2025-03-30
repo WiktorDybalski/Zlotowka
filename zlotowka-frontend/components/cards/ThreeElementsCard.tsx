@@ -15,10 +15,10 @@ export default function ThreeElementsCard({ top, middle, bottom }: ThreeElements
             <div className="w-full text-xl">
               {top}
             </div>
-            <div className="w-full text-4xl font-lato my-auto">
+            <div className="w-full text-4xl xl:text-3xl 2xl:text-4xl font-lato my-auto py-4">
               {middle}
             </div>
-            <div className="w-full text-lg">
+            <div className="w-full text-xl">
               {bottom}
             </div>
           </div>

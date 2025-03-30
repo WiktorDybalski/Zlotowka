@@ -2,6 +2,7 @@ import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import * as React from "react";
+import {useEffect, useState} from "react";
 
 const chartData = [
   { month: "January", desktop: 186 },
@@ -20,6 +21,27 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export function MainChart() {
+  const [padding, setPadding] = useState<{ left: number; right: number }>({ left: 30, right: 30 });
+
+  useEffect(() => {
+    const updatePadding = () => {
+      const width = window.innerWidth;
+
+      if (width <= 640) {
+        setPadding({ left: 0, right: 40 });
+      } else if (width <= 1500) {
+        setPadding({ left: 20, right: 40 });
+      } else {
+        setPadding({ left: 70, right: 70 });
+      }
+    };
+
+    updatePadding();
+    window.addEventListener("resize", updatePadding);
+
+    return () => window.removeEventListener("resize", updatePadding);
+  }, []);
+
   return (
       <Card className="flex flex-col w-full h-full bg-transparent z-10">
         <CardHeader className="flex justify-between items-center">
@@ -28,7 +50,7 @@ export function MainChart() {
             <CardDescription>January - June 2024</CardDescription>
           </div>
           <div>
-            <p>Kiedyś pewnie tu będzie datepicker</p>
+            <p className="text-sm lg:text-lg font-semibold">Kiedyś pewnie tu <br /> będzie datepicker</p>
           </div>
         </CardHeader>
         <CardContent className="w-full flex flex-col justify-center items-center overflow-hidden my-0 px-0">
@@ -45,12 +67,12 @@ export function MainChart() {
                   axisLine={false}
                   tickMargin={8}
                   tickFormatter={(value) => value.slice(0, 3)}
-                  padding={{ left: 100, right: 100 }}
+                  padding={padding}
               />
               <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tickMargin={8}
+                  tickMargin={16}
               />
               <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
               <Line dataKey="desktop" type="natural" stroke="#262626" strokeWidth={2} dot={false} />

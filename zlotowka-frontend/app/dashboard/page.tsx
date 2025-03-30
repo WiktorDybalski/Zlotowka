@@ -16,7 +16,7 @@ export default function Dashboard() {
       <>
         {showAddTransactions && <AddTransaction setShowAddTransaction={setShowAddTransactions} />}
 
-        <div className="w-full min-h-screen grid-rows-[200px_600px_450px_auto] grid grid-cols-3 gap-6 px-24 py-12">
+        <div className="w-full min-h-screen grid px-8 py-12 grid-cols-1 lg:p-6 lg:grid-rows-[200px_600px_450px_auto] lg:grid-cols-3 gap-6 xl:px-4 2xl:px-20">
           <ThreeElementsCard
               top={<p>Następny wydatek</p>}
               middle={<p>29 500.50zł</p>}
@@ -38,19 +38,19 @@ export default function Dashboard() {
           <ThreeElementsCard
               top={<p>Twój wybrany cel</p>}
               middle={<div className="flex flex-col">
-                <p className="text-xl">Wakacje na malediwach</p>
+                <p className="text-2xl">Wakacje na malediwach</p>
                 <div className="w-7/8 h-5 my-2 bg-neutral-200 rounded-xl"></div>
               </div> }
               bottom={<p>Cel: <span className="font-lato">3 000zł</span></p>}
           />
 
-          <GenericCard className="col-span-3">
+          <GenericCard className="lg:col-span-3">
             <div className="w-full h-full">
               <MainChart />
             </div>
           </GenericCard>
 
-          <GenericCard className="col-span-2">Transactions</GenericCard>
+          <GenericCard className="lg:col-span-2">Transactions</GenericCard>
 
           <GenericCard>
             <div className="w-full h-full">
