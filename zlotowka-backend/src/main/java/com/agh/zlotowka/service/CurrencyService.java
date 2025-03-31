@@ -2,9 +2,7 @@ package com.agh.zlotowka.service;
 
 import com.agh.zlotowka.exception.CurrencyConversionException;
 import com.agh.zlotowka.model.Currency;
-import com.agh.zlotowka.model.User;
 import com.agh.zlotowka.repository.CurrencyRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,7 +23,7 @@ import java.util.List;
 public class CurrencyService {
 
     @Value("${CURRENCY_API_URL}")
-    private String API_URL;
+    private String apiUrl;
     private final CurrencyRepository currencyRepository;
 
     public List<Currency> getAllCurrencies() {
@@ -35,7 +33,7 @@ public class CurrencyService {
     public BigDecimal convertCurrency(BigDecimal amount, String fromCurrency, String toCurrency) throws Exception {
         if (fromCurrency.equals(toCurrency)) return amount;
         try {
-            BigDecimal exchangeRate = fetchExchangeRate(amount, fromCurrency, toCurrency);
+            BigDecimal exchangeRate = fetchExchangeRate(fromCurrency.toLowerCase(), toCurrency.toLowerCase());
             return amount.multiply(exchangeRate);
         } catch (IOException e) {
             log.error("CurrencyService: Currency conversion failed: ", e);
@@ -43,18 +41,15 @@ public class CurrencyService {
         }
     }
 
-    private BigDecimal fetchExchangeRate(BigDecimal amount, String fromCurrency, String toCurrency) throws IOException, CurrencyConversionException {
-        toCurrency = toCurrency.toLowerCase();
-        fromCurrency = fromCurrency.toLowerCase();
-        String urlString = String.format("%s/%s.json", API_URL, fromCurrency);
+    private BigDecimal fetchExchangeRate(String fromCurrency, String toCurrency) throws IOException, CurrencyConversionException {
+        String urlString = String.format("%s/%s.json", apiUrl, fromCurrency);
         URL url = new URL(urlString);
         HttpURLConnection connection = getHttpURLConnection(url);
         JSONObject fromCurrencyData = getJsonObject(fromCurrency, connection);
         if (fromCurrencyData != null && fromCurrencyData.has(toCurrency)) {
             Object exchangeRateObj = fromCurrencyData.get(toCurrency);
-            BigDecimal exchangeRate = BigDecimal.valueOf(((Number) exchangeRateObj).doubleValue());
 
-            return amount.multiply(exchangeRate);
+            return BigDecimal.valueOf(((Number) exchangeRateObj).doubleValue());
         } else {
             log.error("CurrencyService: No currencies available");
             throw new CurrencyConversionException("CurrencyService: No such currency available");
