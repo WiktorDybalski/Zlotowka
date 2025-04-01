@@ -1,4 +1,4 @@
-import GenericCard from "@/components/cards/GenericCard";
+import GenericCard from "@/components/dashboard/cards/GenericCard";
 import {ReactNode} from "react";
 
 interface ThreeElementsCardProps {
