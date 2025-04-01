@@ -6,8 +6,8 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
 const chartData = [
-  { category: "Income", visitors: 275, fill: "#262626" },
-  { category: "Expenses", visitors: 200, fill: "#e9e9e9" },
+  { category: "Przychody", visitors: 275, fill: "#262626" },
+  { category: "Wydatki", visitors: 200, fill: "#e9e9e9" },
 ];
 
 const chartConfig = {
@@ -15,11 +15,11 @@ const chartConfig = {
     label: "Visitors",
   },
   Income: {
-    label: "Income",
+    label: "Przychody",
     color: "#262626",
   },
   Expenses: {
-    label: "Expenses",
+    label: "Wydatki",
     color: "#e9e9e9",
   },
 } satisfies ChartConfig;
@@ -55,7 +55,7 @@ export function BarChart() {
                                   6 500 PLN
                                 </tspan>
                                 <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 24} className="text-sm">
-                                  Total
+                                  Suma
                                 </tspan>
                               </text>
                           )

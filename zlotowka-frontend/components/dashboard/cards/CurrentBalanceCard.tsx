@@ -1,5 +1,5 @@
-import ThreeElementsCard from "@/components/dashboard/cards/ThreeElementsCard";
-import CardText from "@/components/dashboard/cards/CardText";
+import ThreeElementsCard from "@/components/dashboard/cards/generic/ThreeElementsCard";
+import CardText from "@/components/dashboard/cards/generic/CardText";
 
 export default function CurrentBalanceCard() {
   return (

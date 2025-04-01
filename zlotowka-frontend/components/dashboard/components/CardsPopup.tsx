@@ -1,14 +1,8 @@
 import {useEffect, useState} from "react";
 import {CardsPopupProps} from "@/interfaces/dashboard/cards/CardPopupProps";
-import {CardId} from "@/interfaces/dashboard/cards/CardComponents";
+import {AVAILABLE_CARDS, CardId} from "@/interfaces/dashboard/cards/CardComponents";
 import DarkButton from "@/components/DarkButton";
 
-const formatCardLabel = (card: string) => {
-  const formatted = card.replace(/([A-Z])/g, " $1").trim();
-  return formatted.charAt(0).toUpperCase() + formatted.slice(1).toLowerCase();
-};
-
-// TODO: change availableCards
 export default function CardsPopup({
                                      setSelectedCards,
                                      onClose,
@@ -18,8 +12,6 @@ export default function CardsPopup({
   const [localSelectedCards, setLocalSelectedCards] = useState<CardId[]>([
     ...selectedCards,
   ]);
-
-  const availableCards: CardId[] = ["nextExpense", "pinnedDream", "monthForecast", "currentBalance"];
 
   const handleClose = () => {
     setIsVisible(false);
@@ -66,24 +58,23 @@ export default function CardsPopup({
           transition-all duration-200 ease-in-out transform ${isVisible ? "scale-100 opacity-100" : "scale-90 opacity-0"}`}
         >
           <h2 className="text-xl font-semibold mb-6">Wybierz karty do wyświetlenia</h2>
-          <div className="space-y-2">
-            {availableCards.map((card) => (
-                <div key={card} className="flex items-center space-x-2">
+          <div className="space-y-4">
+            {AVAILABLE_CARDS.map((card) => (
+                <div key={card.id} className="flex items-center p-2 rounded hover:bg-neutral-200 transition-colors">
                   <input
                       type="checkbox"
-                      id={card}
-                      checked={localSelectedCards.includes(card)}
-                      onChange={() => handleCardToggle(card)}
-                      className="h-5 w-5"
+                      id={card.id}
+                      checked={localSelectedCards.includes(card.id)}
+                      onChange={() => handleCardToggle(card.id)}
+                      className="h-5 w-5 accent-neutral-800"
                   />
-                  <label htmlFor={card} className="text-sm">
-                    {formatCardLabel(card)}
+                  <label htmlFor={card.id} className="text-sm ml-4">
+                    {card.label}
                   </label>
                 </div>
             ))}
           </div>
-
-          <div className="mt-6 flex justify-end space-x-4">
+          <div className="mt-6 flex justify-between space-x-4">
             <DarkButton text={"Zatwierdź"} onClick={handleConfirm} />
           </div>
         </div>

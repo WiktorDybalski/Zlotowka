@@ -1,5 +1,5 @@
-import CardText from "@/components/dashboard/cards/CardText";
-import ThreeElementsCard from "@/components/dashboard/cards/ThreeElementsCard";
+import CardText from "@/components/dashboard/cards/generic/CardText";
+import ThreeElementsCard from "@/components/dashboard/cards/generic/ThreeElementsCard";
 
 const Value = () => (
   <div className="flex items-baseline font-lato">

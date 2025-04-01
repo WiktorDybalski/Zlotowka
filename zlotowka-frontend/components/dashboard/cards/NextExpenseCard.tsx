@@ -1,6 +1,6 @@
-import ThreeElementsCard from "@/components/dashboard/cards/ThreeElementsCard";
-import CardText from "@/components/dashboard/cards/CardText";
-import CardNumber from "@/components/dashboard/cards/CardNumber";
+import ThreeElementsCard from "@/components/dashboard/cards/generic/ThreeElementsCard";
+import CardText from "@/components/dashboard/cards/generic/CardText";
+import CardNumber from "@/components/dashboard/cards/generic/CardNumber";
 
 const DateInfo = () => (
     <div className="w-full flex justify-between">
