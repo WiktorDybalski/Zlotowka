@@ -40,7 +40,7 @@ public class UserService {
         currencyRepository.save(currency2);
         currencyRepository.save(currency3);
 
-        User user = User.builder()
+        User user1 = User.builder()
                 .firstName("Kamilek")
                 .lastName("Rudy")
                 .email("kamilek.pl")
@@ -49,7 +49,17 @@ public class UserService {
                 .darkMode(false)
                 .build();
 
-        return userRepository.save(user);
+        User user2 = User.builder()
+                .firstName("Jan")
+                .lastName("Nowak")
+                .email("gmail.com")
+                .currency(currency2)
+                .currentBudget(new BigDecimal(2000))
+                .darkMode(false)
+                .build();
+
+        userRepository.save(user2);
+        return userRepository.save(user1);
     }
 
     public void removeTransactionAmountFromBudget(int currencyId, BigDecimal amount, boolean isIncome, User user) {
