@@ -1,6 +1,8 @@
 import { NavigationLinksProps } from "@/interfaces/navigation/NavigationLinksProps";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
+//TODO: change links to objects with href
 export default function NavigationLinks({
   links,
   isMobile = false,
@@ -25,9 +27,11 @@ export default function NavigationLinks({
           animate="visible"
           custom={index}
         >
-          <p className="ml-6 text-xl hover:cursor-pointer hover:text-neutral-300 transition-colors">
-            {link}
-          </p>
+          <Link href={"/" + link.toLowerCase()}>
+            <p className="ml-6 text-xl hover:cursor-pointer hover:text-neutral-300 transition-colors">
+              {link}
+            </p>
+          </Link>
         </motion.div>
       ))}
     </div>
