@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { TransactionFormProps } from "@/interfaces/transactions/PopupTransactionsProps";
 import { TransactionData } from "@/interfaces/transactions/TransactionsData";
-import DarkButton from "@/components/DarkButton";
+import ConfirmButton from "@/components/general/Button";
 
 const inputClass =
   "border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md min-w-76 ";
@@ -25,7 +25,7 @@ export default function TransactionForm({
       type: "expense",
       amount: "",
       currency: "PLN",
-    },
+    }
   );
 
   const handleClose = () => {
@@ -34,7 +34,7 @@ export default function TransactionForm({
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     setFormData({
       ...formData,
@@ -55,7 +55,9 @@ export default function TransactionForm({
 
   return (
     <div
-      className={`w-full h-screen fixed top-0 left-0 flex justify-center items-center select-none transition-opacity duration-200 ${isVisible ? "opacity-100" : "opacity-0"}`}
+      className={`w-full h-screen fixed top-0 left-0 flex justify-center items-center select-none transition-opacity duration-200 ${
+        isVisible ? "opacity-100" : "opacity-0"
+      }`}
     >
       {/* Background */}
       <div
@@ -65,7 +67,9 @@ export default function TransactionForm({
 
       {/* Form */}
       <div
-        className={`bg-neutral-100 border-[1px] border-[rgba(38,38,38,0.5)] px-8 py-10 rounded-[10px] z-10 transition-all duration-200 ease-in-out transform ${isVisible ? "scale-100 opacity-100" : "scale-90 opacity-0"}`}
+        className={`bg-neutral-100 border-[1px] border-[rgba(38,38,38,0.5)] px-8 py-10 rounded-[10px] z-10 transition-all duration-200 ease-in-out transform ${
+          isVisible ? "scale-100 opacity-100" : "scale-90 opacity-0"
+        }`}
       >
         <div className="mb-6">
           <h2 className="text-2xl font-medium">{header}</h2>
@@ -160,9 +164,9 @@ export default function TransactionForm({
         </div>
 
         {/* Button */}
-        <div className="w-full h-10 mt-7">
-          <DarkButton icon={submitButtonIcon} text={submitButtonText} />
-        </div>
+        <ConfirmButton icon={submitButtonIcon} variant="dark" className="mt-7">
+          {submitButtonText}
+        </ConfirmButton>
       </div>
     </div>
   );
