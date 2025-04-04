@@ -91,7 +91,7 @@ public class OneTimeTransactionService {
         return updateTransaction(request, transaction);
     }
 
-    private static void validateTransactionOwnership(Integer requestSenderId, Integer transactionOwner) {
+    private void validateTransactionOwnership(Integer requestSenderId, Integer transactionOwner) {
         if (!requestSenderId.equals(transactionOwner))
             throw new IllegalArgumentException(String.format("User Id %d does not match the transaction owner", requestSenderId));
     }

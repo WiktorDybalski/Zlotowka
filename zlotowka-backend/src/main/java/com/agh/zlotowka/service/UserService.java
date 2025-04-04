@@ -58,8 +58,9 @@ public class UserService {
                 .darkMode(false)
                 .build();
 
+        userRepository.save(user1);
         userRepository.save(user2);
-        return userRepository.save(user1);
+        return user1;
     }
 
     public void removeTransactionAmountFromBudget(int currencyId, BigDecimal amount, boolean isIncome, User user) {

@@ -12,6 +12,7 @@ public record OneTimeTransactionRequest(
         Integer userId,
 
         @NotBlank(message = "Name cannot be blank")
+        @Size(max = 512, message = "Name cannot exceed 512 characters")
         String name,
 
         @NotNull(message = "Amount cannot be null")
@@ -24,7 +25,7 @@ public record OneTimeTransactionRequest(
         @NotNull(message = "Amount cannot be null")
         Boolean isIncome,
 
-        @NotNull(message = "Amount cannot be null")
+        @NotNull(message = "Payment date cannot be null")
         @DateAfter2000(message = "Date must be after 2000-01-01")
         LocalDate date,
 
