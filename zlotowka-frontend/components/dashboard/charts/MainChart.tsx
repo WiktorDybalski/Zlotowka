@@ -35,7 +35,7 @@ export function MainChart() {
   }, []);
 
   return (
-      <Card className="flex flex-col w-full h-full bg-transparent z-10">
+      <Card className="flex flex-col w-full h-full bg-transparent z-10 border-none">
         <CardHeader className="flex justify-between items-center">
           <div>
             <CardTitle className="text-xl">Wykres cashflow</CardTitle>

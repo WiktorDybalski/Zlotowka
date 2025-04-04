@@ -26,7 +26,7 @@ const chartConfig = {
 
 export function BarChart() {
   return (
-      <Card className="flex flex-col w-full h-full bg-transparent z-10">
+      <Card className="flex flex-col w-full h-full bg-transparent z-10 border-none">
         <CardHeader className="items-center pb-0">
           <CardTitle className="text-xl">Podsumowanie miesiąca</CardTitle>
         </CardHeader>

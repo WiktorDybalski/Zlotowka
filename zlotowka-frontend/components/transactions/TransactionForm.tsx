@@ -55,7 +55,7 @@ export default function TransactionForm({
 
   return (
     <div
-      className={`w-full h-screen fixed top-0 left-0 flex justify-center items-center select-none transition-opacity duration-200 ${
+      className={`z-[999] w-full h-screen fixed top-0 left-0 flex justify-center items-center select-none transition-opacity duration-200 ${
         isVisible ? "opacity-100" : "opacity-0"
       }`}
     >
