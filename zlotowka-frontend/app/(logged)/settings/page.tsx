@@ -1,11 +1,25 @@
-"use client"
+"use client";
 
 import GenericCard from "@/components/dashboard/cards/generic/GenericCard";
 import DarkButton from "@/components/DarkButton";
 import Image from "next/image";
-import {useState} from "react";
+import {JSX, useState} from "react";
 
-const AccountOptions = [
+interface AccountOption {
+  text: string;
+  avatar?: JSX.Element;
+  value?: string;
+  onClick?: () => void;
+}
+
+interface AccountFieldProps {
+  text: string;
+  value?: string;
+  avatar?: JSX.Element;
+  onClick?: () => void;
+}
+
+const AccountOptions: AccountOption[] = [
   {
     text: "Zdjęcie",
     avatar: <Image src="/avatar.png" width={45} height={45} alt="Avatar" className="rounded-full" />,
@@ -28,14 +42,14 @@ const AccountOptions = [
   },
 ];
 
-const AccountField = ({ text, value, avatar, onClick }) => (
+const AccountField = ({ text, value, avatar, onClick = () => {} }: AccountFieldProps) => (
     <div className="grid grid-cols-[1fr_1fr_1fr] w-full py-4 border-t-2 border-dashed border-neutral-200 last:border-b-2">
       <div className="flex justify-left items-center">
         <h3 className="text-lg">{text}</h3>
       </div>
       <div className="flex justify-center items-center">
         {avatar && <div>{avatar}</div>}
-        {value && <span className="text-neutral-600 font-lato text-lg">{value}</span>}
+        {value && <span className="text-neutral-600 text-lg">{value}</span>}
       </div>
       <div className="flex justify-end items-center">
         <div className="w-28 h-10">
@@ -44,6 +58,7 @@ const AccountField = ({ text, value, avatar, onClick }) => (
       </div>
     </div>
 );
+
 
 const scrollToSection = (id: string) => {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });

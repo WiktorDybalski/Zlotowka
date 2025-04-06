@@ -1,5 +1,5 @@
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import * as React from "react";
 import {useEffect, useState} from "react";
@@ -39,10 +39,9 @@ export function MainChart() {
         <CardHeader className="flex justify-between items-center">
           <div>
             <CardTitle className="text-xl">Wykres cashflow</CardTitle>
-            <CardDescription>Styczeń 2024 - Marzec 2024</CardDescription>
           </div>
           <div>
-            <p className="text-sm lg:text-lg font-semibold">Kiedyś pewnie tu <br /> będzie datepicker</p>
+            <h3>Datepicker nie dziala</h3>
           </div>
         </CardHeader>
         <CardContent className="w-full flex flex-col justify-center items-center overflow-hidden my-0 px-0">
@@ -63,6 +62,7 @@ export function MainChart() {
                           .toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: '2-digit' })
                   }
                   padding={padding}
+                  className="font-(family-name:--font-lato)"
               />
               <YAxis
                   axisLine={false}

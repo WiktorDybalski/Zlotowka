@@ -11,7 +11,7 @@ interface ThreeElementsCardProps {
 export default function ThreeElementsCard({ top, middle, bottom }: ThreeElementsCardProps) {
   return (
       <GenericCard>
-          <div className="w-full h-full px-7 py-5 flex flex-col justify-center font-semibold text-neutral-800">
+          <div className="w-full h-full px-7 py-5 flex flex-col justify-center text-neutral-800">
             <div className="w-full text-xl lg:text-lg 2xl:text-xl">
               {top}
             </div>

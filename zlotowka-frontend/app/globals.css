@@ -6,7 +6,10 @@ p {
 
 :root {
   --font-family-symbols: "Material Symbols Rounded";
+  --font-lato: 'Lato', sans-serif;
+  --font-raleway: 'Raleway', sans-serif;
 }
+
 
 @theme {
   /* Tailwind CSS zmienne*/

@@ -1,12 +1,12 @@
 "use client"
 
 import GenericCard from "@/components/dashboard/cards/generic/GenericCard";
-import {BarChart} from "@/components/dashboard/charts/BarChart";
+import {PieSideChart} from "@/components/dashboard/charts/PieSideChart";
 import AddTransaction from "@/components/transactions/AddTransaction";
 import {useState} from "react";
 import DarkButton from "@/components/DarkButton";
 import {MainChart} from "@/components/dashboard/charts/MainChart";
-import NextExpenseCard from "@/components/dashboard/cards/NextExpenseCard";
+import NextTransactionCard from "@/components/dashboard/cards/NextTransactionCard";
 import PinnedDreamCard from "@/components/dashboard/cards/PinnedDreamCard";
 import MonthForecastCard from "@/components/dashboard/cards/MonthForecastCard";
 import CardsPopup from "@/components/dashboard/components/CardsPopup";
@@ -23,7 +23,7 @@ export default function Dashboard() {
   ]);
 
   const cardComponents: CardComponents = {
-    nextExpense: <NextExpenseCard />,
+    nextExpense: <NextTransactionCard />,
     pinnedDream: <PinnedDreamCard />,
     monthForecast: <MonthForecastCard />,
     currentBalance: <CurrentBalanceCard />
@@ -60,7 +60,7 @@ export default function Dashboard() {
           <GenericCard className="lg:col-span-2">Transactions</GenericCard>
 
           <GenericCard>
-              <BarChart />
+              <PieSideChart />
           </GenericCard>
 
           <div className="w-52 h-10">

@@ -6,8 +6,8 @@ export default function HomeLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex w-full flex-col font-medium font-raleway lg:flex-row">
-      <div className="w-full min-h-20 left-0 top-0 text-neutral-100 lg:w-96 lg:h-screen lg:sticky">
+    <div className="flex w-full flex-col font-semibold xl:flex-row">
+      <div className="w-full min-h-20 left-0 top-0 text-neutral-100 xl:w-96 xl:h-screen xl:sticky">
         <Navigation />
       </div>
       <div className="w-full">{children}</div>

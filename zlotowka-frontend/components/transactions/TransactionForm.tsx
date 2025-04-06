@@ -145,7 +145,7 @@ export default function TransactionForm({
         <div className="flex gap-x-2 min-w-72">
           <input
             name="amount"
-            className="border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md w-full"
+            className="border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md font-(family-name:--font-lato) w-full"
             type="text"
             placeholder="Kwota"
             value={formData.amount}

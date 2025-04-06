@@ -24,7 +24,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export function BarChart() {
+export function PieSideChart() {
   return (
       <Card className="flex flex-col w-full h-full bg-transparent z-10 border-none">
         <CardHeader className="items-center pb-0">
