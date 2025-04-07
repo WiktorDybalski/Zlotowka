@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { TransactionFormProps } from "@/interfaces/transactions/PopupTransactionsProps";
 import { TransactionData } from "@/interfaces/transactions/TransactionsData";
 import ConfirmButton from "@/components/general/Button";
+import dayjs from "dayjs";
+import DatePicker from "@/components/general/DatePicker";
 
 const inputClass =
   "border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md min-w-76 ";
@@ -17,10 +19,11 @@ export default function TransactionForm({
   submitButtonIcon,
 }: TransactionFormProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [formData, setFormData] = useState<TransactionData>(
     transaction || {
       name: "",
-      date: "",
+      date: dayjs().format("YYYY-MM-DD"),
       frequency: "Raz",
       type: "expense",
       amount: "",
@@ -47,6 +50,10 @@ export default function TransactionForm({
       ...formData,
       type,
     });
+  };
+
+  const toggleDatePicker = () => {
+    setIsDatePickerOpen(prev => !prev);
   };
 
   useEffect(() => {
@@ -93,11 +100,23 @@ export default function TransactionForm({
           <h3 className="text-md my-2 font-medium">Data</h3>
           <input
             name="date"
-            className={inputClass}
+            className={inputClass + " font-(family-name:--font-lato)"}
             type="text"
             placeholder="Wyobraźcie sobie date pickera"
             value={formData.date}
             onChange={handleInputChange}
+            onClick={toggleDatePicker}
+          />
+          <DatePicker
+              isOpen={isDatePickerOpen}
+              currentDate={dayjs(formData.date)}
+              setIsOpen={setIsDatePickerOpen}
+              setDate={(newDate) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    date: dayjs(newDate).format("YYYY-MM-DD"),
+                  }))
+              }
           />
         </div>
 

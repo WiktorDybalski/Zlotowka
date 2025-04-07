@@ -51,7 +51,7 @@ export function PieSideChart() {
                         if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                           return (
                               <text x={viewBox.cx} y={viewBox.cy} textAnchor="middle" dominantBaseline="middle">
-                                <tspan x={viewBox.cx} y={viewBox.cy} className="text-xl sm:text-2xl md:text-3xl font-lato">
+                                <tspan x={viewBox.cx} y={viewBox.cy} className="text-xl sm:text-2xl md:text-3xl font-(family-name:--font-lato)">
                                   6 500 PLN
                                 </tspan>
                                 <tspan x={viewBox.cx} y={(viewBox.cy || 0) + 24} className="text-sm">

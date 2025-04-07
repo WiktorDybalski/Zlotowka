@@ -49,7 +49,7 @@ const AccountField = ({ text, value, avatar, onClick = () => {} }: AccountFieldP
       </div>
       <div className="flex justify-center items-center">
         {avatar && <div>{avatar}</div>}
-        {value && <span className="text-neutral-600 text-lg">{value}</span>}
+        {value && <span className="text-neutral-600 text-lg font-(family-name:--font-lato)">{value}</span>}
       </div>
       <div className="flex justify-end items-center">
         <div className="w-28 h-10">
