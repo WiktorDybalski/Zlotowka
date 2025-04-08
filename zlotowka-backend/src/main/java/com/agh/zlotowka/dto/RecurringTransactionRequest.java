@@ -9,7 +9,6 @@ import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.Period;
 
 public record RecurringTransactionRequest(
         @NotNull(message = "User ID cannot be null")

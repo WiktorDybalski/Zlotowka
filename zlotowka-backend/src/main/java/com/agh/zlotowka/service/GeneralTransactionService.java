@@ -115,9 +115,22 @@ public class GeneralTransactionService {
                 recurringTransaction.getUser());
     }
 
-    public TransactionBudgetInfo getNextTransaction(int userId) {
-        Optional<OneTimeTransaction> nextOneTimeTransaction = oneTimeTransactionRepository.getNextOneTimeTransactionByUser(userId, LocalDate.now());
-        Optional<RecurringTransaction> nextRecurringTransaction = recurringTransactionRepository.getNextRecurringTransactionByUser(userId, LocalDate.now());
+    public TransactionBudgetInfo getNextTransaction(Integer userId, Boolean isIncome) {
+        userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
+
+        if (isIncome == null) {
+            throw new IllegalArgumentException("isIncome cannot be null");
+        }
+
+        Optional<OneTimeTransaction> nextOneTimeTransaction;
+        Optional<RecurringTransaction> nextRecurringTransaction;
+        if (isIncome) {
+            nextOneTimeTransaction = oneTimeTransactionRepository.getNextIncomeOneTimeTransactionByUser(userId, LocalDate.now());
+            nextRecurringTransaction = recurringTransactionRepository.getNextIncomeRecurringTransactionByUser(userId, LocalDate.now());
+        } else {
+            nextOneTimeTransaction = oneTimeTransactionRepository.getNextExpenseOneTimeTransactionByUser(userId, LocalDate.now());
+            nextRecurringTransaction = recurringTransactionRepository.getNextExpenseRecurringTransactionByUser(userId, LocalDate.now());
+        }
 
         TransactionBudgetInfo transaction1 = nextOneTimeTransaction.map(t ->
                 new TransactionBudgetInfo(t.getName(), t.getDate(), t.getAmount(), t.getIsIncome(), t.getCurrency().getIsoCode())
@@ -126,6 +139,10 @@ public class GeneralTransactionService {
         TransactionBudgetInfo transaction2 = nextRecurringTransaction.map(t ->
                 new TransactionBudgetInfo(t.getName(), t.getNextPaymentDate(), t.getAmount(), t.getIsIncome(), t.getCurrency().getIsoCode())
         ).orElse(null);
+
+        if (transaction1 == null && transaction2 == null) {
+            return new TransactionBudgetInfo("No transaction", LocalDate.now(), BigDecimal.ZERO, false, "PLN");
+        }
 
         if (transaction1 == null) return transaction2;
         if (transaction2 == null) return transaction1;
@@ -197,7 +214,7 @@ public class GeneralTransactionService {
                     log.error("Unexpected error from CurrencyService", e);
                 }
 
-                nextPaymentDate = period.addToDate(nextPaymentDate,recurringTransaction.getFirstPaymentDate());
+                nextPaymentDate = period.addToDate(nextPaymentDate, recurringTransaction.getFirstPaymentDate());
             }
         }
     }

@@ -25,8 +25,8 @@ public class GeneralTransactionController {
     }
 
     @GetMapping("/nextTransaction/{userId}")
-    public ResponseEntity<TransactionBudgetInfo> getNextTransaction(@PathVariable Integer userId) {
-        TransactionBudgetInfo transactionBudgetInfo = generalTransactionService.getNextTransaction(userId);
+    public ResponseEntity<TransactionBudgetInfo> getNextTransaction(@PathVariable Integer userId, @RequestParam Boolean isIncome) {
+        TransactionBudgetInfo transactionBudgetInfo = generalTransactionService.getNextTransaction(userId, isIncome);
         return ResponseEntity.ok(transactionBudgetInfo);
     }
 

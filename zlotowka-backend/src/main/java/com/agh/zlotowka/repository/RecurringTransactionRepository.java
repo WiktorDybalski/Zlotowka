@@ -18,10 +18,19 @@ public interface RecurringTransactionRepository extends JpaRepository<RecurringT
     List<RecurringTransaction> findDueRecurringTransactions();
 
     @Query("SELECT rt FROM RecurringTransaction rt " +
-            "WHERE rt.user.userId = :userId AND rt.nextPaymentDate >= :now " +
+            "WHERE rt.user.userId = :userId AND rt.nextPaymentDate >= :now AND rt.isIncome=TRUE " +
             "ORDER BY rt.nextPaymentDate ASC " +
             "LIMIT 1")
-    Optional<RecurringTransaction> getNextRecurringTransactionByUser(
+    Optional<RecurringTransaction> getNextIncomeRecurringTransactionByUser(
+            @Param("userId") int userId,
+            @Param("now") LocalDate now
+    );
+
+    @Query("SELECT rt FROM RecurringTransaction rt " +
+            "WHERE rt.user.userId = :userId AND rt.nextPaymentDate >= :now AND rt.isIncome=FALSE " +
+            "ORDER BY rt.nextPaymentDate ASC " +
+            "LIMIT 1")
+    Optional<RecurringTransaction> getNextExpenseRecurringTransactionByUser(
             @Param("userId") int userId,
             @Param("now") LocalDate now
     );
