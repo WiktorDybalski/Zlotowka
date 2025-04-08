@@ -6,7 +6,6 @@ interface GenericCardProps {
   id?: string;
 }
 
-// TODO: fix opacity
 export default function GenericCard({ children, className, id }: GenericCardProps) {
   return (
       <div className={`w-full h-full border-[1px] rounded-xl ${className}`} id={id} style={{ borderColor: "rgba(38, 38, 38, 0.5)" }}>

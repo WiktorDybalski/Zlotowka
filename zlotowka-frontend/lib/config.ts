@@ -1,1 +1,1 @@
-export const API_HOST = process.env.NEXT_PUBLIC_API_HOST || 'http://localhost:8080/test';
+export const API_HOST = process.env.NEXT_PUBLIC_API_HOST || 'http://localhost:8080';

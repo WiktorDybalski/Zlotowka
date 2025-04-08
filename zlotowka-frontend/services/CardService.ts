@@ -20,14 +20,14 @@ const CardService = {
     }
   },
 
-  getNextTransaction: async (userId: number) => {
+  getNextTransaction: async (userId: number, isIncome: boolean) => {
     try {
-      const response = await fetch(`${API_HOST}/generaltransactions/nextTransaction/${userId}`);
+      const response = await fetch(`${API_HOST}/generaltransactions/nextTransaction/${userId}?isIncome=${isIncome}`);
       return await response.json();
     } catch (error) {
       console.log(error);
     }
-  }
+  },
 }
 
 export default CardService

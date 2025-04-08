@@ -6,12 +6,14 @@ import AddTransaction from "@/components/transactions/AddTransaction";
 import {useState} from "react";
 import DarkButton from "@/components/DarkButton";
 import {MainChart} from "@/components/dashboard/charts/MainChart";
-import NextTransactionCard from "@/components/dashboard/cards/NextTransactionCard";
+import NextTransactionCard from "@/components/dashboard/cards/NextIncomeCard";
 import PinnedDreamCard from "@/components/dashboard/cards/PinnedDreamCard";
 import MonthForecastCard from "@/components/dashboard/cards/MonthForecastCard";
 import CardsPopup from "@/components/dashboard/components/CardsPopup";
 import CurrentBalanceCard from "@/components/dashboard/cards/CurrentBalanceCard";
 import {CardComponents, CardId} from "@/interfaces/dashboard/cards/CardComponents";
+import NextExpenseCard from "@/components/dashboard/cards/NextExpenseCard";
+import NextIncomeCard from "@/components/dashboard/cards/NextIncomeCard";
 
 export default function Dashboard() {
   const [showAddTransaction, setShowAddTransaction] = useState(false);
@@ -23,10 +25,11 @@ export default function Dashboard() {
   ]);
 
   const cardComponents: CardComponents = {
-    nextExpense: <NextTransactionCard />,
     pinnedDream: <PinnedDreamCard />,
     monthForecast: <MonthForecastCard />,
-    currentBalance: <CurrentBalanceCard />
+    currentBalance: <CurrentBalanceCard />,
+    nextIncome: <NextIncomeCard />,
+    nextExpense: <NextExpenseCard />
   };
 
   return (
