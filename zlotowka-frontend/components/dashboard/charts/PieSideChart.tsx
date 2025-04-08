@@ -3,11 +3,10 @@
 import * as React from "react"
 import { Label, Pie, PieChart } from "recharts"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { type ChartConfig, ChartContainer, ChartTooltip } from "@/components/ui/chart"
 import {useEffect, useState} from "react";
 import DashboardService from "@/services/DashboardService";
 import formatMoney from "@/utils/formatMoney";
-
 
 const chartConfig = {
   value: {
@@ -56,7 +55,19 @@ export function PieSideChart() {
         <CardContent className="flex-1 flex items-center justify-center p-0">
           <ChartContainer config={chartConfig} className="w-full h-full max-w-md mx-auto">
               <PieChart>
-                <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                <ChartTooltip
+                    cursor={false}
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                            <div className="font-(family-name:--font-lato) p-2 bg-neutral-100 z-[999] border rounded shadow">
+                              <p>{formatMoney(Number(payload[0].value))} PLN</p>
+                            </div>
+                        );
+                      }
+                      return null;
+                    }}
+                />
                 {chartData.some(item => item.value != 0) ?
                     <Pie
                         data={chartData}

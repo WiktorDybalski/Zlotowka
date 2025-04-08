@@ -2,7 +2,7 @@ import clsx from "clsx";
 
 interface HStackProps {
   children: React.ReactNode;
-  className?: string; // Opcjonalne dodatkowe klasy
+  className?: string;
 }
 
 export default function HStack({ children, className }: HStackProps) {

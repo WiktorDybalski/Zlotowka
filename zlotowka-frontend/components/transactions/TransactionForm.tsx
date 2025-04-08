@@ -10,7 +10,6 @@ import DatePicker from "@/components/general/DatePicker";
 const inputClass =
   "border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md min-w-76 ";
 
-// TODO: datepicker
 export default function TransactionForm({
   transaction,
   onClose,
@@ -102,7 +101,6 @@ export default function TransactionForm({
             name="date"
             className={inputClass + " font-(family-name:--font-lato)"}
             type="text"
-            placeholder="Wyobraźcie sobie date pickera"
             value={formData.date}
             onChange={handleInputChange}
             onClick={toggleDatePicker}

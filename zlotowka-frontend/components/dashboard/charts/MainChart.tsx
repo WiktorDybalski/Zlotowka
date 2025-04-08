@@ -4,6 +4,8 @@ import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } f
 import * as React from "react";
 import {useEffect, useState} from "react";
 import DashboardService from "@/services/DashboardService";
+import DarkButton from "@/components/DarkButton";
+import RangePickerPopup from "@/components/dashboard/charts/RangePickerPopup";
 
 const chartConfig = {
   value: {
@@ -15,6 +17,7 @@ const chartConfig = {
 export function MainChart() {
   const [padding, setPadding] = useState<{ left: number; right: number }>({ left: 30, right: 30 });
   const [chartData, setChartData] = useState([])
+  const [showRangePicker, setShowRangePicker] = useState<boolean>(false);
 
   useEffect(() => {
     DashboardService.getMainChartData(1, new Date("2023-03-03"), new Date("2024-03-03")).then(setChartData);
@@ -40,13 +43,15 @@ export function MainChart() {
   }, []);
 
   return (
+      <>
+      {showRangePicker && <RangePickerPopup onClose={() => setShowRangePicker(false)} />}
       <Card className="flex flex-col w-full h-full bg-transparent z-10 border-none">
         <CardHeader className="flex justify-between items-center">
           <div>
             <CardTitle className="text-xl">Wykres cashflow</CardTitle>
           </div>
-          <div>
-            <h3>Datepicker nie dziala</h3>
+          <div className="w-30">
+            <DarkButton text={"Zmień daty"} onClick={() => setShowRangePicker(!showRangePicker)} />
           </div>
         </CardHeader>
         <CardContent className="w-full flex flex-col justify-center items-center overflow-hidden my-0 px-0">
@@ -86,5 +91,6 @@ export function MainChart() {
           </div>
         </CardFooter>
       </Card>
+      </>
   )
 }
