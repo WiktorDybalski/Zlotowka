@@ -11,7 +11,9 @@ export default function CurrentBalanceCard() {
   const [currentBalance, setCurrentBalance] = useState<number | null>(null);
 
   useEffect(() => {
-    CardService.getCurrentBalance(1).then(setCurrentBalance);
+    CardService.getCurrentBalance(1).then(response => {
+      setCurrentBalance(response.currentBalance);
+    });
   }, []);
 
   if (!currentBalance) {

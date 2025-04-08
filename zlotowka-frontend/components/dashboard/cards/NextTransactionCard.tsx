@@ -15,27 +15,31 @@ const DateInfo = ({ text, date }: { text : string, date : string} ) => (
 )
 
 interface NextTransactionResponse {
-  value: number;
-  name: string;
   date: string;
+  amount: number;
+  isIncome: boolean;
+  currencyIsoCode: string;
+  transactionName: string;
 }
 
 export default function NextTransactionCard() {
   const [nextTransaction, setNextTransaction] = useState<NextTransactionResponse | null>(null);
 
   useEffect(() => {
-    CardService.getNextTransaction(1).then(setNextTransaction);
+    CardService.getNextTransaction(1).then(response => {
+      setNextTransaction(response);
+    });
   }, []);
 
-  if (!nextTransaction) {
+  if (nextTransaction === null) {
     return null;
   }
 
   return (
       <ThreeElementsCard
           top={<CardText text="Następna transakcja" />}
-          middle={<CardNumber text={formatMoney(nextTransaction.value) + " zł"} />}
-          bottom={<DateInfo text={nextTransaction.name} date={nextTransaction.date} />}
+          middle={<CardNumber text={formatMoney(nextTransaction.amount) + " " + nextTransaction.currencyIsoCode} />}
+          bottom={<DateInfo text={nextTransaction.transactionName} date={nextTransaction.date} />}
       />
   );
 }

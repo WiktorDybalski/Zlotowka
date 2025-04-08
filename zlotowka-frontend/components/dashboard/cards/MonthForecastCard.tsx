@@ -18,10 +18,13 @@ export default function MonthForecastCard() {
   const [estimatedBalance, setEstimatedBalance] = useState<number | null>(null);
 
   useEffect(() => {
-    CardService.getMonthEstimatedBalance(1).then(setEstimatedBalance);
+    CardService.getMonthEstimatedBalance(1)
+        .then(response => {
+          setEstimatedBalance(response.estimatedBalance);
+        });
   }, []);
 
-  if (!estimatedBalance) {
+  if (estimatedBalance === null) {
     return null;
   }
 

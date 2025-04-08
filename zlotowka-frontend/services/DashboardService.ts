@@ -1,17 +1,27 @@
-const API_HOST = 'http://localhost:3000/api';
+import {API_HOST} from "@/lib/config";
 
 const Dashboard = {
-  getMainChartData: async () => {
+  getMainChartData: async (userId: number, startDate: Date, endDate: Date) => {
     try {
-      const response = await fetch(`${API_HOST}/generalTransactionService/mainChartData`);
+      const response = await fetch(`${API_HOST}/generaltransactions/plotData`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: userId,
+          startDate: startDate,
+          endDate: endDate,
+        }),
+      });
       return await response.json();
     } catch (error) {
       console.log(error);
     }
   },
-  getPieSideChartData: async () => {
+  getPieSideChartData: async (userId: number) => {
     try {
-      const response = await fetch(`${API_HOST}/generalTransactionService/pieSideData`);
+      const response = await fetch(`${API_HOST}/generaltransactions/revenuesAndExpenses/${userId}`);
       return await response.json();
     } catch (error) {
       console.log(error);

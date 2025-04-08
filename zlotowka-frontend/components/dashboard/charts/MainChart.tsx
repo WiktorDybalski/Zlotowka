@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import * as React from "react";
 import {useEffect, useState} from "react";
-import {MainChartData} from "@/mocks/MainChartData";
+import DashboardService from "@/services/DashboardService";
 
 const chartConfig = {
   value: {
@@ -14,6 +14,11 @@ const chartConfig = {
 
 export function MainChart() {
   const [padding, setPadding] = useState<{ left: number; right: number }>({ left: 30, right: 30 });
+  const [chartData, setChartData] = useState([])
+
+  useEffect(() => {
+    DashboardService.getMainChartData(1, new Date("2023-03-03"), new Date("2024-03-03")).then(setChartData);
+  }, []);
 
   useEffect(() => {
     const updatePadding = () => {
@@ -48,7 +53,7 @@ export function MainChart() {
           <ChartContainer config={chartConfig} className="w-full max-w-full h-full flex justify-center">
             <LineChart
                 accessibilityLayer
-                data={MainChartData}
+                data={chartData}
                 className="w-full h-full"
             >
               <CartesianGrid vertical={false} />
