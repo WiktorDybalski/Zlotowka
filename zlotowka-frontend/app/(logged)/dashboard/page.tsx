@@ -6,7 +6,6 @@ import AddTransaction from "@/components/transactions/AddTransaction";
 import {useState} from "react";
 import DarkButton from "@/components/DarkButton";
 import {MainChart} from "@/components/dashboard/charts/MainChart";
-import NextTransactionCard from "@/components/dashboard/cards/NextIncomeCard";
 import PinnedDreamCard from "@/components/dashboard/cards/PinnedDreamCard";
 import MonthForecastCard from "@/components/dashboard/cards/MonthForecastCard";
 import CardsPopup from "@/components/dashboard/components/CardsPopup";

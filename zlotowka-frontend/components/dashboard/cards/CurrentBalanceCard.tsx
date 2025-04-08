@@ -6,18 +6,27 @@ import CardService from "@/services/CardService";
 import {useEffect, useState} from "react";
 import formatMoney from "@/utils/formatMoney";
 import CardNumber from "@/components/dashboard/cards/generic/CardNumber";
+import LoadingSpinner from "@/components/general/LoadingSpinner";
+import toast from "react-hot-toast";
 
 export default function CurrentBalanceCard() {
   const [currentBalance, setCurrentBalance] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     CardService.getCurrentBalance(1).then(response => {
       setCurrentBalance(response.currentBalance);
+    })
+    .catch(err => {
+      toast.error("Failed to fetch current balance: " + err);
+    })
+    .finally(() => {
+      setIsLoading(false);
     });
   }, []);
 
-  if (!currentBalance) {
-    return null;
+  if (isLoading || !currentBalance) {
+    return <LoadingSpinner/>;
   }
 
   return (

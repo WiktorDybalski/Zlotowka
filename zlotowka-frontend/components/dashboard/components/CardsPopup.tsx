@@ -2,6 +2,7 @@ import {useEffect, useState} from "react";
 import {CardsPopupProps} from "@/interfaces/dashboard/cards/CardPopupProps";
 import {AVAILABLE_CARDS, CardId} from "@/interfaces/dashboard/cards/CardComponents";
 import DarkButton from "@/components/DarkButton";
+import toast from "react-hot-toast";
 
 export default function CardsPopup({
                                      setSelectedCards,
@@ -29,7 +30,7 @@ export default function CardsPopup({
 
   const handleConfirm = () => {
     if (localSelectedCards.length !== 3) {
-      alert("Musisz wybrać dokładnie trzy karty!");
+      toast.error("Musisz wybrać dokładnie 3 karty");
       return;
     }
     setSelectedCards(localSelectedCards);

@@ -6,6 +6,8 @@ import {useEffect, useState} from "react";
 import DashboardService from "@/services/DashboardService";
 import DarkButton from "@/components/DarkButton";
 import RangePickerPopup from "@/components/dashboard/charts/RangePickerPopup";
+import LoadingSpinner from "@/components/general/LoadingSpinner";
+import toast from "react-hot-toast";
 
 const chartConfig = {
   value: {
@@ -18,9 +20,17 @@ export function MainChart() {
   const [padding, setPadding] = useState<{ left: number; right: number }>({ left: 30, right: 30 });
   const [chartData, setChartData] = useState([])
   const [showRangePicker, setShowRangePicker] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    DashboardService.getMainChartData(1, new Date("2023-03-03"), new Date("2024-03-03")).then(setChartData);
+    DashboardService.getMainChartData(1, new Date("2023-03-03"), new Date("2024-03-03"))
+        .then(setChartData)
+        .catch(err => {
+          toast.error("Failed to fetch main chart: " + err);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
   }, []);
 
   useEffect(() => {
@@ -41,6 +51,10 @@ export function MainChart() {
 
     return () => window.removeEventListener("resize", updatePadding);
   }, []);
+
+  if (isLoading || !chartData) {
+    return <LoadingSpinner />;
+  }
 
   return (
       <>

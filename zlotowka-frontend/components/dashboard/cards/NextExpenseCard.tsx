@@ -8,19 +8,29 @@ import CardService from "@/services/CardService";
 import formatMoney from "@/utils/formatMoney";
 import {NextTransactionResponse} from "@/interfaces/dashboard/cards/NextTransactionResponse";
 import DateInfo from "@/components/dashboard/cards/generic/DateInfo";
+import toast from "react-hot-toast";
+import LoadingSpinner from "@/components/general/LoadingSpinner";
 
 
 export default function NextExpenseCard() {
   const [nextExpense, setNextExpense] = useState<NextTransactionResponse | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    CardService.getNextTransaction(1, false).then(response => {
-      setNextExpense(response);
-    });
+    CardService.getNextTransaction(1, false)
+        .then(response => {
+          setNextExpense(response);
+        })
+        .catch(err => {
+          toast.error("Failed to fetch next expense: " + err);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
   }, []);
 
-  if (nextExpense === null) {
-    return null;
+  if (isLoading || !nextExpense) {
+    return <LoadingSpinner/>;
   }
 
   return (

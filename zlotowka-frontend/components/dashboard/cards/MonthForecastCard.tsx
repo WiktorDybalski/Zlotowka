@@ -6,6 +6,8 @@ import {useEffect, useState} from "react";
 import CardService from "@/services/CardService";
 import formatMoney from "@/utils/formatMoney";
 import CardNumber from "@/components/dashboard/cards/generic/CardNumber";
+import toast from "react-hot-toast";
+import LoadingSpinner from "@/components/general/LoadingSpinner";
 
 const Value = ({ estimatedBalance }: { estimatedBalance: string }) => (
   <div className="flex items-baseline">
@@ -16,16 +18,22 @@ const Value = ({ estimatedBalance }: { estimatedBalance: string }) => (
 
 export default function MonthForecastCard() {
   const [estimatedBalance, setEstimatedBalance] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     CardService.getMonthEstimatedBalance(1)
         .then(response => {
           setEstimatedBalance(response.estimatedBalance);
+        }).catch(err => {
+          toast.error("Failed to fetch estimated balance: " + err);
+        })
+        .finally(() => {
+           setIsLoading(false);
         });
   }, []);
 
-  if (estimatedBalance === null) {
-    return null;
+  if (isLoading || !estimatedBalance) {
+    return <LoadingSpinner/>;
   }
 
   return (

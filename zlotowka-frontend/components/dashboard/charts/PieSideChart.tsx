@@ -7,6 +7,8 @@ import { type ChartConfig, ChartContainer, ChartTooltip } from "@/components/ui/
 import {useEffect, useState} from "react";
 import DashboardService from "@/services/DashboardService";
 import formatMoney from "@/utils/formatMoney";
+import toast from "react-hot-toast";
+import LoadingSpinner from "@/components/general/LoadingSpinner";
 
 const chartConfig = {
   value: {
@@ -25,6 +27,7 @@ const chartConfig = {
 export function PieSideChart() {
   const [chartData, setChartData] = useState([]);
   const [total, setTotal] = useState("0.00");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
     DashboardService.getPieSideChartData(1)
@@ -44,7 +47,17 @@ export function PieSideChart() {
           setChartData(formattedChartData);
           setTotal(data.total)
         })
+        .catch(err => {
+          toast.error("Failed to fetch pie chart data: " + err);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
   }, [])
+
+  if (isLoading || !chartData) {
+    return <LoadingSpinner />;
+  }
 
   return (
       <Card className="flex flex-col w-full h-full bg-transparent z-10 border-none">
