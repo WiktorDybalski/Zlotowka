@@ -111,7 +111,6 @@ public class UserService {
         } else {
             user.setCurrentBudget(budget.subtract(amount));
         }
-
         userRepository.save(user);
     }
 }

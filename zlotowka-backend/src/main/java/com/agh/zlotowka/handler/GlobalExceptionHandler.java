@@ -20,18 +20,18 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler
+    @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         log.error("Validation error: {}", e.getMessage());
 
         Map<String, String> errors = new HashMap<>();
         e.getBindingResult().getFieldErrors().forEach(error -> {
-            errors.put("error", error.getDefaultMessage());
+            errors.put(error.getField(), error.getDefaultMessage());
         });
         return ResponseEntity.badRequest().body(errors);
     }
 
-    @ExceptionHandler
+    @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException e) {
         log.error("Illegal Argument Error: {}", e.getMessage());
         return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -44,9 +44,11 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGeneralException(Exception e) {
-        log.error("Internal server error {}", e.getMessage());
-        return ResponseEntity.internalServerError().body("Internal server error");
+    public ResponseEntity<Map<String, String>> handleGeneralException(Exception e) {
+        log.error("Internal server error", e);
+        return ResponseEntity
+                .internalServerError()
+                .body(Map.of("error", "Unexpected error occurred. Please try again later."));
     }
 
     @ExceptionHandler(NoResourceFoundException.class)

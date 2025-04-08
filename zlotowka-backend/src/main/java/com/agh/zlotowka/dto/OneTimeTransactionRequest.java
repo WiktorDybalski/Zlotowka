@@ -26,7 +26,7 @@ public record OneTimeTransactionRequest(
         Boolean isIncome,
 
         @NotNull(message = "Payment date cannot be null")
-        @DateAfter2000(message = "Date must be after 2000-01-01")
+        @DateAfter2000
         LocalDate date,
 
         @Size(max = 512, message = "Description cannot exceed 512 characters")

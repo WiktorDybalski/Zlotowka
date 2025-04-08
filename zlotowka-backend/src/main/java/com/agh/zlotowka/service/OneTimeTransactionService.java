@@ -2,10 +2,8 @@ package com.agh.zlotowka.service;
 
 import com.agh.zlotowka.dto.OneTimeTransactionDTO;
 import com.agh.zlotowka.dto.OneTimeTransactionRequest;
-import com.agh.zlotowka.dto.RecurringTransactionDTO;
 import com.agh.zlotowka.model.Currency;
 import com.agh.zlotowka.model.OneTimeTransaction;
-import com.agh.zlotowka.model.RecurringTransaction;
 import com.agh.zlotowka.model.User;
 import com.agh.zlotowka.repository.CurrencyRepository;
 import com.agh.zlotowka.repository.OneTimeTransactionRepository;
@@ -57,19 +55,6 @@ public class OneTimeTransactionService {
         return getOneTimeTransactionDTO(transaction);
     }
 
-    private OneTimeTransactionDTO getOneTimeTransactionDTO(OneTimeTransaction transaction) {
-        return OneTimeTransactionDTO.builder()
-                .transactionId(transaction.getTransactionId())
-                .userId(transaction.getUser().getUserId())
-                .name(transaction.getName())
-                .amount(transaction.getAmount())
-                .currency(transaction.getCurrency())
-                .isIncome(transaction.getIsIncome())
-                .date(transaction.getDate())
-                .description(transaction.getDescription())
-                .build();
-    }
-
     public OneTimeTransactionDTO getTransaction(Integer id) {
         return getOneTimeTransactionDTO(oneTimeTransactionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Transaction with Id %d not found", id))));
@@ -89,6 +74,43 @@ public class OneTimeTransactionService {
             updateTransactionAfterCurrentTime(transaction);
         }
         return updateTransaction(request, transaction);
+    }
+
+    @Transactional
+    public void deleteTransaction(Integer id) {
+        log.info("Deleting transaction with Id {}", id);
+        OneTimeTransaction transaction = oneTimeTransactionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Transaction with Id %d not found", id)));
+
+        if (transaction.getDate().isBefore(LocalDate.now())) {
+            userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
+        }
+        oneTimeTransactionRepository.delete(transaction);
+    }
+
+    public List<OneTimeTransactionDTO> getAllTransactionsByUserId(Integer userId) {
+        List<OneTimeTransaction> transactions = oneTimeTransactionRepository.findAllByUser(userId);
+
+        if (transactions.isEmpty())
+            userRepository.findById(userId)
+                    .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
+
+        return transactions.stream()
+                .map(this::getOneTimeTransactionDTO)
+                .collect(Collectors.toList());
+    }
+
+    private OneTimeTransactionDTO getOneTimeTransactionDTO(OneTimeTransaction transaction) {
+        return OneTimeTransactionDTO.builder()
+                .transactionId(transaction.getTransactionId())
+                .userId(transaction.getUser().getUserId())
+                .name(transaction.getName())
+                .amount(transaction.getAmount())
+                .currency(transaction.getCurrency())
+                .isIncome(transaction.getIsIncome())
+                .date(transaction.getDate())
+                .description(transaction.getDescription())
+                .build();
     }
 
     private void validateTransactionOwnership(Integer requestSenderId, Integer transactionOwner) {
@@ -129,29 +151,5 @@ public class OneTimeTransactionService {
 
         oneTimeTransactionRepository.save(transaction);
         return getOneTimeTransactionDTO(transaction);
-    }
-
-    @Transactional
-    public void deleteTransaction(Integer id) {
-        log.info("Deleting transaction with Id {}", id);
-        OneTimeTransaction transaction = oneTimeTransactionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Transaction with Id %d not found", id)));
-
-        if (transaction.getDate().isBefore(LocalDate.now())) {
-            userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
-        }
-        oneTimeTransactionRepository.delete(transaction);
-    }
-
-    public List<OneTimeTransactionDTO> getAllTransactionsByUserId(Integer userId) {
-        List<OneTimeTransaction> transactions = oneTimeTransactionRepository.findAllByUser(userId);
-
-        if (transactions.isEmpty())
-            userRepository.findById(userId)
-                    .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
-
-        return transactions.stream()
-            .map(this::getOneTimeTransactionDTO)
-            .collect(Collectors.toList());
     }
 }

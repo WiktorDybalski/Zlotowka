@@ -47,7 +47,7 @@ public class RecurringTransactionService {
                 .isIncome(request.isIncome())
                 .interval(interval)
                 .firstPaymentDate(request.firstPaymentDate())
-                .nextPaymentDate(calculateNextPaymentDate(request, user, currency, interval))
+                .nextPaymentDate(calculateNextPaymentDateAndAddOverDueTransaction(request, user, currency, interval))
                 .finalPaymentDate(request.lastPaymentDate())
                 .description(request.description())
                 .build();
@@ -55,62 +55,6 @@ public class RecurringTransactionService {
         recurringTransactionRepository.save(transaction);
         log.info("New transaction with Id {} has been created", transaction.getTransactionId());
         return getRecurringTransactionDTO(transaction);
-    }
-
-    private LocalDate calculateNextPaymentDate(RecurringTransactionRequest request, User user, Currency currency, PeriodEnum interval) {
-        if (request.firstPaymentDate().isAfter(LocalDate.now()))
-            return request.firstPaymentDate();
-
-        LocalDate nextPaymentDate;
-        LocalDate date = request.firstPaymentDate();
-        List<OneTimeTransaction> transactionsList = new ArrayList<>();
-
-        while (!date.isAfter(LocalDate.now())) {
-            OneTimeTransaction transaction = OneTimeTransaction.builder()
-                    .user(user)
-                    .name(request.name())
-                    .amount(request.amount())
-                    .currency(currency)
-                    .isIncome(request.isIncome())
-                    .date(date)
-                    .description(request.description())
-                    .build();
-
-            transactionsList.add(transaction);
-            nextPaymentDate  = interval.addToDate(date, request.firstPaymentDate());
-
-            if (!nextPaymentDate.isAfter(request.lastPaymentDate()))
-                date = nextPaymentDate;
-            else
-                break;
-        }
-
-        userService.addTransactionAmountToBudget(currency.getCurrencyId(),
-                request.amount().multiply(new BigDecimal(transactionsList.size())), request.isIncome(), user);
-        oneTimeTransactionRepository.saveAll(transactionsList);
-        return date;
-    }
-
-    private void validateFirstAndFinalDates(LocalDate firstPaymentDate, LocalDate lastPaymentDate) {
-        if (firstPaymentDate.isAfter(lastPaymentDate)) {
-            throw new IllegalArgumentException("First payment date must be before the last payment date");
-        }
-    }
-
-    private RecurringTransactionDTO getRecurringTransactionDTO(RecurringTransaction transaction) {
-        return RecurringTransactionDTO.builder()
-                .transactionId(transaction.getTransactionId())
-                .userId(transaction.getUser().getUserId())
-                .name(transaction.getName())
-                .amount(transaction.getAmount())
-                .currency(transaction.getCurrency())
-                .isIncome(transaction.getIsIncome())
-                .firstPaymentDate(transaction.getFirstPaymentDate())
-                .nextPaymentDate(transaction.getNextPaymentDate())
-                .finalPaymentDate(transaction.getFinalPaymentDate())
-                .interval(transaction.getInterval())
-                .description(transaction.getDescription())
-                .build();
     }
 
     public RecurringTransactionDTO getTransaction(Integer id) {
@@ -142,10 +86,62 @@ public class RecurringTransactionService {
         return getRecurringTransactionDTO(transaction);
     }
 
+    @Transactional
+    public void deleteTransaction(Integer id) {
+        log.info("Deleting transaction with transactionId {}", id);
+        RecurringTransaction transaction = recurringTransactionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Transaction with Id %d not found", id)));
+
+        recurringTransactionRepository.delete(transaction);
+    }
+
     private RecurringTransaction findTransactionById(int transactionId) {
         return recurringTransactionRepository.findById(transactionId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Transaction with Id %d not found", transactionId)));
+    }
+
+    private LocalDate calculateNextPaymentDateAndAddOverDueTransaction(RecurringTransactionRequest request, User user, Currency currency, PeriodEnum interval) {
+        if (request.firstPaymentDate().isAfter(LocalDate.now()))
+            return request.firstPaymentDate();
+
+        LocalDate nextPaymentDate;
+        LocalDate date = request.firstPaymentDate();
+        List<OneTimeTransaction> transactionsList = new ArrayList<>();
+
+        while (!date.isAfter(LocalDate.now())) {
+            OneTimeTransaction transaction = OneTimeTransaction.builder()
+                    .user(user)
+                    .name(request.name())
+                    .amount(request.amount())
+                    .currency(currency)
+                    .isIncome(request.isIncome())
+                    .date(date)
+                    .description(request.description())
+                    .build();
+
+            transactionsList.add(transaction);
+            nextPaymentDate  = interval.addToDate(date, request.firstPaymentDate());
+
+            if (!nextPaymentDate.isAfter(request.lastPaymentDate()))
+                date = nextPaymentDate;
+            else
+                break;
+        }
+        addOverdueTransactionsToBudget(currency, request, transactionsList, user);
+        return date;
+    }
+
+    private void addOverdueTransactionsToBudget(Currency currency, RecurringTransactionRequest request, List<OneTimeTransaction> transactionsList, User user) {
+        userService.addTransactionAmountToBudget(currency.getCurrencyId(),
+                request.amount().multiply(new BigDecimal(transactionsList.size())), request.isIncome(), user);
+        oneTimeTransactionRepository.saveAll(transactionsList);
+    }
+
+    private void validateFirstAndFinalDates(LocalDate firstPaymentDate, LocalDate lastPaymentDate) {
+        if (firstPaymentDate.isAfter(lastPaymentDate)) {
+            throw new IllegalArgumentException("First payment date must be before the last payment date");
+        }
     }
 
     private void validateTransactionType(RecurringTransactionRequest request, RecurringTransaction transaction) {
@@ -183,7 +179,7 @@ public class RecurringTransactionService {
         if (!request.firstPaymentDate().equals(transaction.getFirstPaymentDate())) {
             transaction.setFirstPaymentDate(request.firstPaymentDate());
             transaction.setNextPaymentDate(
-                    calculateNextPaymentDate(request, transaction.getUser(), transaction.getCurrency(), newInterval)
+                    calculateNextPaymentDateAndAddOverDueTransaction(request, transaction.getUser(), transaction.getCurrency(), newInterval)
             );
         }
     }
@@ -193,12 +189,19 @@ public class RecurringTransactionService {
             throw new IllegalArgumentException(String.format("User Id %d does not match the transaction owner", requestSenderId));
     }
 
-    @Transactional
-    public void deleteTransaction(Integer id) {
-        log.info("Deleting transaction with transactionId {}", id);
-        RecurringTransaction transaction = recurringTransactionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Transaction with Id %d not found", id)));
-
-        recurringTransactionRepository.delete(transaction);
+    private RecurringTransactionDTO getRecurringTransactionDTO(RecurringTransaction transaction) {
+        return RecurringTransactionDTO.builder()
+                .transactionId(transaction.getTransactionId())
+                .userId(transaction.getUser().getUserId())
+                .name(transaction.getName())
+                .amount(transaction.getAmount())
+                .currency(transaction.getCurrency())
+                .isIncome(transaction.getIsIncome())
+                .firstPaymentDate(transaction.getFirstPaymentDate())
+                .nextPaymentDate(transaction.getNextPaymentDate())
+                .finalPaymentDate(transaction.getFinalPaymentDate())
+                .interval(transaction.getInterval())
+                .description(transaction.getDescription())
+                .build();
     }
 }
