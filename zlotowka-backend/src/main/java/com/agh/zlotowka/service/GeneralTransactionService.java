@@ -16,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -33,67 +32,20 @@ import java.util.Optional;
 public class GeneralTransactionService {
     private final RecurringTransactionRepository recurringTransactionRepository;
     private final OneTimeTransactionRepository oneTimeTransactionRepository;
+    private final ScheduledTransactionService scheduledTransactionService;
     private final UserRepository userRepository;
     private final CurrencyService currencyService;
-    private final UserService userService;
 
-    // TODO Add oneTimeTransaction in scheduled task
 //    @Scheduled(cron = "00 46 17 * * ?") // Everyday at 19:00
     public void addRecurringTransactions() {
         log.info("Adding transactions using sheduled task...");
         List<RecurringTransaction> recurringTransactions = recurringTransactionRepository.findDueRecurringTransactions();
         List<OneTimeTransaction> oneTimeTransactionsToAdd = oneTimeTransactionRepository.findTransactionsToday();
-        addOneTimeTransactionToUserBudget(oneTimeTransactionsToAdd);
+        scheduledTransactionService.addOneTimeTransactionToUserBudget(oneTimeTransactionsToAdd);
         for (RecurringTransaction recurringTransaction : recurringTransactions) {
-            updateDataWithNewTransaction(recurringTransaction);
+            scheduledTransactionService.updateDataWithNewTransaction(recurringTransaction);
         }
     }
-
-    private void addOneTimeTransactionToUserBudget(List<OneTimeTransaction> oneTimeTransactionsToAdd) {
-        log.info("Adding oneTimeTransactions to user budget...");
-        for (OneTimeTransaction transaction : oneTimeTransactionsToAdd) {
-            userService.addTransactionAmountToBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
-        }
-    }
-
-    @Transactional
-    public void updateDataWithNewTransaction(RecurringTransaction recurringTransaction) {
-        log.info("Updating data with new transaction from recurring...");
-        updateRecurringTransaction(recurringTransaction);
-        addOneTimeTransactionFromRecurring(recurringTransaction);
-    }
-
-    private void addOneTimeTransactionFromRecurring(RecurringTransaction recurringTransaction) {
-        log.info("Adding oneTimeTransaction from recurring...");
-        OneTimeTransaction oneTimeTransaction = OneTimeTransaction.builder()
-                .user(recurringTransaction.getUser())
-                .name(recurringTransaction.getName())
-                .amount(recurringTransaction.getAmount())
-                .currency(recurringTransaction.getCurrency())
-                .isIncome(recurringTransaction.getIsIncome())
-                .date(LocalDate.now())
-                .description(recurringTransaction.getDescription())
-                .build();
-        oneTimeTransactionRepository.save(oneTimeTransaction);
-
-        userService.addTransactionAmountToBudget(
-                recurringTransaction.getCurrency().getCurrencyId(),
-                recurringTransaction.getAmount(),
-                recurringTransaction.getIsIncome(),
-                recurringTransaction.getUser());
-    }
-
-    private void updateRecurringTransaction(RecurringTransaction recurringTransaction) {
-        log.info("Updating recurring transaction...");
-        PeriodEnum interval = recurringTransaction.getInterval();
-        LocalDate newPaymentDate = interval.addToDate(recurringTransaction.getNextPaymentDate(), recurringTransaction.getFirstPaymentDate());
-
-        if (!newPaymentDate.isAfter(recurringTransaction.getFinalPaymentDate()))
-            recurringTransaction.setNextPaymentDate(newPaymentDate);
-
-        recurringTransactionRepository.save(recurringTransaction);
-    }
-
 
     public TransactionBudgetInfo getNextTransaction(Integer userId, Boolean isIncome) {
         userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
