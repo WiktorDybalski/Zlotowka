@@ -1,6 +1,7 @@
 package com.agh.zlotowka.service;
 
 import com.agh.zlotowka.dto.RevenuesAndExpensesResponse;
+import com.agh.zlotowka.dto.SinglePlotData;
 import com.agh.zlotowka.dto.TransactionBudgetInfo;
 import com.agh.zlotowka.dto.UserDataInDateRangeRequest;
 import com.agh.zlotowka.exception.CurrencyConversionException;
@@ -13,17 +14,12 @@ import com.agh.zlotowka.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -84,8 +80,7 @@ public class GeneralTransactionService {
 
     public BigDecimal getEstimatedBalanceAtTheEndOfTheMonth(int userId) throws EntityNotFoundException {
         LocalDate endOfMonth = LocalDate.now().with(TemporalAdjusters.lastDayOfMonth());
-        System.out.println(endOfMonth);
-        List<TransactionBudgetInfo> transactions = getEstimatedBudgetInDateRange(new UserDataInDateRangeRequest(userId, LocalDate.now(), endOfMonth));
+        List<SinglePlotData> transactions = getEstimatedBudgetInDateRange(new UserDataInDateRangeRequest(userId, LocalDate.now(), endOfMonth));
 
         if (transactions.isEmpty()) {
             return userRepository.getUserBudget(userId)
@@ -96,31 +91,46 @@ public class GeneralTransactionService {
         }
     }
 
-    public List<TransactionBudgetInfo> getEstimatedBudgetInDateRange(UserDataInDateRangeRequest request) {
+    public List<SinglePlotData> getEstimatedBudgetInDateRange(UserDataInDateRangeRequest request) {
         BigDecimal budget = userRepository.getUserBudget(request.userId())
                 .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", request.userId())));
         String userCurrency = userRepository.getUserCurrencyName(request.userId())
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Currency for user with ID %d not found", request.userId())));
 
-        List<TransactionBudgetInfo> allTransactions = new ArrayList<>();
+        List<TransactionBudgetInfo> futureTransactions = new ArrayList<>();
+        List<TransactionBudgetInfo> pastTransactions = new ArrayList<>();
 
-        transformOneTimeTransactions(request.userId(), request.startDate(), request.endDate(), userCurrency, allTransactions);
-        System.out.println(allTransactions);
+        transformOneTimeTransactions(request.userId(), request.startDate(), request.endDate(), userCurrency, futureTransactions, pastTransactions);
+
         if (request.endDate().isAfter(LocalDate.now())) {
-            recurringTransactionsIntoOneTime(request.userId(), request.startDate(), request.endDate(), userCurrency, allTransactions);
+            recurringTransactionsIntoOneTime(request.userId(), request.startDate(), request.endDate(), userCurrency, futureTransactions);
         }
 
-        allTransactions.sort(Comparator.comparing(TransactionBudgetInfo::date));
-        System.out.println(allTransactions);
-        List<TransactionBudgetInfo> transactionBudgetInfoList = new ArrayList<>();
+        futureTransactions.sort(Comparator.comparing(TransactionBudgetInfo::date));
+        pastTransactions.sort(Comparator.comparing(TransactionBudgetInfo::date).reversed());
+
+        List<SinglePlotData> transactionBudgetInfoList = new ArrayList<>();
         BigDecimal updatedBudget = budget;
 
-        for (TransactionBudgetInfo transaction : allTransactions) {
-            updatedBudget = updatedBudget.add(transaction.amount());
-            transactionBudgetInfoList.add(new TransactionBudgetInfo(transaction.transactionName(), transaction.date(), updatedBudget, transaction.isIncome(), userCurrency));
+        for (TransactionBudgetInfo transaction : pastTransactions) {
+            updatedBudget = updatedBudget.subtract(transaction.amount());
+            transactionBudgetInfoList.add(new SinglePlotData(transaction.date(), updatedBudget));
         }
-        System.out.println(transactionBudgetInfoList);
-        return transactionBudgetInfoList;
+
+        updatedBudget = budget;
+        transactionBudgetInfoList.add(new SinglePlotData(LocalDate.now(), updatedBudget));
+
+        for (TransactionBudgetInfo transaction : futureTransactions) {
+            updatedBudget = updatedBudget.add(transaction.amount());
+            transactionBudgetInfoList.add(new SinglePlotData(transaction.date(), updatedBudget));
+        }
+
+        Map<LocalDate, SinglePlotData> uniqueByDate = new TreeMap<>();
+        for (SinglePlotData data : transactionBudgetInfoList) {
+            uniqueByDate.put(data.date(), data);
+        }
+
+        return new ArrayList<>(uniqueByDate.values());
     }
 
     private void recurringTransactionsIntoOneTime(int userId, LocalDate startDate, LocalDate endDate, String userCurrency, List<TransactionBudgetInfo> allTransactions) {
@@ -158,7 +168,7 @@ public class GeneralTransactionService {
         }
     }
 
-    private void transformOneTimeTransactions(int userId, LocalDate startDate, LocalDate endDate, String userCurrency, List<TransactionBudgetInfo> allTransactions) {
+    private void transformOneTimeTransactions(int userId, LocalDate startDate, LocalDate endDate, String userCurrency, List<TransactionBudgetInfo> futureTransaction, List<TransactionBudgetInfo> pastTransactions) {
         List<OneTimeTransaction> oneTimeTransactionsList = oneTimeTransactionRepository.getTransactionsInRange(userId, startDate, endDate);
 
         for (OneTimeTransaction oneTimeTransaction : oneTimeTransactionsList) {
@@ -167,13 +177,20 @@ public class GeneralTransactionService {
             try {
                 transactionAmount = currencyService.convertCurrency(oneTimeTransaction.getAmount(), transactionCurrency, userCurrency);
 
-                allTransactions.add(new TransactionBudgetInfo(
+                TransactionBudgetInfo transactionBudgetInfo = new TransactionBudgetInfo(
                         oneTimeTransaction.getName(),
                         oneTimeTransaction.getDate(),
                         oneTimeTransaction.getIsIncome() ? transactionAmount : transactionAmount.negate(),
                         oneTimeTransaction.getIsIncome(),
                         userCurrency
-                ));
+                );
+
+                if (oneTimeTransaction.getDate().isAfter(LocalDate.now())) {
+                    futureTransaction.add(transactionBudgetInfo);
+                } else {
+                    pastTransactions.add(transactionBudgetInfo);
+                }
+
             } catch (CurrencyConversionException e) {
                 log.error("Currency conversion failed", e);
             } catch (Exception e) {

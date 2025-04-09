@@ -1,6 +1,7 @@
 package com.agh.zlotowka.controller;
 
 import com.agh.zlotowka.dto.RevenuesAndExpensesResponse;
+import com.agh.zlotowka.dto.SinglePlotData;
 import com.agh.zlotowka.dto.TransactionBudgetInfo;
 import com.agh.zlotowka.dto.UserDataInDateRangeRequest;
 import com.agh.zlotowka.service.GeneralTransactionService;
@@ -20,8 +21,8 @@ public class GeneralTransactionController {
     private final GeneralTransactionService generalTransactionService;
 
     @PostMapping("/plotData")
-    public ResponseEntity<List<TransactionBudgetInfo>> getUserBudgetInDateRange(@Valid @RequestBody UserDataInDateRangeRequest request) {
-        List<TransactionBudgetInfo> budgetList = generalTransactionService.getEstimatedBudgetInDateRange(request);
+    public ResponseEntity<List<SinglePlotData>> getUserBudgetInDateRange(@Valid @RequestBody UserDataInDateRangeRequest request) {
+        List<SinglePlotData> budgetList = generalTransactionService.getEstimatedBudgetInDateRange(request);
         return ResponseEntity.ok(budgetList);
     }
 
