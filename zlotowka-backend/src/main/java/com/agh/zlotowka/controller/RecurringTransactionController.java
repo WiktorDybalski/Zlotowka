@@ -2,10 +2,8 @@ package com.agh.zlotowka.controller;
 
 import com.agh.zlotowka.dto.RecurringTransactionDTO;
 import com.agh.zlotowka.dto.RecurringTransactionRequest;
-import com.agh.zlotowka.model.OneTimeTransaction;
-import com.agh.zlotowka.model.RecurringTransaction;
 import com.agh.zlotowka.service.RecurringTransactionService;
-import com.agh.zlotowka.service.RecurringTransactionTempService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,17 +13,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/recurringtransaction")
+@RequestMapping("/recurring-transaction")
 @RequiredArgsConstructor
 public class RecurringTransactionController {
     private final RecurringTransactionService recurringTransactionService;
-//    private final RecurringTransactionTempService recurringTransactionService;
 
     @PostMapping
     public ResponseEntity<RecurringTransactionDTO> addRecurringTransaction(@Valid @RequestBody RecurringTransactionRequest request) {

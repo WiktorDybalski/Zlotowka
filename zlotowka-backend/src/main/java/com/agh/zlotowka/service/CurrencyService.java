@@ -5,9 +5,9 @@ import com.agh.zlotowka.model.Currency;
 import com.agh.zlotowka.repository.CurrencyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;

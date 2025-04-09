@@ -1,7 +1,6 @@
 package com.agh.zlotowka.dto;
 
 import com.agh.zlotowka.model.Currency;
-import com.agh.zlotowka.model.PeriodEnum;
 import lombok.Builder;
 
 import java.math.BigDecimal;

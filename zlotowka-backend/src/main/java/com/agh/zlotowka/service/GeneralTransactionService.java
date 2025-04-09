@@ -1,5 +1,6 @@
 package com.agh.zlotowka.service;
 
+import com.agh.zlotowka.dto.MonthlySummaryDto;
 import com.agh.zlotowka.dto.RevenuesAndExpensesResponse;
 import com.agh.zlotowka.dto.SinglePlotData;
 import com.agh.zlotowka.dto.TransactionBudgetInfo;
@@ -14,16 +15,23 @@ import com.agh.zlotowka.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.TreeMap;
 
 @Slf4j
 @Service
-//@EnableScheduling
+@EnableScheduling
 @RequiredArgsConstructor
 public class GeneralTransactionService {
     private final RecurringTransactionRepository recurringTransactionRepository;
@@ -32,9 +40,9 @@ public class GeneralTransactionService {
     private final UserRepository userRepository;
     private final CurrencyService currencyService;
 
-//    @Scheduled(cron = "00 46 17 * * ?") // Everyday at 19:00
+    @Scheduled(cron = "00 01 00 * * ?")
     public void addRecurringTransactions() {
-        log.info("Adding transactions using sheduled task...");
+        log.info("Adding transactions using scheduled task...");
         List<RecurringTransaction> recurringTransactions = recurringTransactionRepository.findDueRecurringTransactions();
         List<OneTimeTransaction> oneTimeTransactionsToAdd = oneTimeTransactionRepository.findTransactionsToday();
         scheduledTransactionService.addOneTimeTransactionToUserBudget(oneTimeTransactionsToAdd);
@@ -227,5 +235,16 @@ public class GeneralTransactionService {
         }
 
         return new RevenuesAndExpensesResponse(revenue, expenses);
+    }
+
+    public MonthlySummaryDto getMonthlySummary(Integer userId) {
+        userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
+        LocalDate startDate = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth());
+
+        BigDecimal monthlyIncome = oneTimeTransactionRepository.getMonthlyIncomeByUser(userId, startDate);
+        BigDecimal monthlyExpenses = oneTimeTransactionRepository.getMonthlyExpensesByUser(userId, startDate);
+        System.out.println("Monthly income: " + monthlyIncome);
+        System.out.println("Monthly expenses: " + monthlyExpenses);
+        return new MonthlySummaryDto(monthlyIncome, monthlyExpenses, monthlyIncome.subtract(monthlyExpenses));
     }
 }

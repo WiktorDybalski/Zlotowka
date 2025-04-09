@@ -2,7 +2,6 @@ package com.agh.zlotowka.controller;
 
 import com.agh.zlotowka.dto.OneTimeTransactionDTO;
 import com.agh.zlotowka.dto.OneTimeTransactionRequest;
-import com.agh.zlotowka.model.OneTimeTransaction;
 import com.agh.zlotowka.service.OneTimeTransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,11 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/onetimetransaction")
+@RequestMapping("/onetime-transaction")
 @RequiredArgsConstructor
 public class OneTimeTransactionController {
     private final OneTimeTransactionService oneTimeTransactionService;
-//    private final OneTimeTransactionTempService oneTimeTransactionService;
 
     @PostMapping
     public ResponseEntity<OneTimeTransactionDTO> createOneTimeTransaction(@Valid @RequestBody OneTimeTransactionRequest request) {
