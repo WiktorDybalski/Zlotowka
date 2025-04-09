@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/generaltransactions")
@@ -31,9 +32,9 @@ public class GeneralTransactionController {
     }
 
     @GetMapping("/estimatedBalance/{userId}")
-    public ResponseEntity<BigDecimal> getEstimatedBalanceAtTheEndOfTheMonth(@PathVariable Integer userId) {
+    public ResponseEntity<Map<String, BigDecimal>> getEstimatedBalanceAtTheEndOfTheMonth(@PathVariable Integer userId) {
         BigDecimal estimatedBalance = generalTransactionService.getEstimatedBalanceAtTheEndOfTheMonth(userId);
-        return ResponseEntity.ok(estimatedBalance);
+        return ResponseEntity.ok(Map.of("estimatedBalance:", estimatedBalance));
     }
 
     @PostMapping("/revenuesAndExpensesInRange")

@@ -13,8 +13,6 @@ import com.agh.zlotowka.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -152,6 +150,7 @@ public class GeneralTransactionService {
 
     public BigDecimal getEstimatedBalanceAtTheEndOfTheMonth(int userId) throws EntityNotFoundException {
         LocalDate endOfMonth = LocalDate.now().with(TemporalAdjusters.lastDayOfMonth());
+        System.out.println(endOfMonth);
         List<TransactionBudgetInfo> transactions = getEstimatedBudgetInDateRange(new UserDataInDateRangeRequest(userId, LocalDate.now(), endOfMonth));
 
         if (transactions.isEmpty()) {
@@ -172,11 +171,13 @@ public class GeneralTransactionService {
         List<TransactionBudgetInfo> allTransactions = new ArrayList<>();
 
         transformOneTimeTransactions(request.userId(), request.startDate(), request.endDate(), userCurrency, allTransactions);
+        System.out.println(allTransactions);
         if (request.endDate().isAfter(LocalDate.now())) {
             recurringTransactionsIntoOneTime(request.userId(), request.startDate(), request.endDate(), userCurrency, allTransactions);
         }
 
         allTransactions.sort(Comparator.comparing(TransactionBudgetInfo::date));
+        System.out.println(allTransactions);
         List<TransactionBudgetInfo> transactionBudgetInfoList = new ArrayList<>();
         BigDecimal updatedBudget = budget;
 
@@ -184,6 +185,7 @@ public class GeneralTransactionService {
             updatedBudget = updatedBudget.add(transaction.amount());
             transactionBudgetInfoList.add(new TransactionBudgetInfo(transaction.transactionName(), transaction.date(), updatedBudget, transaction.isIncome(), userCurrency));
         }
+        System.out.println(transactionBudgetInfoList);
         return transactionBudgetInfoList;
     }
 
@@ -193,29 +195,32 @@ public class GeneralTransactionService {
         for (RecurringTransaction recurringTransaction : rucurringTransactionsList) {
 
             PeriodEnum period = recurringTransaction.getInterval();
-            LocalDate nextPaymentDate = period.addToDate(recurringTransaction.getNextPaymentDate(), recurringTransaction.getFirstPaymentDate());
+            LocalDate nextPaymentDate = recurringTransaction.getNextPaymentDate();
             String transactionCurrency = recurringTransaction.getCurrency().getIsoCode();
-            BigDecimal transactionAmount;
 
-            while (nextPaymentDate.isBefore(endDate) && nextPaymentDate.isBefore(recurringTransaction.getFinalPaymentDate())) {
-                try {
-                    transactionAmount = currencyService.convertCurrency(recurringTransaction.getAmount(), transactionCurrency, userCurrency);
-
-                    allTransactions.add(new TransactionBudgetInfo(
-                            recurringTransaction.getName(),
-                            nextPaymentDate,
-                            recurringTransaction.getIsIncome() ? transactionAmount : transactionAmount.negate(),
-                            recurringTransaction.getIsIncome(),
-                            userCurrency
-                    ));
-                } catch (CurrencyConversionException e) {
-                    log.error("Currency conversion failed", e);
-                } catch (Exception e) {
-                    log.error("Unexpected error from CurrencyService", e);
-                }
+            while (!nextPaymentDate.isAfter(endDate) && !nextPaymentDate.isAfter(recurringTransaction.getFinalPaymentDate())) {
+                addToAllTransactions(userCurrency, allTransactions, recurringTransaction, transactionCurrency, nextPaymentDate);
 
                 nextPaymentDate = period.addToDate(nextPaymentDate, recurringTransaction.getFirstPaymentDate());
             }
+        }
+    }
+
+    private void addToAllTransactions(String userCurrency, List<TransactionBudgetInfo> allTransactions, RecurringTransaction recurringTransaction, String transactionCurrency, LocalDate nextPaymentDate) {
+        try {
+            BigDecimal transactionAmount = currencyService.convertCurrency(recurringTransaction.getAmount(), transactionCurrency, userCurrency);
+
+            allTransactions.add(new TransactionBudgetInfo(
+                    recurringTransaction.getName(),
+                    nextPaymentDate,
+                    recurringTransaction.getIsIncome() ? transactionAmount : transactionAmount.negate(),
+                    recurringTransaction.getIsIncome(),
+                    userCurrency
+            ));
+        } catch (CurrencyConversionException e) {
+            log.error("Currency conversion failed", e);
+        } catch (Exception e) {
+            log.error("Unexpected error from CurrencyService", e);
         }
     }
 

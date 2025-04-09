@@ -12,16 +12,16 @@ import java.util.Optional;
 
 @Repository
 public interface OneTimeTransactionRepository extends JpaRepository<OneTimeTransaction, Integer> {
-    @Query("SELECT t FROM OneTimeTransaction t WHERE t.user.userId = :userId AND t.date >= :startDate AND t.date <= :endDate")
+    @Query("SELECT t FROM OneTimeTransaction t WHERE t.user.userId = :userId AND t.date > :startDate AND t.date <= :endDate")
     List<OneTimeTransaction> getTransactionsInRange(
             @Param("userId") int userId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
-    @Query("SELECT t FROM OneTimeTransaction t WHERE t.user.userId = :userId AND t.date >= :now AND t.isIncome=TRUE ORDER BY t.date ASC LIMIT 1")
+    @Query("SELECT t FROM OneTimeTransaction t WHERE t.user.userId = :userId AND t.date > :now AND t.isIncome=TRUE ORDER BY t.date ASC LIMIT 1")
     Optional<OneTimeTransaction> getNextIncomeOneTimeTransactionByUser(@Param("userId") int userId, @Param("now") LocalDate now);
 
-    @Query("SELECT t FROM OneTimeTransaction t WHERE t.user.userId = :userId AND t.date >= :now AND t.isIncome=FALSE ORDER BY t.date ASC LIMIT 1")
+    @Query("SELECT t FROM OneTimeTransaction t WHERE t.user.userId = :userId AND t.date > :now AND t.isIncome=FALSE ORDER BY t.date ASC LIMIT 1")
     Optional<OneTimeTransaction> getNextExpenseOneTimeTransactionByUser(@Param("userId") int userId, @Param("now") LocalDate now);
 
     @Query("SELECT t FROM OneTimeTransaction t WHERE t.date = CURRENT_DATE")
