@@ -1,8 +1,5 @@
 package com.agh.zlotowka.controller;
 
-import com.agh.zlotowka.model.Currency;
-import com.agh.zlotowka.model.PeriodEnum;
-import com.agh.zlotowka.service.CurrencyService;
 import com.agh.zlotowka.service.PeriodService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +18,7 @@ public class PeriodController {
 
     @GetMapping("/all")
     public ResponseEntity<List<Map<String, String>>> getAllCurrencies() {
-        List<Map<String, String>> currencyList = periodService.getPeriods();
-        return ResponseEntity.ok(currencyList);
+        List<Map<String, String>> periodList = periodService.getPeriods();
+        return ResponseEntity.ok(periodList);
     }
 }
