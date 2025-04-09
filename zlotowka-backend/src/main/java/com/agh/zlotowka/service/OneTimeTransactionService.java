@@ -36,7 +36,7 @@ public class OneTimeTransactionService {
         Currency currency = currencyRepository.findById(request.currencyId())
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Currency with Id %d not found", request.currencyId())));
 
-        if (request.date().isBefore(LocalDate.now())) {
+        if (!request.date().isAfter(LocalDate.now())) {
             userService.addTransactionAmountToBudget(request.currencyId(), request.amount(), request.isIncome(), user);
         }
         OneTimeTransaction transaction = OneTimeTransaction.builder()
@@ -68,7 +68,7 @@ public class OneTimeTransactionService {
 
         validateTransactionOwnership(request.userId(), transaction.getUser().getUserId());
 
-        if (request.date().isBefore(LocalDate.now()))
+        if (!request.date().isAfter(LocalDate.now()))
             updateTransactionBeforeCurrentTime(request, transaction);
         else {
             updateTransactionAfterCurrentTime(transaction);
@@ -119,7 +119,7 @@ public class OneTimeTransactionService {
     }
 
     private void updateTransactionBeforeCurrentTime(OneTimeTransactionRequest request, OneTimeTransaction transaction) {
-        if (transaction.getDate().isBefore(LocalDate.now())) {
+        if (!transaction.getDate().isAfter(LocalDate.now())) {
             if ((!request.amount().equals(transaction.getAmount()) || request.currencyId().equals(transaction.getCurrency().getCurrencyId()))) {
                 userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), request.isIncome(), transaction.getUser());
                 userService.addTransactionAmountToBudget(request.currencyId(), request.amount(), request.isIncome(), transaction.getUser());
@@ -130,7 +130,7 @@ public class OneTimeTransactionService {
     }
 
     private void updateTransactionAfterCurrentTime(OneTimeTransaction transaction) {
-        if (transaction.getDate().isBefore(LocalDate.now())) {
+        if (!transaction.getDate().isAfter(LocalDate.now())) {
             userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
         }
     }

@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Repository
 public interface OneTimeTransactionRepository extends JpaRepository<OneTimeTransaction, Integer> {
-    @Query("SELECT t FROM OneTimeTransaction t WHERE t.user.userId = :userId AND t.date > :startDate AND t.date <= :endDate")
+    @Query("SELECT t FROM OneTimeTransaction t WHERE t.user.userId = :userId AND t.date >= :startDate AND t.date <= :endDate")
     List<OneTimeTransaction> getTransactionsInRange(
             @Param("userId") int userId,
             @Param("startDate") LocalDate startDate,
