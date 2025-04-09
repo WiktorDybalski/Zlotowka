@@ -243,8 +243,6 @@ public class GeneralTransactionService {
 
         BigDecimal monthlyIncome = oneTimeTransactionRepository.getMonthlyIncomeByUser(userId, startDate);
         BigDecimal monthlyExpenses = oneTimeTransactionRepository.getMonthlyExpensesByUser(userId, startDate);
-        System.out.println("Monthly income: " + monthlyIncome);
-        System.out.println("Monthly expenses: " + monthlyExpenses);
         return new MonthlySummaryDto(monthlyIncome, monthlyExpenses, monthlyIncome.subtract(monthlyExpenses));
     }
 }
