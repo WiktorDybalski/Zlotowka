@@ -13,6 +13,8 @@ import com.agh.zlotowka.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,7 +38,7 @@ public class GeneralTransactionService {
     private final UserService userService;
 
     // TODO Add oneTimeTransaction in scheduled task
-//    @Scheduled(cron = "0 0 19 * * ?") // Everyday at 19:00
+//    @Scheduled(cron = "00 46 17 * * ?") // Everyday at 19:00
     public void addRecurringTransactions() {
         log.info("Adding transactions using sheduled task...");
         List<RecurringTransaction> recurringTransactions = recurringTransactionRepository.findDueRecurringTransactions();
@@ -50,7 +52,7 @@ public class GeneralTransactionService {
     private void addOneTimeTransactionToUserBudget(List<OneTimeTransaction> oneTimeTransactionsToAdd) {
         log.info("Adding oneTimeTransactions to user budget...");
         for (OneTimeTransaction transaction : oneTimeTransactionsToAdd) {
-            userService.addTransactionAmountToBudget(transaction.getTransactionId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
+            userService.addTransactionAmountToBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
         }
     }
 
@@ -58,7 +60,6 @@ public class GeneralTransactionService {
     public void updateDataWithNewTransaction(RecurringTransaction recurringTransaction) {
         log.info("Updating data with new transaction from recurring...");
         updateRecurringTransaction(recurringTransaction);
-        updateUserBalance(recurringTransaction);
         addOneTimeTransactionFromRecurring(recurringTransaction);
     }
 
@@ -74,6 +75,12 @@ public class GeneralTransactionService {
                 .description(recurringTransaction.getDescription())
                 .build();
         oneTimeTransactionRepository.save(oneTimeTransaction);
+
+        userService.addTransactionAmountToBudget(
+                recurringTransaction.getCurrency().getCurrencyId(),
+                recurringTransaction.getAmount(),
+                recurringTransaction.getIsIncome(),
+                recurringTransaction.getUser());
     }
 
     private void updateRecurringTransaction(RecurringTransaction recurringTransaction) {
@@ -81,37 +88,12 @@ public class GeneralTransactionService {
         PeriodEnum interval = recurringTransaction.getInterval();
         LocalDate newPaymentDate = interval.addToDate(recurringTransaction.getNextPaymentDate(), recurringTransaction.getFirstPaymentDate());
 
-        if (newPaymentDate.isBefore(recurringTransaction.getFinalPaymentDate()))
+        if (!newPaymentDate.isAfter(recurringTransaction.getFinalPaymentDate()))
             recurringTransaction.setNextPaymentDate(newPaymentDate);
 
         recurringTransactionRepository.save(recurringTransaction);
     }
 
-    private void updateUserBalance(RecurringTransaction recurringTransaction) {
-//        User user = recurringTransaction.getUser();
-//        BigDecimal currentBalance = userRepository.getUserBudget(recurringTransaction.getUser().getUserId())
-//                .orElseThrow(() -> new EntityNotFoundException("User with Id not found"));
-//        BigDecimal transactionAmount = recurringTransaction.getIsIncome() ? recurringTransaction.getAmount() : recurringTransaction.getAmount().negate();
-//
-//        String userCurrency = user.getCurrency().getIsoCode();
-//        String transactionCurrency = recurringTransaction.getCurrency().getIsoCode();
-//        try {
-//            transactionAmount = currencyService.convertCurrency(transactionAmount, transactionCurrency, userCurrency);
-//
-//            BigDecimal newBalance = currentBalance.add(transactionAmount);
-//            user.setCurrentBudget(newBalance);
-//            userRepository.save(user);
-//        } catch (CurrencyConversionException e) {
-//            log.error("Currency conversion failed", e);
-//        } catch (Exception e) {
-//            log.error("Unexpected Exception in CurrencyService", e);
-//        }
-        userService.addTransactionAmountToBudget(
-                recurringTransaction.getCurrency().getCurrencyId(),
-                recurringTransaction.getAmount(),
-                recurringTransaction.getIsIncome(),
-                recurringTransaction.getUser());
-    }
 
     public TransactionBudgetInfo getNextTransaction(Integer userId, Boolean isIncome) {
         userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
