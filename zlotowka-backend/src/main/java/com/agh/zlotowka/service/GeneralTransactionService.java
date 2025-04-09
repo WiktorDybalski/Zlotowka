@@ -203,22 +203,28 @@ public class GeneralTransactionService {
         String userCurrency = userRepository.getUserCurrencyName(request.userId())
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Currency for user with ID %d not found", request.userId())));
 
-        List<TransactionBudgetInfo> allTransactions = new ArrayList<>();
+        List<TransactionBudgetInfo> futureTransactions = new ArrayList<>();
+        List<TransactionBudgetInfo> pastTransactions = new ArrayList<>();
 
-        transformOneTimeTransactions(request.userId(), request.startDate(), request.endDate(), userCurrency, allTransactions);
+        transformOneTimeTransactions(request.userId(), request.startDate(), request.endDate(), userCurrency, futureTransactions, pastTransactions);
         if (request.endDate().isAfter(LocalDate.now())) {
-            recurringTransactionsIntoOneTime(request.userId(), request.startDate(), request.endDate(), userCurrency, allTransactions);
+            recurringTransactionsIntoOneTime(request.userId(), request.startDate(), request.endDate(), userCurrency, futureTransactions);
         }
 
-        BigDecimal revenue = allTransactions.stream()
-                .filter(TransactionBudgetInfo::isIncome)
-                .map(TransactionBudgetInfo::amount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        List<TransactionBudgetInfo> allTransactions = new ArrayList<>();
+        allTransactions.addAll(futureTransactions);
+        allTransactions.addAll(pastTransactions);
 
-        BigDecimal expenses = allTransactions.stream()
-                .filter(t -> !t.isIncome())
-                .map(TransactionBudgetInfo::amount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal revenue = BigDecimal.ZERO;
+        BigDecimal expenses = BigDecimal.ZERO;
+
+        for (TransactionBudgetInfo tx : allTransactions) {
+            if (tx.isIncome()) {
+                revenue = revenue.add(tx.amount());
+            } else {
+                expenses = expenses.add(tx.amount());
+            }
+        }
 
         return new RevenuesAndExpensesResponse(revenue, expenses);
     }
