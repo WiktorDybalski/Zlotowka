@@ -1,4 +1,4 @@
-import {ReactNode} from "react";
+import { ReactNode } from "react";
 
 interface GenericCardProps {
   children: ReactNode;
@@ -6,10 +6,17 @@ interface GenericCardProps {
   id?: string;
 }
 
-export default function GenericCard({ children, className, id }: GenericCardProps) {
+export default function GenericCard({
+  children,
+  className,
+  id,
+}: GenericCardProps) {
   return (
-      <div className={`w-full h-full border-[1px] rounded-xl ${className}`} id={id} style={{ borderColor: "rgba(38, 38, 38, 0.5)" }}>
-        {children}
-      </div>
+    <div
+      className={`w-full h-full border-[1px] rounded-xl border-border-color ${className}`}
+      id={id}
+    >
+      {children}
+    </div>
   );
 }

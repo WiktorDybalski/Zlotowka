@@ -12,7 +12,7 @@ export default function HamburgerMenu({ isOpen, onClick }: HamburgerMenuProps) {
         width="32"
         height="24"
         viewBox="0 0 32 24"
-        className="fill-current text-neutral-100"
+        className="fill-current text-background"
       >
         <path d="M0 2h32v3H0z" />
         <path d="M0 10h32v3H0z" />

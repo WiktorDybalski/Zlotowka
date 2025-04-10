@@ -1,10 +1,11 @@
-import {API_HOST} from "@/lib/config";
+import { API_HOST } from "@/lib/config";
 
 const CardService = {
   getCurrentBalance: async (userId: number) => {
     try {
-      const response = await fetch(`${API_HOST}/generaltransactions/currentBalance/${userId}`);
-      console.log(response);
+      const response = await fetch(
+        `${API_HOST}/general-transactions/current-balance/${userId}`,
+      );
       return await response.json();
     } catch (error) {
       console.log(error);
@@ -13,7 +14,9 @@ const CardService = {
 
   getMonthEstimatedBalance: async (userId: number) => {
     try {
-      const response = await fetch(`${API_HOST}/generaltransactions/estimatedBalance/${userId}`);
+      const response = await fetch(
+        `${API_HOST}/general-transactions/estimated-balance/${userId}`,
+      );
       return await response.json();
     } catch (error) {
       console.log(error);
@@ -22,12 +25,14 @@ const CardService = {
 
   getNextTransaction: async (userId: number, isIncome: boolean) => {
     try {
-      const response = await fetch(`${API_HOST}/generaltransactions/nextTransaction/${userId}?isIncome=${isIncome}`);
+      const response = await fetch(
+        `${API_HOST}/general-transactions/next-transaction/${userId}?isIncome=${isIncome}`,
+      );
       return await response.json();
     } catch (error) {
       console.log(error);
     }
   },
-}
+};
 
-export default CardService
+export default CardService;

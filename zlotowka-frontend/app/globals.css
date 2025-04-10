@@ -6,10 +6,9 @@ p {
 
 :root {
   --font-family-symbols: "Material Symbols Rounded";
-  --font-lato: 'Lato', sans-serif;
-  --font-raleway: 'Raleway', sans-serif;
+  --font-lato: "Lato", sans-serif;
+  --font-raleway: "Raleway", sans-serif;
 }
-
 
 @theme {
   /* Tailwind CSS zmienne*/
@@ -21,11 +20,17 @@ p {
   --color-backgroundDark: #3a3a3a;
   --color-backgroundLightDark: #8e8e93;
   --color-error: #fb2c36;
+  --color-border-color: oklch(27.27% 0 0 / 0.5);
+  --font-lato: "Lato", sans-serif;
 }
 
 .material-symbols {
   font-family: var(--font-family-symbols);
-  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 48;
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 48;
   font-size: 24px;
   display: inline-block;
   line-height: 1;

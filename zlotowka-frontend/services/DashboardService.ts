@@ -1,9 +1,9 @@
-import {API_HOST} from "@/lib/config";
+import { API_HOST } from "@/lib/config";
 
 const Dashboard = {
-  getMainChartData: async (userId: number, startDate: Date, endDate: Date) => {
+  getMainChartData: async (userId: number, startDate: string, endDate: string) => {
     try {
-      const response = await fetch(`${API_HOST}/generaltransactions/plotData`, {
+      const response = await fetch(`${API_HOST}/general-transactions/plot-data`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -21,12 +21,14 @@ const Dashboard = {
   },
   getPieSideChartData: async (userId: number) => {
     try {
-      const response = await fetch(`${API_HOST}/generaltransactions/revenuesAndExpenses/${userId}`);
+      const response = await fetch(
+        `${API_HOST}/general-transactions/monthly-summary/${userId}`,
+      );
       return await response.json();
     } catch (error) {
       console.log(error);
     }
-  }
-}
+  },
+};
 
-export default Dashboard
+export default Dashboard;

@@ -1,8 +1,19 @@
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  type ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 import * as React from "react";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import DashboardService from "@/services/DashboardService";
 import DarkButton from "@/components/DarkButton";
 import RangePickerPopup from "@/components/dashboard/charts/RangePickerPopup";
@@ -14,24 +25,36 @@ const chartConfig = {
     label: "Stan konta",
     color: "#262626",
   },
-} satisfies ChartConfig
+} satisfies ChartConfig;
 
 export function MainChart() {
-  const [padding, setPadding] = useState<{ left: number; right: number }>({ left: 30, right: 30 });
-  const [chartData, setChartData] = useState([])
+  const [padding, setPadding] = useState<{ left: number; right: number }>({
+    left: 30,
+    right: 30,
+  });
+  const [chartData, setChartData] = useState(null);
   const [showRangePicker, setShowRangePicker] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    DashboardService.getMainChartData(1, new Date("2023-03-03"), new Date("2024-03-03"))
-        .then(setChartData)
-        .catch(err => {
-          toast.error("Failed to fetch main chart: " + err);
-        })
-        .finally(() => {
-          setIsLoading(false);
-        });
+    DashboardService.getMainChartData(
+      1,
+      "2025-03-03",
+      "2028-04-18",
+    )
+      .then(response => {
+        setChartData(response);
+
+      })
+      .catch((err) => {
+        toast.error("Failed to fetch main chart: " + err);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, []);
+
+  console.log(chartData);
 
   useEffect(() => {
     const updatePadding = () => {
@@ -57,54 +80,73 @@ export function MainChart() {
   }
 
   return (
-      <>
-      {showRangePicker && <RangePickerPopup onClose={() => setShowRangePicker(false)} />}
+    <>
+      {showRangePicker && (
+        <RangePickerPopup onClose={() => setShowRangePicker(false)} />
+      )}
       <Card className="flex flex-col w-full h-full bg-transparent z-10 border-none">
         <CardHeader className="flex justify-between items-center">
           <div>
             <CardTitle className="text-xl">Wykres cashflow</CardTitle>
           </div>
           <div className="w-30">
-            <DarkButton text={"Zmień daty"} onClick={() => setShowRangePicker(!showRangePicker)} />
+            <DarkButton
+              text={"Zmień daty"}
+              onClick={() => setShowRangePicker(!showRangePicker)}
+            />
           </div>
         </CardHeader>
         <CardContent className="w-full flex flex-col justify-center items-center overflow-hidden my-0 px-0">
-          <ChartContainer config={chartConfig} className="w-full max-w-full h-full flex justify-center">
+          <ChartContainer
+            config={chartConfig}
+            className="w-full max-w-full h-full flex justify-center"
+          >
             <LineChart
-                accessibilityLayer
-                data={chartData}
-                className="w-full h-full"
+              accessibilityLayer
+              data={chartData}
+              className="w-full h-full"
             >
               <CartesianGrid vertical={false} />
               <XAxis
-                  dataKey="date"
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  tickFormatter={(value) =>
-                      new Date(value)
-                          .toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: '2-digit' })
-                  }
-                  padding={padding}
-                  className="font-(family-name:--font-lato)"
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value) =>
+                  new Date(value).toLocaleDateString("pl-PL", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "2-digit",
+                  })
+                }
+                padding={padding}
+                className="font-lato"
               />
-              <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tickMargin={16}
+              <YAxis axisLine={false} tickLine={false} tickMargin={16} />
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
               />
-              <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-              <Line dataKey="value" type="natural" stroke="#262626" strokeWidth={2} dot={false} />
+              <Line
+                dataKey="amount"
+                type="natural"
+                stroke="#262626"
+                strokeWidth={2}
+                dot={false}
+              />
             </LineChart>
           </ChartContainer>
         </CardContent>
         <CardFooter className="w-full flex flex-wrap justify-center my-0 py-0">
           <div className="flex items-center gap-2">
-            <span className="w-5 h-2" style={{ backgroundColor: "#262626" }}></span>
+            <span
+              className="w-5 h-2"
+              style={{ backgroundColor: "#262626" }}
+            ></span>
             <span className="text-sm text-muted-foreground">Stan konta</span>
           </div>
         </CardFooter>
       </Card>
-      </>
-  )
+    </>
+  );
 }

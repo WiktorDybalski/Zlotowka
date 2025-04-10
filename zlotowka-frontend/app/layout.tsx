@@ -1,19 +1,19 @@
 import localFont from "next/font/local";
-import { Raleway, Lato } from 'next/font/google';
+import { Raleway, Lato } from "next/font/google";
 import "./globals.css";
 
 const raleway = Raleway({
-  weight: ['400', '500', '600', '700'],
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-raleway',
+  weight: ["400", "500", "600", "700"],
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-raleway",
 });
 
 const lato = Lato({
-  subsets: ['latin'],
-  display: 'swap',
-  weight: ['400', '700'],
-  variable: '--font-lato',
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "700"],
+  variable: "--font-lato",
 });
 
 const materialSymbols = localFont({
@@ -31,9 +31,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pl">
-    <body
+      <body
         className={`${raleway.variable} ${lato.variable} ${materialSymbols.variable} font-(family-name:--font-raleway) bg-background`}
-    >
+      >
         {children}
       </body>
     </html>

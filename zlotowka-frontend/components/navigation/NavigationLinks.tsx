@@ -21,7 +21,7 @@ export default function NavigationLinks({
       {links.map((link, index) => (
         <motion.div
           key={link}
-          className={`${isMobile ? "border-l-2" : "border-l-4"} border-neutral-100`}
+          className={`${isMobile ? "border-l-2" : "border-l-4"} border-background`}
           variants={linkVariants}
           initial="hidden"
           animate="visible"
