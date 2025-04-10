@@ -42,7 +42,7 @@ public class GeneralTransactionController {
     @GetMapping("/estimated-balance/{userId}")
     public ResponseEntity<Map<String, BigDecimal>> getEstimatedBalanceAtTheEndOfTheMonth(@PathVariable Integer userId) {
         BigDecimal estimatedBalance = generalTransactionService.getEstimatedBalanceAtTheEndOfTheMonth(userId);
-        return ResponseEntity.ok(Map.of("estimatedBalance:", estimatedBalance));
+        return ResponseEntity.ok(Map.of("estimatedBalance", estimatedBalance));
     }
 
     @PostMapping("/revenues-expenses-in-range")
