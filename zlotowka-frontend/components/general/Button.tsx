@@ -27,7 +27,7 @@ export default function Button({
         variant === "accent" &&
           "bg-accent hover:bg-backgroundDark text-background py-4 text-lg rounded-lg ",
         variant === "dark" &&
-          "bg-[#262626] hover:bg-[#141414] text-neutral-100 w-full py-2 text-sm rounded-[10px]"
+          "bg-accent hover:bg-[#141414] text-background w-full py-2 text-sm rounded-[10px]",
       )}
       onClick={onClick}
       type={type}

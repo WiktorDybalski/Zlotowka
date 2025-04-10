@@ -5,7 +5,7 @@ import Divider from "@/components/navigation/Divider";
 
 export default function DesktopMenu({ navLinks }: MenuProps) {
   return (
-    <div className="hidden lg:flex lg:flex-col w-full h-full">
+    <div className="hidden xl:flex xl:flex-col w-full h-full">
       <Divider />
       <NavigationLinks links={navLinks} />
       <Divider />

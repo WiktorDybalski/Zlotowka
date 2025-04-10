@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import { TransactionFormProps } from "@/interfaces/transactions/PopupTransactionsProps";
 import { TransactionData } from "@/interfaces/transactions/TransactionsData";
 import ConfirmButton from "@/components/general/Button";
+import dayjs from "dayjs";
+import DatePicker from "@/components/general/DatePicker";
 
 const inputClass =
   "border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md min-w-76 ";
 
-// TODO: datepicker
 export default function TransactionForm({
   transaction,
   onClose,
@@ -17,15 +18,16 @@ export default function TransactionForm({
   submitButtonIcon,
 }: TransactionFormProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [formData, setFormData] = useState<TransactionData>(
     transaction || {
       name: "",
-      date: "",
+      date: dayjs().format("YYYY-MM-DD"),
       frequency: "Raz",
       type: "expense",
       amount: "",
       currency: "PLN",
-    }
+    },
   );
 
   const handleClose = () => {
@@ -34,7 +36,7 @@ export default function TransactionForm({
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     setFormData({
       ...formData,
@@ -49,13 +51,17 @@ export default function TransactionForm({
     });
   };
 
+  const toggleDatePicker = () => {
+    setIsDatePickerOpen((prev) => !prev);
+  };
+
   useEffect(() => {
     setIsVisible(true);
   }, []);
 
   return (
     <div
-      className={`w-full h-screen fixed top-0 left-0 flex justify-center items-center select-none transition-opacity duration-200 ${
+      className={`z-[999] w-full h-screen fixed top-0 left-0 flex justify-center items-center select-none transition-opacity duration-200 ${
         isVisible ? "opacity-100" : "opacity-0"
       }`}
     >
@@ -67,7 +73,7 @@ export default function TransactionForm({
 
       {/* Form */}
       <div
-        className={`bg-neutral-100 border-[1px] border-[rgba(38,38,38,0.5)] px-8 py-10 rounded-[10px] z-10 transition-all duration-200 ease-in-out transform ${
+        className={`bg-background border-[1px] border-[rgba(38,38,38,0.5)] px-8 py-10 rounded-[10px] z-10 transition-all duration-200 ease-in-out transform ${
           isVisible ? "scale-100 opacity-100" : "scale-90 opacity-0"
         }`}
       >
@@ -93,11 +99,22 @@ export default function TransactionForm({
           <h3 className="text-md my-2 font-medium">Data</h3>
           <input
             name="date"
-            className={inputClass}
+            className={inputClass + " font-lato"}
             type="text"
-            placeholder="Wyobraźcie sobie date pickera"
             value={formData.date}
             onChange={handleInputChange}
+            onClick={toggleDatePicker}
+          />
+          <DatePicker
+            isOpen={isDatePickerOpen}
+            currentDate={dayjs(formData.date)}
+            setIsOpen={setIsDatePickerOpen}
+            setDate={(newDate) =>
+              setFormData((prev) => ({
+                ...prev,
+                date: dayjs(newDate).format("YYYY-MM-DD"),
+              }))
+            }
           />
         </div>
 
@@ -108,7 +125,7 @@ export default function TransactionForm({
             name="frequency"
             value={formData.frequency}
             onChange={handleInputChange}
-            className={inputClass + "bg-neutral-100"}
+            className={inputClass + "bg-background"}
           >
             <option value="Raz">Raz</option>
             <option value="Codziennie">Codziennie</option>
@@ -145,7 +162,7 @@ export default function TransactionForm({
         <div className="flex gap-x-2 min-w-72">
           <input
             name="amount"
-            className="border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md w-full"
+            className="border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md font-lato w-full"
             type="text"
             placeholder="Kwota"
             value={formData.amount}
@@ -155,7 +172,7 @@ export default function TransactionForm({
             name="currency"
             value={formData.currency}
             onChange={handleInputChange}
-            className="border-[1px] border-neutral-300 rounded-[5px] px-2 text-md bg-neutral-100"
+            className="border-[1px] border-neutral-300 rounded-[5px] px-2 text-md bg-background"
           >
             <option value="PLN">PLN</option>
             <option value="EUR">EUR</option>

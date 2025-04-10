@@ -27,7 +27,7 @@ export default function MobileMenu({ isOpen, navLinks }: MenuProps) {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="lg:hidden w-full h-full flex flex-col overflow-hidden"
+          className="xl:hidden w-full h-full flex flex-col overflow-hidden"
           variants={mobileContentVariants}
           initial="hidden"
           animate="visible"
