@@ -245,4 +245,9 @@ public class GeneralTransactionService {
         BigDecimal monthlyExpenses = oneTimeTransactionRepository.getMonthlyExpensesByUser(userId, startDate);
         return new MonthlySummaryDto(monthlyIncome, monthlyExpenses, monthlyIncome.subtract(monthlyExpenses));
     }
+
+    public BigDecimal getCurrentBalance(Integer userId) {
+        return userRepository.getUserBudget(userId)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
+    }
 }

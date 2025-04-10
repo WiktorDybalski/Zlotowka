@@ -56,5 +56,11 @@ public class GeneralTransactionController {
         MonthlySummaryDto monthlySummaryDto = generalTransactionService.getMonthlySummary(userId);
         return ResponseEntity.ok(monthlySummaryDto);
     }
+
+    @GetMapping("/current-balance/{userId}")
+    public ResponseEntity<Map<String, BigDecimal>> getCurrentBalance(@PathVariable Integer userId) {
+        BigDecimal currentBalance = generalTransactionService.getCurrentBalance(userId);
+        return ResponseEntity.ok(Map.of("currentBalance", currentBalance));
+    }
 }
 
