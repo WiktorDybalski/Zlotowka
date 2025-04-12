@@ -73,7 +73,7 @@ export default function Dashboard() {
           <PieSideChart />
         </GenericCard>
 
-        <div className="w-full xl:w-52 h-10">
+        <div className="w-full sm:w-52 h-10">
           <DarkButton
             icon={"add"}
             text={"Dodaj transakcje"}

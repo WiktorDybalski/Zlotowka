@@ -158,7 +158,7 @@ export function PieSideChart() {
               style={{ backgroundColor: item.fill }}
             ></span>
             <span className="text-sm text-muted-foreground">
-              {item.category}
+              {item.category} ({item.value} PLN)
             </span>
           </div>
         ))}
