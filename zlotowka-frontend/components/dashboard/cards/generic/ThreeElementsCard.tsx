@@ -17,7 +17,7 @@ export default function ThreeElementsCard({
       <div className="w-full text-3xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-lato my-auto py-4">
         {middle}
       </div>
-      <div className="w-full text-md lg:text-sm 2xl:text-base 3xl:text-lg">
+      <div className="w-full text-[clamp(0.8rem,1vw,1.20rem)]">
         {bottom}
       </div>
     </div>
