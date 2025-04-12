@@ -56,18 +56,18 @@ const AccountField = ({
   avatar,
   onClick = () => {},
 }: AccountFieldProps) => (
-  <div className="grid grid-cols-[1fr_1fr_1fr] w-full py-4 border-t-2 border-dashed border-neutral-200 last:border-b-2">
-    <div className="flex justify-left items-center">
-      <h3 className="text-lg">{text}</h3>
+  <div className="grid grid-cols-[1fr_80px] xl:grid-cols-[1fr_1fr_1fr] w-full py-4 border-t-2 border-dashed border-neutral-200 last:border-b-2">
+    <div className="flex justify-left w-full  items-center">
+      <h3 className="text-md xl:text-lg">{text}</h3>
     </div>
-    <div className="flex justify-center items-center">
+    <div className="flex row-start-2 justify-left xl:justify-center items-center">
       {avatar && <div>{avatar}</div>}
       {value && (
-        <span className="text-neutral-600 text-lg font-lato">{value}</span>
+        <span className="text-neutral-600 text-md xl:text-lg font-lato">{value}</span>
       )}
     </div>
-    <div className="flex justify-end items-center">
-      <div className="w-28 h-10">
+    <div className="flex  justify-end row-start-1 row-end-3 items-center item">
+      <div className="w-18 xl:w-28 h-10">
         <DarkButton text={"Edytuj"} onClick={onClick} />
       </div>
     </div>
@@ -83,11 +83,11 @@ export default function Settings() {
   const [darkMode, setDarkMode] = useState(false);
 
   return (
-    <div className="w-full min-h-screen px-32 py-20 font-semibold text-accent">
+    <div className="w-full p-8 min-h-screen xl:px-32 xl:py-20 font-semibold text-accent">
       <div>
-        <h1 className="text-6xl">Ustawienia</h1>
+        <h1 className="text-4xl">Ustawienia</h1>
       </div>
-      <div className="flex gap-x-6 mt-8">
+      <div className="flex flex-col gap-y-2 xl:gap-x-6 mt-8">
         {navLinks.map((link) => (
           <div
             key={link}
@@ -100,7 +100,7 @@ export default function Settings() {
       </div>
 
       <GenericCard className="mt-10 max-w-3xl p-6" id="Konto">
-        <h2 className="text-3xl">Informacje ogólne</h2>
+        <h2 className="text-2xl xl:text-3xl">Informacje ogólne</h2>
         <div className="mt-4">
           {AccountOptions.map((option, index) => (
             <AccountField
@@ -115,11 +115,11 @@ export default function Settings() {
       </GenericCard>
 
       <GenericCard className="mt-10 max-w-3xl p-6" id={"Preferencje"}>
-        <h2 className="text-3xl">Preferencje</h2>
+        <h2 className="text-2xl xl:text-3xl">Preferencje</h2>
         <div className="mt-4">
           <div className="flex justify-between items-center">
-            <h4 className="text-lg">Ciemny motyw</h4>
-            <div className="w-28 h-10">
+            <h4 className="text-md xl:text-lg">Ciemny motyw</h4>
+            <div className="w-22 xl:w-28 h-10">
               <DarkButton
                 className={`${
                   darkMode
@@ -135,11 +135,11 @@ export default function Settings() {
       </GenericCard>
 
       <GenericCard className="mt-10 max-w-3xl p-6" id={"Powiadomienia"}>
-        <h2 className="text-3xl">Powiadomienia</h2>
+        <h2 className="text-2xl xl:text-3xl">Powiadomienia</h2>
         <div className="mt-4">
           <div className="flex justify-between items-center border-t-2 border-dashed border-neutral-200 py-4">
-            <h4 className="text-lg">Na email</h4>
-            <div className="w-28 h-10">
+            <h4 className="text-md xl:text-lg">Na email</h4>
+            <div className="w-22 xl:w-28 h-10">
               <DarkButton
                 className={`${
                   darkMode
@@ -152,8 +152,8 @@ export default function Settings() {
             </div>
           </div>
           <div className="flex justify-between items-center border-y-2 border-dashed border-neutral-200 py-4">
-            <h4 className="text-lg">Na telefon</h4>
-            <div className="w-28 h-10">
+            <h4 className="text-md xl:text-lg">Na telefon</h4>
+            <div className="w-22 xl:w-28 h-10">
               <DarkButton
                 className={`${
                   darkMode

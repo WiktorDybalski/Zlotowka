@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-export default function SettingsLink() {
+export default function SettingsLink({ onLinkClick }: { onLinkClick?: () => void }) {
   return (
-    <Link href="/settings">
+    <Link href="/settings" onClick={onLinkClick}>
       <div className="flex items-center hover:text-neutral-300 cursor-pointer transition-colors">
         <span className="material-symbols text-xl font-light">settings</span>
         <div>
