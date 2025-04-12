@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import DatePicker from "@/components/general/DatePicker";
-import DarkButton from "@/components/DarkButton";
+import GenericPopup from "@/components/general/GenericPopup";
 import dayjs, { Dayjs } from "dayjs";
 import toast from "react-hot-toast";
 
@@ -15,16 +15,10 @@ interface RangePickerPopupProps {
 }
 
 export default function RangePickerPopup({ onClose, onDateChange }: RangePickerPopupProps) {
-  const [isVisible, setIsVisible] = useState(false);
   const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
   const [startDate, setStartDate] = useState<Dayjs>(dayjs().subtract(30, "day"));
   const [endDate, setEndDate] = useState<Dayjs>(dayjs());
-
-  const handleClose = () => {
-    setIsVisible(false);
-    setTimeout(() => onClose(), 300);
-  };
 
   const handleConfirm = () => {
     if(startDate > endDate) {
@@ -32,9 +26,7 @@ export default function RangePickerPopup({ onClose, onDateChange }: RangePickerP
       return;
     }
     onDateChange(startDate, endDate);
-    setStartDate(startDate);
-    setEndDate(endDate);
-    handleClose();
+    onClose();
   };
 
   const handleStartDateClick = () => {
@@ -47,26 +39,14 @@ export default function RangePickerPopup({ onClose, onDateChange }: RangePickerP
     setIsStartDatePickerOpen(false);
   };
 
-  useEffect(() => {
-    setIsVisible(true);
-  }, []);
-
   return (
-      <div
-          className={`z-[999] w-full min-h-screen fixed top-0 left-0 flex justify-center items-center select-none transition-opacity duration-200 ${isVisible ? "opacity-100" : "opacity-0"}`}
+      <GenericPopup
+          title="Wybierz zakres dat"
+          onClose={onClose}
+          onConfirm={handleConfirm}
+          confirmText="Potwierdź"
       >
-        <div
-            className="absolute w-full h-full bg-[#818181] opacity-70 transition-opacity duration-300"
-            onClick={handleClose}
-        ></div>
-
-        <div
-            className={`bg-background border-[1px] border-[rgba(38,38,38,0.5)] px-8 py-10 rounded-[10px] z-10 transition-all duration-200 ease-in-out transform ${isVisible ? "scale-100 opacity-100" : "scale-90 opacity-0"}`}
-        >
-          <div className="mb-6">
-            <h2 className="text-2xl font-medium">Wybierz zakres dat</h2>
-          </div>
-
+        <div>
           <div className="py-1">
             <h3 className="text-md my-2 font-medium">Data Początkowa</h3>
             <input
@@ -106,11 +86,7 @@ export default function RangePickerPopup({ onClose, onDateChange }: RangePickerP
                 />
             )}
           </div>
-
-          <div className="mt-4">
-            <DarkButton text="Potwierdź" onClick={handleConfirm} />
-          </div>
         </div>
-      </div>
+      </GenericPopup>
   );
 }
