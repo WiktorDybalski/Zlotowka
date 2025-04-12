@@ -10,6 +10,7 @@ import { NextTransactionResponse } from "@/interfaces/dashboard/cards/NextTransa
 import TextNumberField from "@/components/dashboard/cards/generic/TextNumberField";
 import toast from "react-hot-toast";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
+import dayjs from "dayjs";
 
 export default function NextIncomeCard() {
   const [nextIncome, setNextIncome] = useState<NextTransactionResponse | null>(
@@ -47,7 +48,7 @@ export default function NextIncomeCard() {
       bottom={
         <TextNumberField
           text={nextIncome.transactionName}
-          number={nextIncome.date}
+          number={dayjs(nextIncome.date).format("DD-MM-YYYY")}
         />
       }
     />

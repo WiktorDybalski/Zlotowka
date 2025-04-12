@@ -56,18 +56,18 @@ const AccountField = ({
   avatar,
   onClick = () => {},
 }: AccountFieldProps) => (
-  <div className="grid grid-cols-[1fr_80px] xl:grid-cols-[1fr_1fr_1fr] w-full py-4 border-t-2 border-dashed border-neutral-200 last:border-b-2">
-    <div className="flex justify-left w-full  items-center">
+  <div className="grid grid-cols-[1fr_80px]  sm:grid-cols-[1fr_1fr_1fr] w-full py-4 border-t-2 border-dashed border-neutral-200 last:border-b-2">
+    <div className="flex justify-left sm:row-start-1 w-full  items-center">
       <h3 className="text-md xl:text-lg">{text}</h3>
     </div>
-    <div className="flex row-start-2 justify-left xl:justify-center items-center">
+    <div className="flex row-start-2 sm:row-start-1 justify-left xl:justify-center items-center">
       {avatar && <div>{avatar}</div>}
       {value && (
         <span className="text-neutral-600 text-md xl:text-lg font-lato">{value}</span>
       )}
     </div>
-    <div className="flex  justify-end row-start-1 row-end-3 items-center item">
-      <div className="w-18 xl:w-28 h-10">
+    <div className="flex  justify-end row-start-1 row-end-3 sm:row-end-1 items-center item">
+      <div className="w-18 sm:w-28 h-10">
         <DarkButton text={"Edytuj"} onClick={onClick} />
       </div>
     </div>
@@ -87,7 +87,7 @@ export default function Settings() {
       <div>
         <h1 className="text-4xl">Ustawienia</h1>
       </div>
-      <div className="flex flex-col gap-y-2 xl:gap-x-6 mt-8">
+      <div className="flex flex-col sm:flex-row gap-y-2 sm:gap-x-6 mt-8">
         {navLinks.map((link) => (
           <div
             key={link}
@@ -115,11 +115,11 @@ export default function Settings() {
       </GenericCard>
 
       <GenericCard className="mt-10 max-w-3xl p-6" id={"Preferencje"}>
-        <h2 className="text-2xl xl:text-3xl">Preferencje</h2>
+        <h2 className="text-2xl md:text-3xl">Preferencje</h2>
         <div className="mt-4">
           <div className="flex justify-between items-center">
-            <h4 className="text-md xl:text-lg">Ciemny motyw</h4>
-            <div className="w-22 xl:w-28 h-10">
+            <h4 className="text-md md:text-lg">Ciemny motyw</h4>
+            <div className="w-22 sm:w-28 h-10">
               <DarkButton
                 className={`${
                   darkMode
@@ -135,11 +135,11 @@ export default function Settings() {
       </GenericCard>
 
       <GenericCard className="mt-10 max-w-3xl p-6" id={"Powiadomienia"}>
-        <h2 className="text-2xl xl:text-3xl">Powiadomienia</h2>
+        <h2 className="text-2xl md:text-3xl">Powiadomienia</h2>
         <div className="mt-4">
           <div className="flex justify-between items-center border-t-2 border-dashed border-neutral-200 py-4">
-            <h4 className="text-md xl:text-lg">Na email</h4>
-            <div className="w-22 xl:w-28 h-10">
+            <h4 className="text-md md:text-lg">Na email</h4>
+            <div className="w-22 sm:w-28 h-10">
               <DarkButton
                 className={`${
                   darkMode
@@ -152,8 +152,8 @@ export default function Settings() {
             </div>
           </div>
           <div className="flex justify-between items-center border-y-2 border-dashed border-neutral-200 py-4">
-            <h4 className="text-md xl:text-lg">Na telefon</h4>
-            <div className="w-22 xl:w-28 h-10">
+            <h4 className="text-md md:text-lg">Na telefon</h4>
+            <div className="w-22 sm:w-28 h-10">
               <DarkButton
                 className={`${
                   darkMode
