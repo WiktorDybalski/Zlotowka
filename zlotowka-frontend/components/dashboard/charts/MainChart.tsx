@@ -55,12 +55,11 @@ export function MainChart() {
   const handleDateChange = (newStartDate: Dayjs, newEndDate: Dayjs) => {
     setStartDate(newStartDate);
     setEndDate(newEndDate);
-    fetchData(newStartDate, newEndDate);
   };
 
   useEffect(() => {
     fetchData(startDate, endDate);
-  }, []);
+  }, [startDate, endDate]);
 
   useEffect(() => {
     const updatePadding = () => {

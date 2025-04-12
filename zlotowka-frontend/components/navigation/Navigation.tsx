@@ -10,7 +10,7 @@ export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const navLinks: string[] = ["Dashboard", "Transakcje", "Marzenia"];
   const baseClasses =
-    "w-full flex flex-col justify-center px-8 bg-accent transition-all duration-300 rounded-b-lg z-[999]";
+    "w-full flex flex-col justify-center px-8 bg-accent transition-all duration-300 xl:rounded-b-lg z-[999]";
   const mobileClasses = isOpen
     ? "h-[100dvh] pb-6 absolute top-0 left-0"
     : "h-20";
