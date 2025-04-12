@@ -19,6 +19,7 @@ import DarkButton from "@/components/DarkButton";
 import RangePickerPopup from "@/components/dashboard/charts/RangePickerPopup";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import toast from "react-hot-toast";
+import dayjs, {Dayjs} from "dayjs";
 
 const chartConfig = {
   value: {
@@ -26,6 +27,7 @@ const chartConfig = {
     color: "#262626",
   },
 } satisfies ChartConfig;
+
 
 export function MainChart() {
   const [padding, setPadding] = useState<{ left: number; right: number }>({
@@ -35,26 +37,30 @@ export function MainChart() {
   const [chartData, setChartData] = useState(null);
   const [showRangePicker, setShowRangePicker] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [startDate, setStartDate] = useState<Dayjs>(dayjs().subtract(30, "day"));
+  const [endDate, setEndDate] = useState<Dayjs>(dayjs());
+
+  const fetchData = async (startDate: Dayjs, endDate: Dayjs) => {
+    setIsLoading(true);
+    try {
+      const response = await DashboardService.getMainChartData(1, startDate.format("YYYY-MM-DD"), endDate.format("YYYY-MM-DD"));
+      setChartData(response);
+    } catch (err) {
+      toast.error("Failed to fetch main chart: " + err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDateChange = (newStartDate: Dayjs, newEndDate: Dayjs) => {
+    setStartDate(newStartDate);
+    setEndDate(newEndDate);
+    fetchData(newStartDate, newEndDate);
+  };
 
   useEffect(() => {
-    DashboardService.getMainChartData(
-      1,
-      "2025-03-03",
-      "2028-04-18",
-    )
-      .then(response => {
-        setChartData(response);
-
-      })
-      .catch((err) => {
-        toast.error("Failed to fetch main chart: " + err);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+    fetchData(startDate, endDate);
   }, []);
-
-  console.log(chartData);
 
   useEffect(() => {
     const updatePadding = () => {
@@ -82,7 +88,10 @@ export function MainChart() {
   return (
     <>
       {showRangePicker && (
-        <RangePickerPopup onClose={() => setShowRangePicker(false)} />
+          <RangePickerPopup
+              onClose={() => setShowRangePicker(false)}
+              onDateChange={handleDateChange}
+          />
       )}
       <Card className="flex flex-col w-full h-full bg-transparent z-10 border-none">
         <CardHeader className="flex justify-between items-center">

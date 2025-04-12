@@ -47,8 +47,8 @@ export default function Dashboard() {
         />
       )}
 
-      <div className="relative w-full min-h-screen grid px-16 py-8 grid-cols-1 lg:px-16 lg:grid-rows-[200px_600px_450px_auto] lg:grid-cols-3 gap-6 2xl:px-20">
-        <div className="absolute top-8 right-5 2xl:top-8 2xl:right-5 hover:cursor-pointer">
+      <div className="relative w-full min-h-screen grid px-6 py-12 grid-cols-1 lg:px-16 lg:py-8 lg:grid-rows-[200px_600px_450px_auto] lg:grid-cols-3 gap-6 2xl:px-20">
+        <div className="absolute top-4 right-5 lg:top-8 2xl:right-5 hover:cursor-pointer">
           <span
             className="material-symbols"
             onClick={() => setShowPopup(!showPopup)}

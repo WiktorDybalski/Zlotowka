@@ -25,7 +25,7 @@ export default function DatePicker({
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pl">
       {isOpen && (
         <DateCalendar
-          className="border-border-color border-[1px] rounded-[5px] min-w-76 absolute z-[9999] bg-background"
+          className="border-border-color border-[1px] rounded-[5px] min-w-76 absolute z-[9999] bg-background overflow-y-auto"
           value={currentDate}
           onChange={(newValue) => {
             setDate(newValue);
@@ -33,6 +33,7 @@ export default function DatePicker({
           }}
           sx={{
             width: 300,
+            overflow: "auto",
             ".Mui-selected": {
               backgroundColor: "#262626 !important",
               "&:focus": {
