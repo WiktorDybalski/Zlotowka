@@ -32,7 +32,7 @@ export default function FormInput({
             htmlFor={id}
             className={clsx(
               "text-sm font-medium",
-              errorMessage ? "text-error" : "text-gray-700" // Zmiana koloru w zależności od błędu
+              errorMessage ? "text-error" : "text-gray-700", // Zmiana koloru w zależności od błędu
             )}
           >
             {label}
@@ -43,7 +43,7 @@ export default function FormInput({
             <div
               className={clsx(
                 "absolute left-3 flex items-center h-full", // Wyśrodkowanie elementu
-                errorMessage ? "text-error" : "text-gray-500" // Zmiana koloru w zależności od błędu
+                errorMessage ? "text-error" : "text-gray-500", // Zmiana koloru w zależności od błędu
               )}
             >
               {inputLeftElement}
@@ -61,7 +61,7 @@ export default function FormInput({
               errorMessage
                 ? "border-error focus:ring-error"
                 : "border-lightAccent focus:ring-accent",
-              className
+              className,
             )}
           />
         </div>
