@@ -22,7 +22,7 @@ import toast from "react-hot-toast";
 import dayjs, {Dayjs} from "dayjs";
 
 const chartConfig = {
-  value: {
+  amount: {
     label: "Stan konta",
     color: "#262626",
   },
@@ -130,10 +130,10 @@ export function MainChart() {
                 padding={padding}
                 className="font-lato"
               />
-              <YAxis axisLine={false} tickLine={false} tickMargin={16} />
+              <YAxis axisLine={false} tickLine={false} tickMargin={16} className="font-lato" />
               <ChartTooltip
                 cursor={false}
-                content={<ChartTooltipContent hideLabel />}
+                content={<ChartTooltipContent className="font-lato" />}
               />
               <Line
                 dataKey="amount"
