@@ -14,9 +14,9 @@ const CardService = {
 
   getMonthEstimatedBalance: async (userId: number) => {
     try {
-      console.log(`${API_HOST}/general-transactions/estimated-balance/${userId}`)
+      console.log(`${API_HOST}/general-transactions/estimated-balance/${userId}`);
 
-      
+      console.log("nie wierze");
       const response = await fetch(
         `${API_HOST}/general-transactions/estimated-balance/${userId}`,
       );
