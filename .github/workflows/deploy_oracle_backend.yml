@@ -2,11 +2,8 @@ name: Deploy and Build Docker Image on Oracle Cloud VM
 on:
   push:
     branches:
-      - small-fixes
       - main
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
