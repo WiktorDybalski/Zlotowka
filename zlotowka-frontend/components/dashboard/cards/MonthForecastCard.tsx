@@ -27,7 +27,6 @@ export default function MonthForecastCard() {
     CardService.getMonthEstimatedBalance(1)
       .then((response) => {
         setEstimatedBalance(response.estimatedBalance);
-        console.log(response);
       })
       .catch((err) => {
         toast.error("Failed to fetch estimated balance: " + err);
