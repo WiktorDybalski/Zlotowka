@@ -4,7 +4,7 @@ const CardService = {
   getCurrentBalance: async (userId: number) => {
     try {
       const response = await fetch(
-        `http://${API_HOST}/general-transactions/current-balance/${userId}`,
+        `https://${API_HOST}/general-transactions/current-balance/${userId}`,
       );
       return await response.json();
     } catch (error) {
@@ -14,9 +14,9 @@ const CardService = {
 
   getMonthEstimatedBalance: async (userId: number) => {
     try {
-      console.log(`http://${API_HOST}/general-transactions/estimated-balance/${userId}`);
+      console.log(`https://${API_HOST}/general-transactions/estimated-balance/${userId}`);
       const response = await fetch(
-        `http://${API_HOST}/general-transactions/estimated-balance/${userId}`,
+        `https://${API_HOST}/general-transactions/estimated-balance/${userId}`,
       );
       return await response.json();
     } catch (error) {
@@ -27,7 +27,7 @@ const CardService = {
   getNextTransaction: async (userId: number, isIncome: boolean) => {
     try {
       const response = await fetch(
-        `http://${API_HOST}/general-transactions/next-transaction/${userId}?isIncome=${isIncome}`,
+        `https://${API_HOST}/general-transactions/next-transaction/${userId}?isIncome=${isIncome}`,
       );
       return await response.json();
     } catch (error) {
