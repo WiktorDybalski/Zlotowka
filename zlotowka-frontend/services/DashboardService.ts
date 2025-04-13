@@ -2,6 +2,7 @@ import { API_HOST } from "@/lib/config";
 
 const Dashboard = {
   getMainChartData: async (userId: number, startDate: string, endDate: string) => {
+    
     try {
       const response = await fetch(`http://${API_HOST}/general-transactions/plot-data`, {
         method: "POST",
