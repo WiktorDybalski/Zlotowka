@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - small-fixes
   workflow_dispatch:
 
 jobs:
