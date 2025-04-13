@@ -1,0 +1,43 @@
+name: Deploy and Build Docker Image on Oracle Cloud VM
+on:
+  push:
+    branches:
+      - small-fixes
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.OCI_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.OCI_VM_PUBLIC_IP }} >> ~/.ssh/known_hosts
+
+      - name: Copy files to Oracle Cloud VM
+        run: |
+          rsync -avz -e "ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no" \
+            ./ ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_VM_PUBLIC_IP }}:/home/ubuntu/zlotowka
+
+      - name: Build and Run Docker container on Oracle Cloud VM
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no \
+            ${{ secrets.OCI_USERNAME }}@${{ secrets.OCI_VM_PUBLIC_IP }} << 'EOF'
+            sudo docker stop zlotowka-backend || true
+            sudo docker rm zlotowka-backend || true
+            sudo usermod -aG docker $USER
+            sudo systemctl start docker
+            cd /home/ubuntu/zlotowka/zlotowka-backend
+            sudo docker build -t zlotowka-backend .
+            sudo docker run -d -p 8080:8080 -v /app/config:/app/config --name zlotowka-backend zlotowka-backend --spring.config.location=file:/app/config/application.properties
+          EOF
+
+
