@@ -36,7 +36,6 @@ export default function MonthForecastCard() {
       });
   }, []);
 
-  console.log(estimatedBalance);
   if (isLoading || !estimatedBalance) {
     return <LoadingSpinner />;
   }

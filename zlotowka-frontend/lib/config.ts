@@ -1,1 +1,1 @@
-export const API_HOST = process.env.NEXT_PUBLIC_API_ORACLE_BACKEND_HOST || process.env.NEXT_PUBLIC_API_BACKEND_HOST;
+export const API_HOST = process.env.NEXT_PUBLIC_API_ORACLE_BACKEND_HOST;
