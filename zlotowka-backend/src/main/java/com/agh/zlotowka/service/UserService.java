@@ -12,6 +12,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import com.agh.zlotowka.dto.RegistrationRequest;
+import jakarta.persistence.EntityExistsException;
+import java.time.LocalDate;
+
+
+
 
 import java.math.BigDecimal;
 
@@ -22,6 +29,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final CurrencyService currencyService;
     private final CurrencyRepository currencyRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public User createUser() {
@@ -44,6 +52,7 @@ public class UserService {
                 .firstName("Kamilek")
                 .lastName("Rudy")
                 .email("kamilek.pl")
+                .password(passwordEncoder.encode("password123"))
                 .currency(currency1)
                 .currentBudget(new BigDecimal(1000))
                 .darkMode(false)
@@ -53,6 +62,7 @@ public class UserService {
                 .firstName("Jan")
                 .lastName("Nowak")
                 .email("gmail.com")
+                .password(passwordEncoder.encode("password123"))
                 .currency(currency2)
                 .currentBudget(new BigDecimal(2000))
                 .darkMode(false)
@@ -61,6 +71,28 @@ public class UserService {
         userRepository.save(user1);
         userRepository.save(user2);
         return user1;
+    }
+
+    @Transactional
+    public User registerUser(RegistrationRequest request) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new EntityExistsException("User with the given email address already exists");
+        }
+
+        Currency selectedCurrency = currencyRepository.findByIsoCode(request.getCurrencyIsoCode())
+                .orElseThrow(() -> new EntityNotFoundException("Currency not found: " + request.getCurrencyIsoCode()));
+
+
+        User newUser = User.builder()
+                .firstName(request.getUsername())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .dateOfJoining(LocalDate.now())
+                .currentBudget(new BigDecimal(0))
+                .currency(selectedCurrency)
+                .build();
+
+        return userRepository.save(newUser);
     }
 
     public void removeTransactionAmountFromBudget(int currencyId, BigDecimal amount, boolean isIncome, User user) {
