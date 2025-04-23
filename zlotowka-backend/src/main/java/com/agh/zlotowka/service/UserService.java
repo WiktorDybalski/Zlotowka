@@ -53,9 +53,13 @@ public class UserService {
                 .lastName("Rudy")
                 .email("kamilek.pl")
                 .password(passwordEncoder.encode("password123"))
+                .phoneNumber("")
+                .dateOfJoining(LocalDate.now())
                 .currency(currency1)
                 .currentBudget(new BigDecimal(1000))
                 .darkMode(false)
+                .notificationsByEmail(false)
+                .notificationsByPhone(false)
                 .build();
 
         User user2 = User.builder()
@@ -63,9 +67,13 @@ public class UserService {
                 .lastName("Nowak")
                 .email("gmail.com")
                 .password(passwordEncoder.encode("password123"))
+                .phoneNumber("")
+                .dateOfJoining(LocalDate.now())
                 .currency(currency2)
                 .currentBudget(new BigDecimal(2000))
                 .darkMode(false)
+                .notificationsByEmail(false)
+                .notificationsByPhone(false)
                 .build();
 
         userRepository.save(user1);
@@ -79,17 +87,22 @@ public class UserService {
             throw new IllegalArgumentException("User with the given email address already exists");
         }
 
-        Currency selectedCurrency = currencyRepository.findByIsoCode(request.getCurrencyIsoCode())
-                .orElseThrow(() -> new EntityNotFoundException("Currency not found: " + request.getCurrencyIsoCode()));
+        Currency defaultCurrency = currencyRepository.findByIsoCode("PLN")
+                .orElseThrow(() -> new EntityNotFoundException("Default currency PLN not found"));
 
 
         User newUser = User.builder()
-                .firstName(request.getUsername())
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
+                .phoneNumber("")
                 .dateOfJoining(LocalDate.now())
                 .currentBudget(new BigDecimal(0))
-                .currency(selectedCurrency)
+                .currency(defaultCurrency)
+                .darkMode(false)
+                .notificationsByEmail(false)
+                .notificationsByPhone(false)
                 .build();
 
         return userRepository.save(newUser);
