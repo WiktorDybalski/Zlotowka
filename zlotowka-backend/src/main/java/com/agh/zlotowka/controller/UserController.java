@@ -7,6 +7,10 @@ import com.agh.zlotowka.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import jakarta.persistence.EntityNotFoundException;
+
+
 
 @RestController
 @RequiredArgsConstructor
@@ -17,9 +21,12 @@ public class UserController {
     private final UserRepository userRepository;
 
     @GetMapping("/me")
-    public User getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+    public ResponseEntity<User> getCurrentUser(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        User u = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        return ResponseEntity.ok(u);
     }
 
     @PostMapping

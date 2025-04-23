@@ -1,5 +1,6 @@
 package com.agh.zlotowka.controller;
 
+import com.agh.zlotowka.dto.LoginRequest;
 import com.agh.zlotowka.dto.RegistrationRequest;
 import com.agh.zlotowka.security.JWTUtil;
 import com.agh.zlotowka.security.CustomUserDetails;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -36,12 +36,13 @@ public class AuthController {
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
             String token = jwtUtil.generateToken(userDetails);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("token", token);
-            response.put("message", "Login completed successfully!");
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(Map.of(
+                    "token", token,
+                    "message", "Login completed successfully!"
+            ));
         } catch (BadCredentialsException ex) {
-            return ResponseEntity.status(401).body("Incorrect email or password");
+            return ResponseEntity.status(401)
+                    .body(Map.of("error", "Incorrect email or password"));
         }
     }
 
@@ -57,22 +58,13 @@ public class AuthController {
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
             String token = jwtUtil.generateToken(userDetails);
 
-            Map<String, Object> response = new HashMap<>();
-            response.put("token", token);
-            response.put("message", "Registration completed successfully!");
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(400).body(e.getMessage());
+            return ResponseEntity.ok(Map.of(
+                    "token", token,
+                    "message", "Registration completed successfully!"
+            ));
+        } catch (Exception ex) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", ex.getMessage()));
         }
     }
-}
-
-// DTO do logowania
-class LoginRequest {
-    private String email;
-    private String password;
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
 }

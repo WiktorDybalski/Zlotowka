@@ -76,7 +76,7 @@ public class UserService {
     @Transactional
     public User registerUser(RegistrationRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new EntityExistsException("User with the given email address already exists");
+            throw new IllegalArgumentException("User with the given email address already exists");
         }
 
         Currency selectedCurrency = currencyRepository.findByIsoCode(request.getCurrencyIsoCode())
