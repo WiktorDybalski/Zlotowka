@@ -1,38 +1,42 @@
-import { API_HOST } from "@/lib/config";
+"use client";
 
-const CardService = {
-  getCurrentBalance: async (userId: number) => {
-    try {
-      const response = await fetch(
-        `${API_HOST}/general-transactions/current-balance/${userId}`,
-      );
-      return await response.json();
-    } catch (error) {
-      console.log(error);
-    }
-  },
+import { useLogin } from "@/components/providers/LoginProvider";
+import sendToBackend, { getAuthHeader } from "@/lib/sendToBackend";
 
-  getMonthEstimatedBalance: async (userId: number) => {
-    try {
-      const response = await fetch(
-        `${API_HOST}/general-transactions/estimated-balance/${userId}`,
-      );
-      return await response.json();
-    } catch (error) {
-      console.log(error);
-    }
-  },
+export function useCardService() {
+  const { token } = useLogin();
 
-  getNextTransaction: async (userId: number, isIncome: boolean) => {
-    try {
-      const response = await fetch(
-        `${API_HOST}/general-transactions/next-transaction/${userId}?isIncome=${isIncome}`,
-      );
-      return await response.json();
-    } catch (error) {
-      console.log(error);
-    }
-  },
-};
+  if (!token) throw new Error("User Logged Out (Token not provided)!" + token);
 
-export default CardService;
+  const withAuthHeader = getAuthHeader(token);
+
+  async function getCurrentBalance(userId: number) {
+    return await sendToBackend(
+      `general-transactions/current-balance/${userId}`,
+      withAuthHeader,
+      "Failed to fetch current balance"
+    );
+  }
+
+  async function getMonthEstimatedBalance(userId: number) {
+    return await sendToBackend(
+      `general-transactions/estimated-balance/${userId}`,
+      withAuthHeader,
+      "Failed to fetch estimated balance"
+    );
+  }
+
+  async function getNextTransaction(userId: number, isIncome: boolean) {
+    return await sendToBackend(
+      `general-transactions/next-transaction/${userId}?isIncome=${isIncome}`,
+      withAuthHeader,
+      "Failed to fetch next transaction"
+    );
+  }
+
+  return {
+    getCurrentBalance,
+    getMonthEstimatedBalance,
+    getNextTransaction,
+  };
+}

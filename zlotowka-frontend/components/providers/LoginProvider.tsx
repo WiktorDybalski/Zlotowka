@@ -24,11 +24,17 @@ interface LoginProviderProps {
 const localStorageTokenField = "loginToken";
 
 export function LoginProvider({ children }: LoginProviderProps) {
-  const [token, setToken] = useState<string | null>(
-    typeof window !== "undefined"
-      ? localStorage.getItem(localStorageTokenField)
-      : null
-  );
+  const [token, setToken] = useState<string | null>(null);
+  const [hasMounted, setHasMounted] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedToken = localStorage.getItem(localStorageTokenField);
+      setToken(storedToken);
+      setHasMounted(true);
+      console.log("Loaded token: " + storedToken);
+    }
+  }, []);
 
   useEffect(() => {
     // TODO: remove this
@@ -48,6 +54,8 @@ export function LoginProvider({ children }: LoginProviderProps) {
   };
 
   const isLogged = () => !!token;
+
+  if (!hasMounted) return null;
 
   return (
     <AuthContext.Provider value={{ token, login, logout, isLogged }}>

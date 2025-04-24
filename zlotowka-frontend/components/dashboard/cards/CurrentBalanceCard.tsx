@@ -2,7 +2,7 @@
 
 import ThreeElementsCard from "@/components/dashboard/cards/generic/ThreeElementsCard";
 import CardText from "@/components/dashboard/cards/generic/CardText";
-import CardService from "@/services/CardService";
+import { useCardService } from "@/services/CardService";
 import { useEffect, useState } from "react";
 import formatMoney from "@/utils/formatMoney";
 import CardNumber from "@/components/dashboard/cards/generic/CardNumber";
@@ -14,6 +14,7 @@ import TextNumberField from "@/components/dashboard/cards/generic/TextNumberFiel
 export default function CurrentBalanceCard() {
   const [currentBalance, setCurrentBalance] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const CardService = useCardService();
 
   useEffect(() => {
     CardService.getCurrentBalance(1)
@@ -21,7 +22,7 @@ export default function CurrentBalanceCard() {
         setCurrentBalance(response.currentBalance);
       })
       .catch((err) => {
-        toast.error("Failed to fetch current balance: " + err);
+        toast.error(err);
       })
       .finally(() => {
         setIsLoading(false);
