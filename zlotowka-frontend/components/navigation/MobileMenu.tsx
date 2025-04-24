@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import NavigationLinks from "@/components/navigation/NavigationLinks";
-import SettingsLink from "@/components/navigation/SettingsLink";
+import BottomLinks from "@/components/navigation/BottomLinks";
 import { MenuProps } from "@/interfaces/navigation/MenuProps";
 import Divider from "@/components/navigation/Divider";
 
@@ -44,7 +44,7 @@ export default function MobileMenu({ isOpen, navLinks, onLinkClick }: MenuProps)
                     transition: { delay: 0.6 },
                   }}
               >
-                <SettingsLink onLinkClick={onLinkClick} />
+                <BottomLinks onLinkClick={onLinkClick} />
               </motion.div>
             </motion.div>
         )}
