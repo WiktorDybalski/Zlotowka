@@ -1,6 +1,8 @@
 import localFont from "next/font/local";
 import { Raleway, Lato } from "next/font/google";
+import ReactQuerryProvider from "@/components/providers/react-querry";
 import "./globals.css";
+import { LoginProvider } from "@/components/providers/LoginProvider";
 
 const raleway = Raleway({
   weight: ["400", "500", "600", "700"],
@@ -34,7 +36,9 @@ export default function RootLayout({
       <body
         className={`${raleway.variable} ${lato.variable} ${materialSymbols.variable} font-(family-name:--font-raleway) bg-background`}
       >
-        {children}
+        <ReactQuerryProvider>
+          <LoginProvider>{children}</LoginProvider>
+        </ReactQuerryProvider>
       </body>
     </html>
   );
