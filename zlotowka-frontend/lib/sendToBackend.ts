@@ -1,3 +1,5 @@
+"use client";
+
 import { API_HOST } from "@/lib/config";
 
 export default async function sendToBackend(
@@ -13,7 +15,7 @@ export default async function sendToBackend(
     }
     return await response.json();
   } catch (error) {
-    console.error("Error fetching data:", error);
+    console.log("Error fetching data:", error);
     throw error;
   }
 }

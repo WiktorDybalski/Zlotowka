@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/components/providers/LoginProvider";
+import { useAuth } from "@/components/providers/AuthProvider";
 import sendToBackend, { getAuthHeader } from "@/lib/sendToBackend";
 
 export function useCardService() {

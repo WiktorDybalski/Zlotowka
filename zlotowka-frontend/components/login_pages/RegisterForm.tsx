@@ -23,6 +23,7 @@ interface RegistrationFormProps {
   inputs: FormInputData[]; // List of data for FormInput
   registerButtonText: string;
   links?: LinkData[]; // List of links to display
+  disabled?: boolean; // Optional prop to disable the button
 }
 
 const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -33,6 +34,7 @@ export default function RegistrationForm({
   inputs,
   registerButtonText,
   links,
+  disabled = false,
 }: RegistrationFormProps) {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -95,14 +97,14 @@ export default function RegistrationForm({
           />
         ))}
 
-        <RegisterButton variant="accent" type="submit">
+        <RegisterButton variant="accent" type="submit" disabled={disabled}>
           {registerButtonText}
         </RegisterButton>
 
         {/* Links */}
         {links &&
           links.map((link, index) => (
-            <LightLink key={index} href={link.href}>
+            <LightLink key={index} href={link.href} disabled={disabled}>
               {link.text}
             </LightLink>
           ))}

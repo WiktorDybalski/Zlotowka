@@ -34,25 +34,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const storedToken = localStorage.getItem(localStorageTokenField);
       setToken(storedToken);
       setHasMounted(true);
-      console.log("Loaded token: " + storedToken);
+      console.log("Loaded token: " + storedToken); //TODO: remove
     }
   }, []);
 
   useEffect(() => {
     // TODO: remove this
-    console.log("new topken" + token);
+    console.log("new topken " + token);
   }, [token]);
 
   const setLogin = (newToken: string) => {
     setToken(newToken);
     localStorage.setItem(localStorageTokenField, newToken);
-    alert("Zalogowano pomyślnie!" + newToken); // TODO: remove this alert
   };
 
   const setLogout = () => {
     setToken(null);
     localStorage.removeItem(localStorageTokenField);
-    alert("Wylogowano pomyślnie!"); // TODO: remove this alert
   };
 
   const isLogged = () => !!token;
@@ -82,6 +80,7 @@ export function EnterWithAuth({ children }: WithAuthProps) {
   const { isLogged } = useAuth();
 
   if (!isLogged()) {
+    console.log("User not logged in, auto redirect to login page...");
     redirect(routes.login.pathname);
     return null;
   }
@@ -93,6 +92,7 @@ export function RedirectWhenLogged({ children }: WithAuthProps) {
   const { isLogged } = useAuth();
 
   if (isLogged()) {
+    console.log("User already logged in, auto redirect to dashboard...");
     redirect(routes.dashboard.pathname);
     return null;
   }

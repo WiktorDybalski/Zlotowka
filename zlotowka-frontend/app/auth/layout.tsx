@@ -1,6 +1,6 @@
 import ReturnButton from "@/components/general/ReturnButton";
 import Waves from "@/components/main_page/AbsoluteWaves";
-import { RedirectWhenLogged } from "@/components/providers/LoginProvider";
+import { RedirectWhenLogged } from "@/components/providers/AuthProvider";
 import routes from "@/routes";
 
 export default function LoginLayout({
