@@ -10,20 +10,20 @@ import React, {
 
 interface AuthContextType {
   token: string | null;
-  login: (token: string) => void;
-  logout: () => void;
+  setLogin: (token: string) => void;
+  setLogout: () => void;
   isLogged: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-interface LoginProviderProps {
+interface AuthProviderProps {
   children: ReactNode;
 }
 
 const localStorageTokenField = "loginToken";
 
-export function LoginProvider({ children }: LoginProviderProps) {
+export function AuthProvider({ children }: AuthProviderProps) {
   const [token, setToken] = useState<string | null>(null);
   const [hasMounted, setHasMounted] = useState(false);
 
@@ -41,13 +41,13 @@ export function LoginProvider({ children }: LoginProviderProps) {
     console.log("new topken" + token);
   }, [token]);
 
-  const login = (newToken: string) => {
+  const setLogin = (newToken: string) => {
     setToken(newToken);
     localStorage.setItem(localStorageTokenField, newToken);
     alert("Zalogowano pomyślnie!" + newToken); // TODO: remove this alert
   };
 
-  const logout = () => {
+  const setLogout = () => {
     setToken(null);
     localStorage.removeItem(localStorageTokenField);
     alert("Wylogowano pomyślnie!"); // TODO: remove this alert
@@ -58,13 +58,13 @@ export function LoginProvider({ children }: LoginProviderProps) {
   if (!hasMounted) return null;
 
   return (
-    <AuthContext.Provider value={{ token, login, logout, isLogged }}>
+    <AuthContext.Provider value={{ token, setLogin, setLogout, isLogged }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useLogin(): AuthContextType {
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error("useLogin has to be used within a LoginProvider");

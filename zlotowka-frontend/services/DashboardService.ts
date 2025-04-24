@@ -1,10 +1,10 @@
 "use client";
 
-import { useLogin } from "@/components/providers/LoginProvider";
+import { useAuth } from "@/components/providers/LoginProvider";
 import sendToBackend, { getAuthHeader } from "@/lib/sendToBackend";
 
 export function useDashboardService() {
-  const { token } = useLogin();
+  const { token } = useAuth();
 
   if (!token) throw new Error("User Logged Out (Token not provided)!");
 
