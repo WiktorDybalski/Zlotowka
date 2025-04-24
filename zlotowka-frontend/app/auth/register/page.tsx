@@ -4,7 +4,8 @@ import RegistrationForm from "@/components/login_pages/RegisterForm";
 import routes from "@/routes";
 
 interface FormData {
-  username: string;
+  firstName: string;
+  lastName: string;
   email: string;
   password: string;
 }
@@ -20,18 +21,10 @@ export default function RegisterPage() {
     <RegistrationForm
       title="Zarejestruj się"
       inputs={[
-        { id: "username", placeholder: "Nazwa użytkownika" },
-        {
-          id: "email",
-          placeholder: "Email",
-          inputLeftElement: "@",
-        },
-        {
-          id: "password",
-          type: "password",
-          placeholder: "Hasło",
-          inputLeftElement: "#",
-        },
+        { id: "firstName", placeholder: "Imię" },
+        { id: "lastName", placeholder: "Nazwisko" },
+        { id: "email", placeholder: "Email" },
+        { id: "password", type: "password", placeholder: "Hasło" },
       ]}
       links={[
         { href: routes.login.pathname, text: "Masz już konto? Zaloguj się!" },
