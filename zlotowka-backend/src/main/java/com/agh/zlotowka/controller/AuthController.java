@@ -38,7 +38,8 @@ public class AuthController {
 
             return ResponseEntity.ok(Map.of(
                     "token", token,
-                    "message", "Login completed successfully!"
+                    "message", "Login completed successfully!",
+                    "user", userDetails.getUser()
             ));
         } catch (BadCredentialsException ex) {
             return ResponseEntity.status(401)
@@ -51,7 +52,6 @@ public class AuthController {
         try {
             var newUser = userService.registerUser(registrationRequest);
 
-            // automatyczne logowanie po rejestracji
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(newUser.getEmail(), registrationRequest.getPassword())
             );
@@ -60,7 +60,8 @@ public class AuthController {
 
             return ResponseEntity.ok(Map.of(
                     "token", token,
-                    "message", "Registration completed successfully!"
+                    "message", "Registration completed successfully!",
+                    "user", userDetails.getUser()
             ));
         } catch (Exception ex) {
             return ResponseEntity.badRequest()
