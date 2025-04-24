@@ -83,6 +83,7 @@ export default function TransactionForm({
                 className={inputClass + " font-lato"}
                 type="text"
                 value={formData.date}
+                readOnly={true}
                 onChange={handleInputChange}
                 onClick={toggleDatePicker}
             />

@@ -14,7 +14,7 @@ export default function UserInfo() {
         />
       </div>
       <div>
-        <h3 className="text-xl">Kamil Rudny</h3>
+        <h3 className="text-xl ml-3 xl:ml-0">Kamil Rudny</h3>
         <h4 className="hidden xl:block text-neutral-400 text-xs">
           kamil.rudny@gmail.com
         </h4>
