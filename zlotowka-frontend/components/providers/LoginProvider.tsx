@@ -1,5 +1,7 @@
 "use client";
 
+import routes from "@/routes";
+import { redirect } from "next/navigation";
 import React, {
   createContext,
   useContext,
@@ -70,4 +72,30 @@ export function useAuth(): AuthContextType {
     throw new Error("useLogin has to be used within a LoginProvider");
   }
   return context;
+}
+
+interface WithAuthProps {
+  children: ReactNode;
+}
+
+export function EnterWithAuth({ children }: WithAuthProps) {
+  const { isLogged } = useAuth();
+
+  if (!isLogged()) {
+    redirect(routes.login.pathname);
+    return null;
+  }
+
+  return <>{children}</>;
+}
+
+export function RedirectWhenLogged({ children }: WithAuthProps) {
+  const { isLogged } = useAuth();
+
+  if (isLogged()) {
+    redirect(routes.dashboard.pathname);
+    return null;
+  }
+
+  return <>{children}</>;
 }

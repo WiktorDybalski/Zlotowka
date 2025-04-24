@@ -2,6 +2,7 @@
 
 import RegistrationForm from "@/components/login_pages/RegisterForm";
 import routes from "@/routes";
+import { redirect } from "next/navigation";
 
 interface FormData {
   firstName: string;
@@ -15,6 +16,7 @@ export default function RegisterPage() {
     formData as unknown as FormData; //for type checking, TS do not kill me
     console.log("Submitted data:", formData);
     alert("Submitted data:" + JSON.stringify(formData));
+    redirect(routes.dashboard.pathname);
   };
 
   return (

@@ -3,6 +3,7 @@
 import LoginForm from "@/components/login_pages/RegisterForm";
 import { useAuth } from "@/components/providers/LoginProvider";
 import routes from "@/routes";
+import { redirect } from "next/navigation";
 
 interface FormData {
   email: string;
@@ -17,10 +18,12 @@ export default function LoginPage() {
     console.log("Submitted data:", formData);
     Login.setLogin("fajny_token"); // TODO: !!!!!!!!!! replace with real token from backend
     alert("Submitted data:" + JSON.stringify(formData));
+    redirect(routes.dashboard.pathname);
   };
 
   return (
     <LoginForm
+      title="Zaloguj się"
       inputs={[
         { id: "email", placeholder: "Email" },
         { id: "password", type: "password", placeholder: "Hasło" },
