@@ -5,6 +5,8 @@ import com.agh.zlotowka.dto.RegistrationRequest;
 import com.agh.zlotowka.security.JWTUtil;
 import com.agh.zlotowka.security.CustomUserDetails;
 import com.agh.zlotowka.service.UserService;
+import com.agh.zlotowka.dto.UserResponse;
+import com.agh.zlotowka.model.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,11 +34,24 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
         );
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        User user = userDetails.getUser();
         String token = jwtUtil.generateToken(userDetails);
         return ResponseEntity.ok(Map.of(
                 "token", token,
                 "message", "Login completed successfully!",
-                "user", userDetails.getUser()
+                "user", new UserResponse(
+                        user.getUserId(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.getEmail(),
+                        user.getPhoneNumber(),
+                        user.getDateOfJoining(),
+                        user.getCurrentBudget(),
+                        user.getCurrency(),
+                        user.getDarkMode(),
+                        user.getNotificationsByEmail(),
+                        user.getNotificationsByPhone()
+                )
         ));
     }
 
@@ -47,11 +62,24 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(newUser.getEmail(), registrationRequest.password())
         );
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        User user = userDetails.getUser();
         String token = jwtUtil.generateToken(userDetails);
         return ResponseEntity.ok(Map.of(
                 "token", token,
                 "message", "Registration completed successfully!",
-                "user", userDetails.getUser()
+                "user", new UserResponse(
+                        user.getUserId(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.getEmail(),
+                        user.getPhoneNumber(),
+                        user.getDateOfJoining(),
+                        user.getCurrentBudget(),
+                        user.getCurrency(),
+                        user.getDarkMode(),
+                        user.getNotificationsByEmail(),
+                        user.getNotificationsByPhone()
+                )
         ));
     }
 }
