@@ -86,17 +86,19 @@ public class PlanService {
     
     
     private PlanDTO getPlanDTO(Plan plan) {
-        BigDecimal currentAmount = plan.getUser().getCurrentBudget();
+        BigDecimal currentAmount = calculateCurrentBudget(plan);
+
         return PlanDTO.builder()
                 .planId(plan.getPlanId())
                 .userId(plan.getUser().getUserId())
                 .name(plan.getName())
+                .date(plan.getDate())
                 .amount(plan.getRequiredAmount())
                 .currencyId(plan.getCurrency().getCurrencyId())
                 .description(plan.getDescription())
                 .completed(plan.getCompleted())
                 .subplansCompleted(plan.getSubplansCompleted())
-                .canBeCompleted(currentAmount.compareTo(plan.getUser().getCurrentBudget()) <= 0)
+                .canBeCompleted(currentAmount.compareTo(plan.getRequiredAmount()) >= 0)
                 .actualAmount(currentAmount)
                 .build();
     }
@@ -105,6 +107,10 @@ public class PlanService {
         if (plan.getCompleted()) return plan.getRequiredAmount();
         BigDecimal currentBudget = plan.getUser().getCurrentBudget();
         return currentBudget.add(subPlanRepository.getTotalSubPlanAmountCompleted(plan.getPlanId()));
+    }
+
+    private BigDecimal calculateRequiredAmount(Plan plan) {
+        return plan.getRequiredAmount().subtract(subPlanRepository.getTotalSubPlanAmount(plan.getPlanId()));
     }
 
     @Transactional
@@ -130,9 +136,16 @@ public class PlanService {
         Plan plan = planRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Plan with Id %d not found", id)));
 
+        if (plan.getCompleted())
+            throw new IllegalArgumentException("Plan is already completed");
+
+        BigDecimal currentAmount = calculateCurrentBudget(plan);
+        if (currentAmount.compareTo(plan.getRequiredAmount()) < 0)
+            throw new IllegalArgumentException("Plan cannot be completed, required amount not reached");
+
         plan.setCompleted(true);
         plan.setDate(LocalDate.now());
-        plan.getUser().setCurrentBudget(plan.getUser().getCurrentBudget().subtract(calculateCurrentBudget(plan)));
+        plan.getUser().setCurrentBudget(calculateRequiredAmount(plan));
         planRepository.save(plan);
         userRepository.save(plan.getUser());
         return getPlanDTO(plan);

@@ -5,10 +5,8 @@ import com.agh.zlotowka.dto.SubplanDTO;
 import com.agh.zlotowka.dto.SubplanRequest;
 import com.agh.zlotowka.model.Plan;
 import com.agh.zlotowka.model.Subplan;
-import com.agh.zlotowka.repository.CurrencyRepository;
 import com.agh.zlotowka.repository.PlanRepository;
 import com.agh.zlotowka.repository.SubPlanRepository;
-import com.agh.zlotowka.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +23,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SubplanService {
     private final PlanRepository planRepository;
-    private final UserRepository userRepository;
-    private final CurrencyRepository currencyRepository;
     private final SubPlanRepository subPlanRepository;
 
     @Transactional
