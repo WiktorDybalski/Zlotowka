@@ -3,7 +3,6 @@ package com.agh.zlotowka.controller;
 import com.agh.zlotowka.model.User;
 import com.agh.zlotowka.repository.UserRepository;
 import com.agh.zlotowka.security.CustomUserDetails;
-import com.agh.zlotowka.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +15,6 @@ import jakarta.persistence.EntityNotFoundException;
 @RequiredArgsConstructor
 @RequestMapping("/user")
 public class UserController {
-    private final UserService userService;
 
     private final UserRepository userRepository;
 
@@ -29,8 +27,4 @@ public class UserController {
         return ResponseEntity.ok(u);
     }
 
-    @PostMapping
-    public User createUser() {
-        return userService.createUser();
-    }
 }

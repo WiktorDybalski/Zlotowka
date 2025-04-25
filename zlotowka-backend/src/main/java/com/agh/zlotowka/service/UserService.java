@@ -32,56 +32,6 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public User createUser() {
-        Currency currency1 = Currency.builder()
-                .isoCode("PLN")
-                .build();
-
-        Currency currency2 = Currency.builder()
-                .isoCode("USD")
-                .build();
-
-        Currency currency3 = Currency.builder()
-                .isoCode("EUR")
-                .build();
-        currencyRepository.save(currency1);
-        currencyRepository.save(currency2);
-        currencyRepository.save(currency3);
-
-        User user1 = User.builder()
-                .firstName("Kamilek")
-                .lastName("Rudy")
-                .email("kamilek.pl")
-                .password(passwordEncoder.encode("password123"))
-                .phoneNumber("")
-                .dateOfJoining(LocalDate.now())
-                .currency(currency1)
-                .currentBudget(new BigDecimal(1000))
-                .darkMode(false)
-                .notificationsByEmail(false)
-                .notificationsByPhone(false)
-                .build();
-
-        User user2 = User.builder()
-                .firstName("Jan")
-                .lastName("Nowak")
-                .email("gmail.com")
-                .password(passwordEncoder.encode("password123"))
-                .phoneNumber("")
-                .dateOfJoining(LocalDate.now())
-                .currency(currency2)
-                .currentBudget(new BigDecimal(2000))
-                .darkMode(false)
-                .notificationsByEmail(false)
-                .notificationsByPhone(false)
-                .build();
-
-        userRepository.save(user1);
-        userRepository.save(user2);
-        return user1;
-    }
-
-    @Transactional
     public User registerUser(RegistrationRequest request) {
         if (userRepository.findByEmail(request.email()).isPresent()) {
             throw new IllegalArgumentException("User with the given email address already exists");
