@@ -83,7 +83,7 @@ public class UserService {
 
     @Transactional
     public User registerUser(RegistrationRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+        if (userRepository.findByEmail(request.email()).isPresent()) {
             throw new IllegalArgumentException("User with the given email address already exists");
         }
 
@@ -92,10 +92,10 @@ public class UserService {
 
 
         User newUser = User.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
                 .phoneNumber("")
                 .dateOfJoining(LocalDate.now())
                 .currentBudget(new BigDecimal(0))

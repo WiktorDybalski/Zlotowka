@@ -28,44 +28,30 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword())
-            );
-
-            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-            String token = jwtUtil.generateToken(userDetails);
-
-            return ResponseEntity.ok(Map.of(
-                    "token", token,
-                    "message", "Login completed successfully!",
-                    "user", userDetails.getUser()
-            ));
-        } catch (BadCredentialsException ex) {
-            return ResponseEntity.status(401)
-                    .body(Map.of("error", "Incorrect email or password"));
-        }
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
+        );
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        String token = jwtUtil.generateToken(userDetails);
+        return ResponseEntity.ok(Map.of(
+                "token", token,
+                "message", "Login completed successfully!",
+                "user", userDetails.getUser()
+        ));
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegistrationRequest registrationRequest) {
-        try {
-            var newUser = userService.registerUser(registrationRequest);
-
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(newUser.getEmail(), registrationRequest.getPassword())
-            );
-            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-            String token = jwtUtil.generateToken(userDetails);
-
-            return ResponseEntity.ok(Map.of(
-                    "token", token,
-                    "message", "Registration completed successfully!",
-                    "user", userDetails.getUser()
-            ));
-        } catch (Exception ex) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", ex.getMessage()));
-        }
+        var newUser = userService.registerUser(registrationRequest);
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(newUser.getEmail(), registrationRequest.password())
+        );
+        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+        String token = jwtUtil.generateToken(userDetails);
+        return ResponseEntity.ok(Map.of(
+                "token", token,
+                "message", "Registration completed successfully!",
+                "user", userDetails.getUser()
+        ));
     }
 }
