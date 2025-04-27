@@ -2,84 +2,30 @@ package com.agh.zlotowka.controller;
 
 import com.agh.zlotowka.dto.LoginRequest;
 import com.agh.zlotowka.dto.RegistrationRequest;
-import com.agh.zlotowka.security.JWTUtil;
-import com.agh.zlotowka.security.CustomUserDetails;
-import com.agh.zlotowka.service.UserService;
-import com.agh.zlotowka.dto.UserResponse;
-import com.agh.zlotowka.model.User;
+import com.agh.zlotowka.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
-
-
 import java.util.Map;
+import com.agh.zlotowka.security.CustomUserDetails;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
 
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthenticationManager authenticationManager;
-    private final JWTUtil jwtUtil;
-    private final UserService userService;
+    private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest loginRequest) {
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
-        );
-        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-        User user = userDetails.getUser();
-        String token = jwtUtil.generateToken(userDetails);
-        return ResponseEntity.ok(Map.of(
-                "token", token,
-                "message", "Login completed successfully!",
-                "user", new UserResponse(
-                        user.getUserId(),
-                        user.getFirstName(),
-                        user.getLastName(),
-                        user.getEmail(),
-                        user.getPhoneNumber(),
-                        user.getDateOfJoining(),
-                        user.getCurrentBudget(),
-                        user.getCurrency(),
-                        user.getDarkMode(),
-                        user.getNotificationsByEmail(),
-                        user.getNotificationsByPhone()
-                )
-        ));
+    public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginRequest loginRequest) {
+        return ResponseEntity.ok(authService.login(loginRequest));
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegistrationRequest registrationRequest) {
-        var newUser = userService.registerUser(registrationRequest);
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(newUser.getEmail(), registrationRequest.password())
-        );
-        CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-        User user = userDetails.getUser();
-        String token = jwtUtil.generateToken(userDetails);
-        return ResponseEntity.ok(Map.of(
-                "token", token,
-                "message", "Registration completed successfully!",
-                "user", new UserResponse(
-                        user.getUserId(),
-                        user.getFirstName(),
-                        user.getLastName(),
-                        user.getEmail(),
-                        user.getPhoneNumber(),
-                        user.getDateOfJoining(),
-                        user.getCurrentBudget(),
-                        user.getCurrency(),
-                        user.getDarkMode(),
-                        user.getNotificationsByEmail(),
-                        user.getNotificationsByPhone()
-                )
-        ));
+    public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody RegistrationRequest registrationRequest) {
+        return ResponseEntity.ok(authService.register(registrationRequest));
     }
 }

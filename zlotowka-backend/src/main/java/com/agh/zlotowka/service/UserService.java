@@ -7,6 +7,8 @@ import com.agh.zlotowka.model.OneTimeTransaction;
 import com.agh.zlotowka.model.User;
 import com.agh.zlotowka.repository.CurrencyRepository;
 import com.agh.zlotowka.repository.UserRepository;
+import com.agh.zlotowka.dto.UserResponse;
+import com.agh.zlotowka.security.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -78,6 +80,25 @@ public class UserService {
             log.error("Unexpected Exception in CurrencyService", e);
         }
     }
+    public UserResponse getCurrentUser(CustomUserDetails userDetails) {
+        User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        return new UserResponse(
+                user.getUserId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getPhoneNumber(),
+                user.getDateOfJoining(),
+                user.getCurrentBudget(),
+                user.getCurrency(),
+                user.getDarkMode(),
+                user.getNotificationsByEmail(),
+                user.getNotificationsByPhone()
+        );
+    }
+
 
     public void addTransactionAmountToBudget(int currencyId, BigDecimal amount, boolean isIncome, User user) {
         BigDecimal budget = user.getCurrentBudget();

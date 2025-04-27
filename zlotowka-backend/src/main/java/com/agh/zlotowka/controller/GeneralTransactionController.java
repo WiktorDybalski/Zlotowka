@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.agh.zlotowka.security.CustomUserDetails;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -28,39 +31,59 @@ public class GeneralTransactionController {
     private final GeneralTransactionService generalTransactionService;
 
     @PostMapping("/plot-data")
-    public ResponseEntity<List<SinglePlotData>> getUserBudgetInDateRange(@Valid @RequestBody UserDataInDateRangeRequest request) {
-        List<SinglePlotData> budgetList = generalTransactionService.getEstimatedBudgetInDateRange(request);
-        return ResponseEntity.ok(budgetList);
+    public ResponseEntity<List<SinglePlotData>> getUserBudgetInDateRange(
+            @Valid @RequestBody UserDataInDateRangeRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        validateUserId(request.userId(), userDetails);
+        return ResponseEntity.ok(generalTransactionService.getEstimatedBudgetInDateRange(request));
     }
 
     @GetMapping("/next-transaction/{userId}")
-    public ResponseEntity<TransactionBudgetInfo> getNextTransaction(@PathVariable Integer userId, @RequestParam Boolean isIncome) {
-        TransactionBudgetInfo transactionBudgetInfo = generalTransactionService.getNextTransaction(userId, isIncome);
-        return ResponseEntity.ok(transactionBudgetInfo);
+    public ResponseEntity<TransactionBudgetInfo> getNextTransaction(
+            @PathVariable Integer userId,
+            @RequestParam Boolean isIncome,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        validateUserId(userId, userDetails);
+        return ResponseEntity.ok(generalTransactionService.getNextTransaction(userId, isIncome));
     }
 
     @GetMapping("/estimated-balance/{userId}")
-    public ResponseEntity<Map<String, BigDecimal>> getEstimatedBalanceAtTheEndOfTheMonth(@PathVariable Integer userId) {
-        BigDecimal estimatedBalance = generalTransactionService.getEstimatedBalanceAtTheEndOfTheMonth(userId);
-        return ResponseEntity.ok(Map.of("estimatedBalance", estimatedBalance));
+    public ResponseEntity<Map<String, BigDecimal>> getEstimatedBalanceAtTheEndOfTheMonth(
+            @PathVariable Integer userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        validateUserId(userId, userDetails);
+        BigDecimal balance = generalTransactionService.getEstimatedBalanceAtTheEndOfTheMonth(userId);
+        return ResponseEntity.ok(Map.of("estimatedBalance", balance));
     }
 
     @PostMapping("/revenues-expenses-in-range")
-    public ResponseEntity<RevenuesAndExpensesResponse> getRevenuesAndExpensesInRange(@Valid @RequestBody UserDataInDateRangeRequest request) {
-        RevenuesAndExpensesResponse expensesAndRevenuesResponse = generalTransactionService.getRevenuesAndExpensesInRange(request);
-        return ResponseEntity.ok(expensesAndRevenuesResponse);
+    public ResponseEntity<RevenuesAndExpensesResponse> getRevenuesAndExpensesInRange(
+            @Valid @RequestBody UserDataInDateRangeRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        validateUserId(request.userId(), userDetails);
+        return ResponseEntity.ok(generalTransactionService.getRevenuesAndExpensesInRange(request));
     }
 
     @GetMapping("/monthly-summary/{userId}")
-    public ResponseEntity<MonthlySummaryDto> getMonthlySummary(@PathVariable Integer userId) {
-        MonthlySummaryDto monthlySummaryDto = generalTransactionService.getMonthlySummary(userId);
-        return ResponseEntity.ok(monthlySummaryDto);
+    public ResponseEntity<MonthlySummaryDto> getMonthlySummary(
+            @PathVariable Integer userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        validateUserId(userId, userDetails);
+        return ResponseEntity.ok(generalTransactionService.getMonthlySummary(userId));
     }
 
     @GetMapping("/current-balance/{userId}")
-    public ResponseEntity<Map<String, BigDecimal>> getCurrentBalance(@PathVariable Integer userId) {
+    public ResponseEntity<Map<String, BigDecimal>> getCurrentBalance(
+            @PathVariable Integer userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        validateUserId(userId, userDetails);
         BigDecimal currentBalance = generalTransactionService.getCurrentBalance(userId);
         return ResponseEntity.ok(Map.of("currentBalance", currentBalance));
+    }
+    private void validateUserId(Integer userId, CustomUserDetails userDetails) {
+        if (!userId.equals(userDetails.getUser().getUserId())) {
+            throw new IllegalArgumentException("Access denied");
+        }
     }
 }
 
