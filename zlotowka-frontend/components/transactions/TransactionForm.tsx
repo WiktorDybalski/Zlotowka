@@ -7,6 +7,8 @@ import ConfirmButton from "@/components/general/Button";
 import dayjs from "dayjs";
 import DatePicker from "@/components/general/DatePicker";
 import GenericPopup from "@/components/general/GenericPopup";
+import { useQuery } from "@tanstack/react-query";
+import { useCurrencyService } from "@/services/CurrencyController";
 
 const inputClass =
   "border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md min-w-76 ";
@@ -26,11 +28,36 @@ export default function TransactionForm({
   header,
   submitButtonText,
   submitButtonIcon,
+  onSubmit,
 }: TransactionFormProps) {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [formData, setFormData] = useState<TransactionData>(
     transaction || defaultTransactionData
   );
+
+  const CurrencyService = useCurrencyService();
+
+  const {
+    data: currencyList,
+    isLoading: isCurrenciesLoading,
+    isError: isCurrenciecError,
+    isSuccess: isCurrenciesSuccess,
+  } = useQuery({
+    queryKey: ["currencyData"],
+    queryFn: CurrencyService.getCurrencyList,
+  });
+
+  if (isCurrenciesSuccess) {
+    console.log("Waluty załadowane pomyślnie!");
+  }
+
+  if (isCurrenciesLoading) {
+    console.log("Ładowanie walut...");
+  }
+
+  if (isCurrenciecError) {
+    console.log("Wystąpił błąd podczas ładowania walut!");
+  }
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -54,13 +81,14 @@ export default function TransactionForm({
 
   const handleSubmit = () => {
     // TODO add validation
-    onClose(formData);
+    onClose();
+    onSubmit(formData); // Call the onSubmit function with the form data
   };
 
   return (
     <GenericPopup
       title={header}
-      onClose={() => onClose(formData)}
+      onClose={onClose}
       showConfirm={false} // We'll use our custom button instead
     >
       <>

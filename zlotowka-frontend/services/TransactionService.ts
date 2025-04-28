@@ -2,11 +2,7 @@
 
 import { useAuth } from "@/components/providers/AuthProvider";
 import sendToBackend, { getAuthHeader } from "@/lib/sendToBackend";
-
-export interface Currency {
-  currencyId: number;
-  isoCode: string;
-}
+import { Currency } from "./CurrencyController";
 
 export interface OneTimeTransaction {
   transactionId: number;
