@@ -32,9 +32,7 @@ public class SubplanService {
         Plan plan = planRepository.findById(request.planId())
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Plan with Id %d not found", request.planId())));
 
-        if (request.userId() != plan.getUser().getUserId()) {
-            throw new IllegalArgumentException("User does not have permission to create a subplan for this plan");
-        }
+        validateSubplanOwnership(request.userId(), plan.getUser().getUserId());
 
         validateSubplanAmount(plan, request.amount());
 
@@ -87,6 +85,7 @@ public class SubplanService {
         Subplan subplan = subPlanRepository.findById(subplanId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Subplan with Id %d not found", subplanId)));
 
+        validateSubplanOwnership(request.userId(), subplan.getPlan().getUser().getUserId());
         validateSubplanAmount(subplan.getPlan(), request.amount());
 
         subplan.setName(request.name());
@@ -98,6 +97,12 @@ public class SubplanService {
 
         subPlanRepository.save(subplan);
         return getSubplanDTO(subplan);
+    }
+
+    private void validateSubplanOwnership(Integer userId, Integer subplanUserId) {
+        if (!userId.equals(subplanUserId)) {
+            throw new IllegalArgumentException(String.format("User Id %d does not match the subplan owner", userId));
+        }
     }
 
     private void validateSubplanAmount(Plan plan, BigDecimal newAmount) {
