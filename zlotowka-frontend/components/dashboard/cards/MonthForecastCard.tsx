@@ -25,7 +25,7 @@ export default function MonthForecastCard() {
   const CardService = useCardService();
 
   useEffect(() => {
-    CardService.getMonthEstimatedBalance(1)
+    CardService.getMonthEstimatedBalance()
       .then((response) => {
         setEstimatedBalance(response.estimatedBalance);
         console.log(response);

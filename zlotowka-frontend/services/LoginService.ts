@@ -8,6 +8,7 @@ async function getMockedResponse() {
   await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate network delay
   return {
     token: "mocked_token",
+    userId: 1,
   };
 }
 
@@ -32,8 +33,8 @@ export function useLoginService() {
       },
       "Failed to register user"
     );
-    if (res.token) {
-      Auth.setLogin(res.token); //  Set the token in the auth context
+    if (res.token && res.userId) {
+      Auth.setLogin(res.token, res.userId); //  Set the token in the auth context
     } else {
       throw new Error("Token not found in response");
     }
@@ -59,8 +60,8 @@ export function useLoginService() {
         "Failed to login"
       );
     }
-    if (res.token) {
-      Auth.setLogin(res.token); // Set the token in the auth context
+    if (res.token && res.userId) {
+      Auth.setLogin(res.token, res.userId); // Set the token in the auth context
     } else {
       throw new Error("Token not found in response");
     }

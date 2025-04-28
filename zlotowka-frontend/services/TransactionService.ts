@@ -19,14 +19,21 @@ export interface OneTimeTransaction {
   description: string;
 }
 
+export interface NewOneTimeTransactionReq {
+  name: string;
+  amount: number;
+  currency: Currency;
+  isIncome: boolean;
+  date: string; // ISO date string (np. "2025-04-28")
+  description: string;
+}
+
 export function useTransactionService() {
-  const { token } = useAuth();
+  const { token, userId } = useAuth();
 
   if (!token) throw new Error("User Logged Out (Token not provided)!");
 
   const withAuthHeader = getAuthHeader(token);
-
-  const userId = 1;
 
   async function getTransactions(): Promise<Array<OneTimeTransaction>> {
     return await sendToBackend(
@@ -36,7 +43,31 @@ export function useTransactionService() {
     );
   }
 
+  async function createNewTransaction(
+    transaction: NewOneTimeTransactionReq
+  ): Promise<OneTimeTransaction> {
+    const req = {
+      userId: userId,
+      name: transaction.name,
+      amount: transaction.amount,
+      currencyId: transaction.currency.currencyId,
+      isIncome: transaction.isIncome,
+      date: transaction.date,
+      description: transaction.description,
+    };
+    return await sendToBackend(
+      `onetime-transaction`,
+      {
+        ...withAuthHeader,
+        method: "POST",
+        body: JSON.stringify(req),
+      },
+      "Failed to create new transaction"
+    );
+  }
+
   return {
     getTransactions,
+    createNewTransaction,
   };
 }

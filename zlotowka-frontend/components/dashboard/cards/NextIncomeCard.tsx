@@ -20,7 +20,7 @@ export default function NextIncomeCard() {
   const CardService = useCardService();
 
   useEffect(() => {
-    CardService.getNextTransaction(1, true)
+    CardService.getNextTransaction(true)
       .then((response) => {
         setNextIncome(response);
       })

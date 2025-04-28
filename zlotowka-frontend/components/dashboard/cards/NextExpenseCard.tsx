@@ -19,7 +19,7 @@ export default function NextExpenseCard() {
   const CardService = useCardService();
 
   useEffect(() => {
-    CardService.getNextTransaction(1, false)
+    CardService.getNextTransaction(false)
       .then((response) => {
         setNextExpense(response);
       })

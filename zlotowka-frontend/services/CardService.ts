@@ -4,13 +4,13 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import sendToBackend, { getAuthHeader } from "@/lib/sendToBackend";
 
 export function useCardService() {
-  const { token } = useAuth();
+  const { token, userId } = useAuth();
 
   if (!token) throw new Error("User Logged Out (Token not provided)!" + token);
 
   const withAuthHeader = getAuthHeader(token);
 
-  async function getCurrentBalance(userId: number) {
+  async function getCurrentBalance() {
     return await sendToBackend(
       `general-transactions/current-balance/${userId}`,
       withAuthHeader,
@@ -18,7 +18,7 @@ export function useCardService() {
     );
   }
 
-  async function getMonthEstimatedBalance(userId: number) {
+  async function getMonthEstimatedBalance() {
     return await sendToBackend(
       `general-transactions/estimated-balance/${userId}`,
       withAuthHeader,
@@ -26,7 +26,7 @@ export function useCardService() {
     );
   }
 
-  async function getNextTransaction(userId: number, isIncome: boolean) {
+  async function getNextTransaction(isIncome: boolean) {
     return await sendToBackend(
       `general-transactions/next-transaction/${userId}?isIncome=${isIncome}`,
       withAuthHeader,

@@ -42,7 +42,7 @@ export function PieSideChart() {
   const DashboardService = useDashboardService();
 
   useEffect(() => {
-    DashboardService.getPieSideChartData(1)
+    DashboardService.getPieSideChartData()
       .then((data) => {
         const formattedChartData = [
           {

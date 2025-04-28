@@ -47,7 +47,6 @@ export function MainChart() {
     setIsLoading(true);
     try {
       const response = await DashboardService.getMainChartData(
-        1,
         startDate.format("YYYY-MM-DD"),
         endDate.format("YYYY-MM-DD")
       );

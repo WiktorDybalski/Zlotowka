@@ -12,9 +12,10 @@ import React, {
 
 interface AuthContextType {
   token: string | null;
-  setLogin: (token: string) => void;
+  setLogin: (token: string, newUserId: number) => void;
   setLogout: () => void;
   isLogged: () => boolean;
+  userId: number | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,15 +25,24 @@ interface AuthProviderProps {
 }
 
 const localStorageTokenField = "loginToken";
+const localStorageUserIdField = "userId";
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [token, setToken] = useState<string | null>(null);
   const [hasMounted, setHasMounted] = useState(false);
 
+  const [userId, setUserId] = useState<number | null>(null);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const storedToken = localStorage.getItem(localStorageTokenField);
       setToken(storedToken);
+      const storedUserId = localStorage.getItem(localStorageUserIdField);
+      if (storedUserId) {
+        setUserId(parseInt(storedUserId, 10));
+      } else {
+        setUserId(null);
+      }
       setHasMounted(true);
       console.log("Loaded token: " + storedToken); //TODO: remove
     }
@@ -40,17 +50,21 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     // TODO: remove this
-    console.log("new topken " + token);
+    console.log("new topken " + token, "id=", userId);
   }, [token]);
 
-  const setLogin = (newToken: string) => {
+  const setLogin = (newToken: string, newUserId: number) => {
     setToken(newToken);
+    setUserId(newUserId);
     localStorage.setItem(localStorageTokenField, newToken);
+    localStorage.setItem(localStorageUserIdField, newUserId.toString());
   };
 
   const setLogout = () => {
     setToken(null);
+    setUserId(null);
     localStorage.removeItem(localStorageTokenField);
+    localStorage.removeItem(localStorageUserIdField);
   };
 
   const isLogged = () => !!token;
@@ -58,7 +72,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   if (!hasMounted) return null;
 
   return (
-    <AuthContext.Provider value={{ token, setLogin, setLogout, isLogged }}>
+    <AuthContext.Provider
+      value={{ token, setLogin, setLogout, isLogged, userId }}
+    >
       {children}
     </AuthContext.Provider>
   );
