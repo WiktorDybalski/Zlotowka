@@ -32,7 +32,6 @@ export function useLoginService() {
       },
       "Failed to register user"
     );
-    // const res = await getMockedResponse(); // TODO: delete Mocked response for testing
     if (res.token) {
       Auth.setLogin(res.token); //  Set the token in the auth context
     } else {
@@ -43,17 +42,23 @@ export function useLoginService() {
 
   // Login (endpoint: POST /auth/login)
   async function loginUser(credentials: { email: string; password: string }) {
-    const res = await sendToBackend(
-      `auth/login`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+    let res = null;
+    if (credentials.email === "kamil.rudny@gmail.com") {
+      //TODO bypass delete!!!!!
+      res = await getMockedResponse();
+    } else {
+      res = await sendToBackend(
+        `auth/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(credentials),
         },
-        body: JSON.stringify(credentials),
-      },
-      "Failed to login"
-    );
+        "Failed to login"
+      );
+    }
     if (res.token) {
       Auth.setLogin(res.token); // Set the token in the auth context
     } else {
