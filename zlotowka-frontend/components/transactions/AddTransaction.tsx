@@ -3,10 +3,15 @@ import { AddTransactionProps } from "@/interfaces/transactions/PopupTransactions
 
 export default function AddTransaction({
   setShowAddTransaction,
+  transactionRefresh,
 }: AddTransactionProps) {
   return (
     <TransactionForm
-      onClose={() => setShowAddTransaction(false)}
+      onClose={(data) => {
+        setShowAddTransaction(false);
+        alert("Dodano transakcje: " + JSON.stringify(data));
+        transactionRefresh(); // TODO handle it better
+      }}
       header="Dodaj nową transakcje"
       submitButtonText="Dodaj transakcje"
       submitButtonIcon="add"
