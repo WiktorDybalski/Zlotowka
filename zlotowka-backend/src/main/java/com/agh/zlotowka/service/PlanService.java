@@ -167,20 +167,21 @@ public class PlanService {
     }
 
     private PlanDTO updatePlanLogic(PlanRequest request, Plan plan) {
-        if (!Objects.equals(request.currencyId(), plan.getCurrency().getCurrencyId())) {
-            Currency currency = currencyRepository.findById(request.currencyId())
-                    .orElseThrow(() -> new EntityNotFoundException(String.format("Currency with Id %d not found", request.currencyId())));
-
-            plan.setCurrency(currency);
-        }
         Integer totalCompletedSubplans = subPlanRepository.getCompletedSubPlanCount(plan.getPlanId());
-        if (totalCompletedSubplans > 0 && !request.currencyId().equals(plan.getCurrency().getCurrencyId())) {
-            throw new IllegalArgumentException("Cannot change currency of plan with completed subplans");
-        }
         BigDecimal allSubPlansAmount = subPlanRepository.getTotalSubPlanAmount(plan.getPlanId());
 
         if (allSubPlansAmount.compareTo(request.amount()) > 0) {
             throw new IllegalArgumentException("Total subplan amount exceeds the plan's required amount");
+        }
+
+        if (totalCompletedSubplans > 0 && !request.currencyId().equals(plan.getCurrency().getCurrencyId())) {
+            throw new IllegalArgumentException("Cannot change currency of plan with completed subplans");
+        }
+
+        if (!Objects.equals(request.currencyId(), plan.getCurrency().getCurrencyId())) {
+            Currency currency = currencyRepository.findById(request.currencyId())
+                    .orElseThrow(() -> new EntityNotFoundException(String.format("Currency with Id %d not found", request.currencyId())));
+            plan.setCurrency(currency);
         }
 
         plan.setName(request.name());

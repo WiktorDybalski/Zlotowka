@@ -130,14 +130,11 @@ public class SubplanService {
         subplan.setDate(LocalDate.now());
 
         Plan plan = subplan.getPlan();
-        Integer totalSubplans = subPlanRepository.getSubplanCount(plan.getPlanId());
-        Integer completedSubplans = subPlanRepository.getCompletedSubPlanCount(plan.getPlanId());
-        plan.setSubplansCompleted((double) completedSubplans/totalSubplans);
+        calculatePlanSubplanCompletion(plan);
 
         plan.getUser().setCurrentBudget(currentAmount.subtract(subplan.getRequiredAmount()));
 
         userRepository.save(plan.getUser());
-        planRepository.save(plan);
         subPlanRepository.save(subplan);
 
         return getSubplanDTO(subplan);
@@ -162,11 +159,19 @@ public class SubplanService {
         Subplan subplan = subPlanRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Subplan with Id %d not found", id)));
 
-        if (subplan.getCompleted()) {
+        if (subplan.getCompleted() && !subplan.getPlan().getCompleted()) {
             subplan.getPlan().getUser().setCurrentBudget(
                     subplan.getPlan().getUser().getCurrentBudget().add(subplan.getRequiredAmount()));
         }
 
         subPlanRepository.delete(subplan);
+        calculatePlanSubplanCompletion(subplan.getPlan());
+    }
+
+    void calculatePlanSubplanCompletion(Plan plan) {
+        Integer totalSubplans = subPlanRepository.getSubplanCount(plan.getPlanId());
+        Integer completedSubplans = subPlanRepository.getCompletedSubPlanCount(plan.getPlanId());
+        plan.setSubplansCompleted((double) completedSubplans / totalSubplans);
+        planRepository.save(plan);
     }
 }
