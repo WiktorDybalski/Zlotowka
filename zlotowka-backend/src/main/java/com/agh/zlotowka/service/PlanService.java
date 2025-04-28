@@ -143,9 +143,18 @@ public class PlanService {
         if (currentAmount.compareTo(plan.getRequiredAmount()) < 0)
             throw new IllegalArgumentException("Plan cannot be completed, required amount not reached");
 
+        List<Subplan> subPlans = subPlanRepository.findAllSubPlanByPlanId(id);
+        for (Subplan subPlan : subPlans) {
+            if (!subPlan.getCompleted()) {
+                subPlan.setCompleted(true);
+                subPlan.setDate(plan.getDate());
+                subPlanRepository.save(subPlan);
+            }
+        }
+
         plan.setCompleted(true);
         plan.setDate(LocalDate.now());
-        plan.getUser().setCurrentBudget(calculateRequiredAmount(plan));
+        plan.getUser().setCurrentBudget(plan.getUser().getCurrentBudget().subtract(calculateRequiredAmount(plan)));
         planRepository.save(plan);
         userRepository.save(plan.getUser());
         return getPlanDTO(plan);

@@ -7,6 +7,7 @@ import com.agh.zlotowka.model.Plan;
 import com.agh.zlotowka.model.Subplan;
 import com.agh.zlotowka.repository.PlanRepository;
 import com.agh.zlotowka.repository.SubPlanRepository;
+import com.agh.zlotowka.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +25,16 @@ import java.util.stream.Collectors;
 public class SubplanService {
     private final PlanRepository planRepository;
     private final SubPlanRepository subPlanRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public SubplanDTO createSubplan(SubplanRequest request) {
         Plan plan = planRepository.findById(request.planId())
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Plan with Id %d not found", request.planId())));
+
+        if (request.userId() != plan.getUser().getUserId()) {
+            throw new IllegalArgumentException("User does not have permission to create a subplan for this plan");
+        }
 
         validateSubplanAmount(plan, request.amount());
 
@@ -52,8 +58,22 @@ public class SubplanService {
                 .name(subplan.getName())
                 .amount(subplan.getRequiredAmount())
                 .description(subplan.getDescription())
-                .completed(false)
+                .completed(subplan.getCompleted())
+                .subplanId(subplan.getSubplanId())
+                .currencyId(subplan.getPlan().getCurrency().getCurrencyId())
+                .actualAmount(calculateCurrentBudget(subplan))
+                .canBeCompleted(subplan.getRequiredAmount().compareTo(subplan.getPlan().getUser().getCurrentBudget()) <= 0)
+                .date(subplan.getDate())
                 .build();
+    }
+
+    private BigDecimal calculateCurrentBudget(Subplan subplan) {
+        if (subplan.getCompleted()) {
+            return subplan.getRequiredAmount();
+        }
+        else {
+            return subplan.getPlan().getUser().getCurrentBudget();
+        }
     }
 
     public SubplanDTO getSubplan(Integer id) {
@@ -82,15 +102,24 @@ public class SubplanService {
 
     private void validateSubplanAmount(Plan plan, BigDecimal newAmount) {
         BigDecimal allSubplansAmount = subPlanRepository.getTotalSubPlanAmount(plan.getPlanId());
-        if (allSubplansAmount.add(newAmount).compareTo(plan.getRequiredAmount()) >= 0) {
+        if (allSubplansAmount.add(newAmount).compareTo(plan.getRequiredAmount()) > 0) {
             throw new IllegalArgumentException("Total subplan amount exceeds the plan's required amount");
         }
     }
 
+    @Transactional
     public SubplanDTO completeSubplan(Integer id) {
         log.info("Completing subplan with id: {}", id);
         Subplan subplan = subPlanRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Subplan with Id %d not found", id)));
+
+        if (subplan.getCompleted()) {
+            throw new IllegalArgumentException("Subplan is already completed");
+        }
+        BigDecimal currentAmount = subplan.getPlan().getUser().getCurrentBudget();
+        if (currentAmount.compareTo(subplan.getRequiredAmount()) < 0) {
+            throw new IllegalArgumentException("Subplan cannot be completed, required amount not reached");
+        }
 
         subplan.setCompleted(true);
         subplan.setDate(LocalDate.now());
@@ -100,7 +129,9 @@ public class SubplanService {
         Integer completedSubplans = subPlanRepository.getCompletedSubPlanCount(plan.getPlanId());
         plan.setSubplansCompleted((double) completedSubplans/totalSubplans);
 
+        plan.getUser().setCurrentBudget(currentAmount.subtract(subplan.getRequiredAmount()));
 
+        userRepository.save(plan.getUser());
         planRepository.save(plan);
         subPlanRepository.save(subplan);
 
