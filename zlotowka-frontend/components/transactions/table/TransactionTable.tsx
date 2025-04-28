@@ -28,7 +28,7 @@ export function TransactionTable({ refresh }: TransactionTableProps) {
   }, [refresh]);
 
   return (
-    <section className="h-full">
+    <section className="h-full text-xs md:text-sm lg:text-base">
       <div className="h-full overflow-hidden p-6">
         {/* Nagłówki gridu */}
         <div className="grid grid-cols-5 gap-4 font-bold border-b pb-2">

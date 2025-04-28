@@ -1,5 +1,7 @@
+import { NavigationLinksProps } from "@/interfaces/navigation/NavigationLinksProps";
+
 export interface MenuProps {
   isOpen?: boolean;
-  navLinks: string[];
+  navLinks: NavigationLinksProps["links"];
   onLinkClick?: () => void;
 }
