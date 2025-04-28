@@ -2,7 +2,7 @@
 
 import { API_HOST } from "@/lib/config";
 
-export default async function sendToBackend(
+export async function sendToBackendWithoutReturningJson(
   input: RequestInfo,
   init?: RequestInit,
   errorMessage: string = "Error fetching data"
@@ -13,11 +13,24 @@ export default async function sendToBackend(
     if (!response.ok) {
       throw new Error(errorMessage + " " + response.statusText);
     }
-    return await response.json();
+    return response;
   } catch (error) {
     console.log("Error fetching data:", error);
     throw error;
   }
+}
+
+export default async function sendToBackend(
+  input: RequestInfo,
+  init?: RequestInit,
+  errorMessage: string = "Error fetching data"
+) {
+  const responce = await sendToBackendWithoutReturningJson(
+    input,
+    init,
+    errorMessage
+  );
+  return await responce.json();
 }
 
 export function getAuthHeader(token: string) {

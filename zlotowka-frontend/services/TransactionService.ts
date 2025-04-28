@@ -1,7 +1,10 @@
 "use client";
 
 import { useAuth } from "@/components/providers/AuthProvider";
-import sendToBackend, { getAuthHeader } from "@/lib/sendToBackend";
+import sendToBackend, {
+  getAuthHeader,
+  sendToBackendWithoutReturningJson,
+} from "@/lib/sendToBackend";
 import { Currency } from "./CurrencyController";
 
 export interface OneTimeTransaction {
@@ -62,8 +65,20 @@ export function useTransactionService() {
     );
   }
 
+  async function deleteTransaction(id: number): Promise<void> {
+    await sendToBackendWithoutReturningJson(
+      `onetime-transaction/${id}`,
+      {
+        ...withAuthHeader,
+        method: "DELETE",
+      },
+      "Failed to delete transaction"
+    );
+  }
+
   return {
     getTransactions,
     createNewTransaction,
+    deleteTransaction,
   };
 }
