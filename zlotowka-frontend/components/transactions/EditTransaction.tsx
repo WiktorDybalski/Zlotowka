@@ -9,6 +9,9 @@ export default function EditTransaction({
     <TransactionForm
       transaction={transaction}
       onClose={() => setShowEditTransaction(false)}
+      onSubmit={(data) => {
+        alert(data);
+      }}
       header="Edytuj transakcje"
       submitButtonText="Edytuj transakcje"
       submitButtonIcon="edit"
