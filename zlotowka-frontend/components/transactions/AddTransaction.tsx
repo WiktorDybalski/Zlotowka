@@ -36,21 +36,7 @@ export default function AddTransaction({
         setShowAddTransaction(false);
       }}
       onSubmit={(data) => {
-        alert("Dodano transakcje: " + JSON.stringify(data));
-        const fixedData: NewOneTimeTransactionReq = {
-          name: data.name,
-          date: data.date,
-          amount: 100, //TODO pole jest stringiem i mozna wpisac stringa
-          currency: {
-            //TODO to jest objectem a nie stringiem, zaciagnac sobie z backendu serwisem
-            currencyId: 1,
-            isoCode: "PLN",
-          },
-          isIncome: true, //TODO niech to bedzie bool
-          description: "some description", //TODO nie ma pola w formularzu
-        };
-
-        magic.mutate(fixedData);
+        magic.mutate(data);
       }}
       header="Dodaj nową transakcje"
       submitButtonText="Dodaj transakcje"
