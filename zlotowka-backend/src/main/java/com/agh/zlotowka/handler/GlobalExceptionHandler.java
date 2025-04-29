@@ -1,6 +1,6 @@
 package com.agh.zlotowka.handler;
 
-import com.agh.zlotowka.exception.CurrencyConversionException;
+import com.agh.zlotowka.exception.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -105,5 +105,35 @@ public class GlobalExceptionHandler {
         log.error("Currency conversion error: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of("error", e.getMessage()));
 
+    }
+
+    @ExceptionHandler(BudgetInsufficientException.class)
+    public ResponseEntity<Map<String, String>> handleBudgetInsufficientException(BudgetInsufficientException e) {
+        log.error("Budget insufficient error: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(Map.of("error", e.getMessage()));
+    }
+
+    @ExceptionHandler(InsufficientBudgetException.class)
+    public ResponseEntity<Map<String, String>> handleInsufficientBudgetException(InsufficientBudgetException e) {
+        log.error("Insufficient budget error: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(Map.of("error", e.getMessage()));
+    }
+
+    @ExceptionHandler(PlanAmountExceededException.class)
+    public ResponseEntity<Map<String, String>> handlePlanAmountExceededException(PlanAmountExceededException e) {
+        log.error("Plan amount exceeded error: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(Map.of("error", e.getMessage()));
+    }
+
+    @ExceptionHandler(PlanOwnershipException.class)
+    public ResponseEntity<Map<String, String>> handlePlanOwnershipException(PlanOwnershipException e) {
+        log.error("Plan ownership error: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(Map.of("error", e.getMessage()));
+    }
+
+    @ExceptionHandler(PlanCompletionException.class)
+    public ResponseEntity<Map<String, String>> handlePlanCompletionException(PlanCompletionException e) {
+        log.error("Plan completion error: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(Map.of("error", e.getMessage()));
     }
 }
