@@ -4,6 +4,8 @@ import GenericCard from "@/components/dashboard/cards/generic/GenericCard";
 import DarkButton from "@/components/DarkButton";
 import Image from "next/image";
 import { JSX, useState } from "react";
+import { useUserService } from "@/services/UserService";
+import { useQuery } from "@tanstack/react-query";
 
 interface AccountOption {
   text: string;
@@ -19,37 +21,6 @@ interface AccountFieldProps {
   onClick?: () => void;
 }
 
-const AccountOptions: AccountOption[] = [
-  {
-    text: "Zdjęcie",
-    avatar: (
-      <Image
-        src="/avatar.png"
-        width={45}
-        height={45}
-        alt="Avatar"
-        className="rounded-full"
-      />
-    ),
-    onClick: () => {},
-  },
-  {
-    text: "Nazwa użytkownika",
-    value: "Kamil Rudny",
-    onClick: () => {},
-  },
-  {
-    text: "E-mail",
-    value: "krudny@gmail.com",
-    onClick: () => {},
-  },
-  {
-    text: "Numer telefonu",
-    value: "+48 123 456 789",
-    onClick: () => {},
-  },
-];
-
 const AccountField = ({
   text,
   value,
@@ -63,7 +34,9 @@ const AccountField = ({
     <div className="flex row-start-2 sm:row-start-1 justify-left xl:justify-center items-center">
       {avatar && <div>{avatar}</div>}
       {value && (
-        <span className="text-neutral-600 text-md xl:text-lg font-lato">{value}</span>
+        <span className="text-neutral-600 text-md xl:text-lg font-lato">
+          {value}
+        </span>
       )}
     </div>
     <div className="flex  justify-end row-start-1 row-end-3 sm:row-end-1 items-center item">
@@ -80,7 +53,52 @@ const scrollToSection = (id: string) => {
 
 export default function Settings() {
   const navLinks: string[] = ["Konto", "Preferencje", "Powiadomienia"];
-  const [darkMode, setDarkMode] = useState(false);
+  const UserService = useUserService();
+  const { data } = useQuery({
+    queryKey: ["user", "getUserData"],
+    queryFn: UserService.getUserData,
+  });
+
+  const [darkMode, setDarkMode] = useState(data?.darkMode || false);
+  const [notificationsByEmail, setNotificationsByEmail] = useState(
+    data?.notificationsByEmail || false
+  );
+  const [notificationsByPhone, setNotificationsByPhone] = useState(
+    data?.notificationsByPhone || false
+  );
+
+  const AccountOptions: AccountOption[] = [
+    {
+      text: "Zdjęcie",
+      avatar: (
+        <Image
+          src="/avatar.png"
+          width={45}
+          height={45}
+          alt="Avatar"
+          className="rounded-full"
+        />
+      ),
+      onClick: () => {},
+    },
+    {
+      text: "Nazwa użytkownika",
+      value: data?.firstName
+        ? `${data?.firstName} ${data?.lastName}`
+        : "Użytkownik...",
+      onClick: () => {},
+    },
+    {
+      text: "E-mail",
+      value: data?.email ? data?.email : "Email...",
+      onClick: () => {},
+    },
+    {
+      text: "Numer telefonu",
+      value: data?.phoneNumber ? data?.phoneNumber : "Nie podano...",
+      onClick: () => {},
+    },
+  ];
 
   return (
     <div className="w-full p-8 min-h-screen xl:px-32 xl:py-20 font-semibold text-accent">
@@ -142,12 +160,12 @@ export default function Settings() {
             <div className="w-22 sm:w-28 h-10">
               <DarkButton
                 className={`${
-                  darkMode
+                  notificationsByEmail
                     ? "bg-accent text-background"
                     : "bg-neutral-400 text-accent"
                 }`}
-                text={darkMode ? "Włączony" : "Wyłączony"}
-                onClick={() => setDarkMode(!darkMode)}
+                text={notificationsByEmail ? "Włączony" : "Wyłączony"}
+                onClick={() => setNotificationsByEmail(!notificationsByEmail)}
               />
             </div>
           </div>
@@ -156,12 +174,12 @@ export default function Settings() {
             <div className="w-22 sm:w-28 h-10">
               <DarkButton
                 className={`${
-                  darkMode
+                  notificationsByPhone
                     ? "bg-accent text-background"
                     : "bg-neutral-400 text-accent"
                 }`}
-                text={darkMode ? "Włączony" : "Wyłączony"}
-                onClick={() => setDarkMode(!darkMode)}
+                text={notificationsByPhone ? "Włączony" : "Wyłączony"}
+                onClick={() => setNotificationsByPhone(!notificationsByPhone)}
               />
             </div>
           </div>
