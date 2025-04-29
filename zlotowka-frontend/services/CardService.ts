@@ -3,6 +3,22 @@
 import { useAuth } from "@/components/providers/AuthProvider";
 import sendToBackend, { getAuthHeader } from "@/lib/sendToBackend";
 
+export interface CurrentBalanceResponse {
+  currentBalance: number;
+}
+
+export interface EstimatedBalanceResponse {
+  estimatedBalance: number;
+}
+
+export interface NextTransactionResponse {
+  transactionName: string;
+  date: string; // ISO date
+  amount: number;
+  isIncome: boolean;
+  currencyIsoCode: string;
+}
+
 export function useCardService() {
   const { token, userId } = useAuth();
 
@@ -10,7 +26,7 @@ export function useCardService() {
 
   const withAuthHeader = getAuthHeader(token);
 
-  async function getCurrentBalance() {
+  async function getCurrentBalance(): Promise<CurrentBalanceResponse> {
     return await sendToBackend(
       `general-transactions/current-balance/${userId}`,
       withAuthHeader,
@@ -18,7 +34,7 @@ export function useCardService() {
     );
   }
 
-  async function getMonthEstimatedBalance() {
+  async function getMonthEstimatedBalance(): Promise<EstimatedBalanceResponse> {
     return await sendToBackend(
       `general-transactions/estimated-balance/${userId}`,
       withAuthHeader,
@@ -26,7 +42,9 @@ export function useCardService() {
     );
   }
 
-  async function getNextTransaction(isIncome: boolean) {
+  async function getNextTransaction(
+    isIncome: boolean
+  ): Promise<NextTransactionResponse> {
     return await sendToBackend(
       `general-transactions/next-transaction/${userId}?isIncome=${isIncome}`,
       withAuthHeader,

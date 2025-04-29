@@ -1,6 +1,7 @@
 "use client";
 
 import routes from "@/routes";
+import { UserData } from "@/services/UserService";
 import { redirect } from "next/navigation";
 import React, {
   createContext,
@@ -16,6 +17,8 @@ interface AuthContextType {
   setLogout: () => void;
   isLogged: () => boolean;
   userId: number | null;
+  setUserDataWithinSameToken: (newUserData: UserData) => void;
+  userData: UserData | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,6 +35,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [hasMounted, setHasMounted] = useState(false);
 
   const [userId, setUserId] = useState<number | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -44,14 +48,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setUserId(null);
       }
       setHasMounted(true);
-      console.log("Loaded token: " + storedToken); //TODO: remove
+      // console.log("Loaded token: " + storedToken); //TODO: remove
     }
   }, []);
 
-  useEffect(() => {
-    // TODO: remove this
-    console.log("new topken " + token, "id=", userId);
-  }, [token]);
+  // useEffect(() => {
+  //   // TODO: remove this
+  //   console.log("new topken " + token, "id=", userId);
+  // }, [token]);
 
   const setLogin = (newToken: string, newUserId: number) => {
     setToken(newToken);
@@ -67,13 +71,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
     localStorage.removeItem(localStorageUserIdField);
   };
 
+  function setUserDataWithinSameToken(newUserData: UserData) {
+    setUserData(newUserData);
+  }
+
   const isLogged = () => !!token;
 
   if (!hasMounted) return null;
 
   return (
     <AuthContext.Provider
-      value={{ token, setLogin, setLogout, isLogged, userId }}
+      value={{
+        token,
+        setLogin,
+        setLogout,
+        isLogged,
+        userId,
+        setUserDataWithinSameToken,
+        userData,
+      }}
     >
       {children}
     </AuthContext.Provider>

@@ -20,6 +20,7 @@ import RangePickerPopup from "@/components/dashboard/charts/RangePickerPopup";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import toast from "react-hot-toast";
 import dayjs, { Dayjs } from "dayjs";
+import { useQuery } from "@tanstack/react-query";
 
 const chartConfig = {
   amount: {
@@ -33,9 +34,7 @@ export function MainChart() {
     left: 30,
     right: 30,
   });
-  const [chartData, setChartData] = useState(null);
   const [showRangePicker, setShowRangePicker] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [startDate, setStartDate] = useState<Dayjs>(
     dayjs().subtract(30, "day")
   );
@@ -43,34 +42,32 @@ export function MainChart() {
 
   const DashboardService = useDashboardService();
 
-  const fetchData = async (startDate: Dayjs, endDate: Dayjs) => {
-    setIsLoading(true);
-    try {
-      const response = await DashboardService.getMainChartData(
+  const {
+    data: chartData,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: [
+      "dashboard",
+      "mainChartData",
+      startDate.format("YYYY-MM-DD"),
+      endDate.format("YYYY-MM-DD"),
+    ],
+    queryFn: () =>
+      DashboardService.getMainChartData(
         startDate.format("YYYY-MM-DD"),
         endDate.format("YYYY-MM-DD")
-      );
-      setChartData(response);
-    } catch (err) {
-      toast.error("Failed to fetch main chart: " + err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      ),
+  });
 
-  const handleDateChange = (newStartDate: Dayjs, newEndDate: Dayjs) => {
-    setStartDate(newStartDate);
-    setEndDate(newEndDate);
-  };
-
-  useEffect(() => {
-    fetchData(startDate, endDate);
-  }, [startDate, endDate]);
+  if (isError) {
+    toast.error("Failed to fetch main chart data: " + error.message);
+  }
 
   useEffect(() => {
     const updatePadding = () => {
       const width = window.innerWidth;
-
       if (width <= 640) {
         setPadding({ left: 0, right: 40 });
       } else if (width <= 1500) {
@@ -85,6 +82,11 @@ export function MainChart() {
 
     return () => window.removeEventListener("resize", updatePadding);
   }, []);
+
+  const handleDateChange = (newStartDate: Dayjs, newEndDate: Dayjs) => {
+    setStartDate(newStartDate);
+    setEndDate(newEndDate);
+  };
 
   if (isLoading || !chartData) {
     return <LoadingSpinner />;

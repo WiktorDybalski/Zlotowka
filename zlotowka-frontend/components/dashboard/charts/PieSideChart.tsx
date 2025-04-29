@@ -14,11 +14,11 @@ import {
   ChartContainer,
   ChartTooltip,
 } from "@/components/ui/chart";
-import { useEffect, useState } from "react";
 import { useDashboardService } from "@/services/DashboardService";
 import formatMoney from "@/utils/formatMoney";
 import toast from "react-hot-toast";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
+import { useQuery } from "@tanstack/react-query";
 
 const chartConfig = {
   value: {
@@ -35,41 +35,35 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function PieSideChart() {
-  const [chartData, setChartData] = useState([]);
-  const [total, setTotal] = useState("0.00");
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
   const DashboardService = useDashboardService();
 
-  useEffect(() => {
-    DashboardService.getPieSideChartData()
-      .then((data) => {
-        const formattedChartData = [
-          {
-            category: chartConfig.Income.label,
-            value: data.monthlyIncome,
-            fill: chartConfig.Income.color,
-          },
-          {
-            category: chartConfig.Expenses.label,
-            value: data.monthlyExpenses,
-            fill: chartConfig.Expenses.color,
-          },
-        ];
-        setChartData(formattedChartData);
-        setTotal(data.monthlyBalance);
-      })
-      .catch((err) => {
-        toast.error("Failed to fetch pie chart data: " + err);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, []);
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["dashboard", "getPieSideChartData"],
+    queryFn: DashboardService.getPieSideChartData,
+  });
 
-  if (isLoading || !chartData) {
+  if (isError) {
+    toast.error("Failed to fetch pie chart data: " + error.message);
+  }
+
+  if (isLoading || !data) {
     return <LoadingSpinner />;
   }
+
+  // Przygotowanie danych do wykresu
+  const formattedChartData = [
+    {
+      category: chartConfig.Income.label,
+      value: data.monthlyIncome,
+      fill: chartConfig.Income.color,
+    },
+    {
+      category: chartConfig.Expenses.label,
+      value: data.monthlyExpenses,
+      fill: chartConfig.Expenses.color,
+    },
+  ];
+  const total = data.monthlyBalance;
 
   return (
     <Card className="flex flex-col w-full h-full bg-transparent z-10 border-none">
@@ -96,9 +90,9 @@ export function PieSideChart() {
                 return null;
               }}
             />
-            {chartData.some((item) => item.value != 0) ? (
+            {formattedChartData.some((item) => item.value !== 0) ? (
               <Pie
-                data={chartData}
+                data={formattedChartData}
                 dataKey="value"
                 nameKey="category"
                 innerRadius="70%"
@@ -153,7 +147,7 @@ export function PieSideChart() {
         </ChartContainer>
       </CardContent>
       <CardFooter className="w-full flex flex-wrap justify-center gap-x-8 gap-y-2 px-4">
-        {chartData.map((item) => (
+        {formattedChartData.map((item) => (
           <div key={item.category} className="flex items-center gap-2">
             <span
               className="w-5 h-2"
