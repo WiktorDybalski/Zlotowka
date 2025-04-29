@@ -101,6 +101,12 @@ public class OneTimeTransactionService {
                 .collect(Collectors.toList());
     }
 
+    public void validateUserId(Integer userId, CustomUserDetails userDetails) {
+        if (!userId.equals(userDetails.getUser().getUserId())) {
+            throw new IllegalArgumentException("Access denied");
+        }
+    }
+
     private OneTimeTransactionDTO getOneTimeTransactionDTO(OneTimeTransaction transaction) {
         return OneTimeTransactionDTO.builder()
                 .transactionId(transaction.getTransactionId())

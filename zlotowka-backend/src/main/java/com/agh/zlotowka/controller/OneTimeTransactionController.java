@@ -29,7 +29,7 @@ public class OneTimeTransactionController {
     public ResponseEntity<OneTimeTransactionDTO> createOneTimeTransaction(
             @Valid @RequestBody OneTimeTransactionRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        validateUserId(request.userId(), userDetails);
+        oneTimeTransactionService.validateUserId(request.userId(), userDetails);
         return ResponseEntity.ok(oneTimeTransactionService.createTransaction(request));
     }
 
@@ -37,7 +37,9 @@ public class OneTimeTransactionController {
     public ResponseEntity<OneTimeTransactionDTO> getOneTimeTransaction(
             @PathVariable Integer id,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return ResponseEntity.ok(oneTimeTransactionService.getTransactionWithUserCheck(id, userDetails));
+        oneTimeTransactionService.validateUserId(oneTimeTransactionService
+                .getTransaction(id).userId(), userDetails);
+        return ResponseEntity.ok(oneTimeTransactionService.getTransaction(id));
     }
 
     @PutMapping("/{id}")
@@ -45,7 +47,7 @@ public class OneTimeTransactionController {
             @PathVariable Integer id,
             @Valid @RequestBody OneTimeTransactionRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        validateUserId(request.userId(), userDetails);
+        oneTimeTransactionService.validateUserId(request.userId(), userDetails);
         return ResponseEntity.ok(oneTimeTransactionService.updateOneTimeTransaction(request, id));
     }
 
@@ -53,7 +55,9 @@ public class OneTimeTransactionController {
     public ResponseEntity<Void> removeOneTimeTransaction(
             @PathVariable Integer id,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        oneTimeTransactionService.deleteTransactionWithUserCheck(id, userDetails);
+        oneTimeTransactionService.validateUserId(
+                oneTimeTransactionService.getTransaction(id).userId(), userDetails);
+        oneTimeTransactionService.deleteTransaction(id);
         return ResponseEntity.noContent().build();
     }
 
@@ -61,16 +65,10 @@ public class OneTimeTransactionController {
     public ResponseEntity<List<OneTimeTransactionDTO>> getAllOneTimeTransactions(
             @PathVariable Integer userId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (!userId.equals(userDetails.getUser().getUserId())) {
-            throw new IllegalArgumentException("Access denied");
-        }
+        oneTimeTransactionService.validateUserId(userId, userDetails);
         List<OneTimeTransactionDTO> oneTimeTransactions = oneTimeTransactionService.getAllTransactionsByUserId(userId);
         return ResponseEntity.ok(oneTimeTransactions);
     }
 
-    private void validateUserId(Integer userId, CustomUserDetails userDetails) {
-        if (!userId.equals(userDetails.getUser().getUserId())) {
-            throw new IllegalArgumentException("Access denied");
-        }
-    }
+
 }

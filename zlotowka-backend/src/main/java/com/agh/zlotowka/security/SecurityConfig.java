@@ -29,7 +29,12 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .ignoringRequestMatchers("/","/auth/register", "/auth/login")
+                        .ignoringRequestMatchers(
+                                "/auth/**",
+                                "/recurring-transaction/**",
+                                "/onetime-transaction/**",
+                                "/general-transactions/**"
+                        )
                 )
                 .sessionManagement(sess -> sess
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

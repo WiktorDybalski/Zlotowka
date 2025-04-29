@@ -34,7 +34,7 @@ public class GeneralTransactionController {
     public ResponseEntity<List<SinglePlotData>> getUserBudgetInDateRange(
             @Valid @RequestBody UserDataInDateRangeRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        validateUserId(request.userId(), userDetails);
+        generalTransactionService.validateUserId(request.userId(), userDetails);
         return ResponseEntity.ok(generalTransactionService.getEstimatedBudgetInDateRange(request));
     }
 
@@ -43,15 +43,15 @@ public class GeneralTransactionController {
             @PathVariable Integer userId,
             @RequestParam Boolean isIncome,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        validateUserId(userId, userDetails);
+        generalTransactionService.validateUserId(userId, userDetails);
         return ResponseEntity.ok(generalTransactionService.getNextTransaction(userId, isIncome));
     }
 
     @GetMapping("/estimated-balance/{userId}")
-    public ResponseEntity<Map<String, BigDecimal>> getEstimatedBalanceAtTheEndOfTheMonth(
+    public ResponseEntity<Map<String, BigDecimal>> getEstimatedBalance(
             @PathVariable Integer userId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        validateUserId(userId, userDetails);
+        generalTransactionService.validateUserId(userId, userDetails);
         BigDecimal balance = generalTransactionService.getEstimatedBalanceAtTheEndOfTheMonth(userId);
         return ResponseEntity.ok(Map.of("estimatedBalance", balance));
     }
@@ -60,7 +60,7 @@ public class GeneralTransactionController {
     public ResponseEntity<RevenuesAndExpensesResponse> getRevenuesAndExpensesInRange(
             @Valid @RequestBody UserDataInDateRangeRequest request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        validateUserId(request.userId(), userDetails);
+        generalTransactionService.validateUserId(request.userId(), userDetails);
         return ResponseEntity.ok(generalTransactionService.getRevenuesAndExpensesInRange(request));
     }
 
@@ -68,7 +68,7 @@ public class GeneralTransactionController {
     public ResponseEntity<MonthlySummaryDto> getMonthlySummary(
             @PathVariable Integer userId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        validateUserId(userId, userDetails);
+        generalTransactionService.validateUserId(userId, userDetails);
         return ResponseEntity.ok(generalTransactionService.getMonthlySummary(userId));
     }
 
@@ -76,14 +76,10 @@ public class GeneralTransactionController {
     public ResponseEntity<Map<String, BigDecimal>> getCurrentBalance(
             @PathVariable Integer userId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
-        validateUserId(userId, userDetails);
+        generalTransactionService.validateUserId(userId, userDetails);
         BigDecimal currentBalance = generalTransactionService.getCurrentBalance(userId);
         return ResponseEntity.ok(Map.of("currentBalance", currentBalance));
     }
-    private void validateUserId(Integer userId, CustomUserDetails userDetails) {
-        if (!userId.equals(userDetails.getUser().getUserId())) {
-            throw new IllegalArgumentException("Access denied");
-        }
-    }
+
 }
 
