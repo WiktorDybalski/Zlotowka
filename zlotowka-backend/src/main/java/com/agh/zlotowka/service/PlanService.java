@@ -5,14 +5,8 @@ import com.agh.zlotowka.dto.PlanRequest;
 import com.agh.zlotowka.exception.BudgetInsufficientException;
 import com.agh.zlotowka.exception.CurrencyConversionException;
 import com.agh.zlotowka.exception.PlanCompletionException;
-import com.agh.zlotowka.model.Currency;
-import com.agh.zlotowka.model.Plan;
-import com.agh.zlotowka.model.User;
-import com.agh.zlotowka.model.Subplan;
-import com.agh.zlotowka.repository.CurrencyRepository;
-import com.agh.zlotowka.repository.PlanRepository;
-import com.agh.zlotowka.repository.SubPlanRepository;
-import com.agh.zlotowka.repository.UserRepository;
+import com.agh.zlotowka.model.*;
+import com.agh.zlotowka.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +27,7 @@ public class PlanService {
     private final CurrencyRepository currencyRepository;
     private final SubPlanRepository subPlanRepository;
     private final CurrencyService currencyService;
+    private final OneTimeTransactionRepository oneTimeTransactionRepository;
 
     @Transactional
     public PlanDTO createPlan(PlanRequest request){
@@ -83,24 +78,24 @@ public class PlanService {
                 .map(this::getPlanDTO)
                 .collect(Collectors.toList());
     }
-    
-    
+
+
     private PlanDTO getPlanDTO(Plan plan) {
         BigDecimal currentAmount = calculateCurrentBudget(plan);
 
-        return PlanDTO.builder()
-                .planId(plan.getPlanId())
-                .userId(plan.getUser().getUserId())
-                .name(plan.getName())
-                .date(plan.getDate())
-                .amount(plan.getRequiredAmount())
-                .currencyId(plan.getCurrency().getCurrencyId())
-                .description(plan.getDescription())
-                .completed(plan.getCompleted())
-                .subplansCompleted(plan.getSubplansCompleted())
-                .canBeCompleted(currentAmount.compareTo(plan.getRequiredAmount()) >= 0)
-                .actualAmount(currentAmount)
-                .build();
+        return new PlanDTO(
+                plan.getPlanId(),
+                plan.getUser().getUserId(),
+                plan.getName(),
+                plan.getDescription(),
+                plan.getRequiredAmount(),
+                plan.getDate(),
+                plan.getCurrency().getCurrencyId(),
+                plan.getCompleted(),
+                currentAmount,
+                currentAmount.compareTo(plan.getRequiredAmount()) >= 0,
+                plan.getSubplansCompleted()
+        );
     }
 
 
@@ -170,6 +165,17 @@ public class PlanService {
         planRepository.save(plan);
         userRepository.save(plan.getUser());
 
+        OneTimeTransaction transaction = OneTimeTransaction.builder()
+                .user(plan.getUser())
+                .name("Marzenie:" + plan.getName())
+                .amount(plan.getRequiredAmount())
+                .currency(plan.getCurrency())
+                .isIncome(false)
+                .date(plan.getDate())
+                .description(plan.getDescription())
+                .build();
+
+        oneTimeTransactionRepository.save(transaction);
         return getPlanDTO(plan);
     }
 

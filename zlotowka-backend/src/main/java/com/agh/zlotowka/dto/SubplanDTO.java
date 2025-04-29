@@ -1,11 +1,8 @@
 package com.agh.zlotowka.dto;
 
-import lombok.Builder;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Builder
 public record SubplanDTO (
         Integer planId,
         Integer subplanId,

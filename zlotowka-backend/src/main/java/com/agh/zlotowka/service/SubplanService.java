@@ -4,9 +4,10 @@ package com.agh.zlotowka.service;
 import com.agh.zlotowka.dto.SubplanDTO;
 import com.agh.zlotowka.dto.SubplanRequest;
 import com.agh.zlotowka.exception.CurrencyConversionException;
+import com.agh.zlotowka.model.OneTimeTransaction;
 import com.agh.zlotowka.model.Plan;
 import com.agh.zlotowka.model.Subplan;
-import com.agh.zlotowka.model.User;
+import com.agh.zlotowka.repository.OneTimeTransactionRepository;
 import com.agh.zlotowka.repository.PlanRepository;
 import com.agh.zlotowka.repository.SubPlanRepository;
 import com.agh.zlotowka.repository.UserRepository;
@@ -29,6 +30,7 @@ public class SubplanService {
     private final SubPlanRepository subPlanRepository;
     private final UserRepository userRepository;
     private final CurrencyService currencyService;
+    private final OneTimeTransactionRepository oneTimeTransactionRepository;
 
     @Transactional
     public SubplanDTO createSubplan(SubplanRequest request) {
@@ -50,23 +52,27 @@ public class SubplanService {
                 .build();
 
         subplan = subPlanRepository.save(subplan);
+        calculatePlanSubplanCompletion(subplan.getPlan());
 
         return getSubplanDTO(subplan);
     }
 
     private SubplanDTO getSubplanDTO(Subplan subplan) {
-        return SubplanDTO.builder()
-                .planId(subplan.getPlan().getPlanId())
-                .name(subplan.getName())
-                .amount(subplan.getRequiredAmount())
-                .description(subplan.getDescription())
-                .completed(subplan.getCompleted())
-                .subplanId(subplan.getSubplanId())
-                .currencyId(subplan.getPlan().getCurrency().getCurrencyId())
-                .actualAmount(calculateCurrentBudget(subplan))
-                .canBeCompleted(subplan.getRequiredAmount().compareTo(subplan.getPlan().getUser().getCurrentBudget()) <= 0)
-                .date(subplan.getDate())
-                .build();
+        BigDecimal actualAmount = calculateCurrentBudget(subplan);
+        boolean canBeCompleted = subplan.getRequiredAmount().compareTo(subplan.getPlan().getUser().getCurrentBudget()) <= 0;
+
+        return new SubplanDTO(
+                subplan.getPlan().getPlanId(),
+                subplan.getSubplanId(),
+                subplan.getName(),
+                subplan.getDescription(),
+                subplan.getRequiredAmount(),
+                subplan.getPlan().getCurrency().getCurrencyId(),
+                subplan.getCompleted(),
+                actualAmount,
+                canBeCompleted,
+                subplan.getDate()
+        );
     }
 
     public SubplanDTO getSubplan(Integer id) {
@@ -150,6 +156,17 @@ public class SubplanService {
         userRepository.save(plan.getUser());
         subPlanRepository.save(subplan);
 
+        OneTimeTransaction transaction = OneTimeTransaction.builder()
+                .user(plan.getUser())
+                .name("Część marzenia: " + subplan.getName())
+                .amount(subplan.getRequiredAmount())
+                .currency(plan.getCurrency())
+                .isIncome(false)
+                .date(subplan.getDate())
+                .description(subplan.getDescription())
+                .build();
+
+        oneTimeTransactionRepository.save(transaction);
         return getSubplanDTO(subplan);
     }
 
@@ -196,24 +213,6 @@ public class SubplanService {
         Subplan subplan = subPlanRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Subplan with Id %d not found", id)));
 
-        User user = subplan.getPlan().getUser();
-        if (subplan.getCompleted() && !subplan.getPlan().getCompleted()) {
-            try {
-                BigDecimal correctedAmount = currencyService.convertCurrency(
-                        subplan.getRequiredAmount(),
-                        subplan.getPlan().getCurrency().getIsoCode(),
-                        user.getCurrency().getIsoCode()
-                );
-                user.setCurrentBudget(user.getCurrentBudget().add(correctedAmount));
-            } catch (CurrencyConversionException e) {
-                log.error("Currency conversion failed", e);
-                throw new IllegalArgumentException("Currency conversion failed");
-            } catch (Exception e) {
-                log.error("Unexpected error from CurrencyService", e);
-            }
-        }
-
-        userRepository.save(user);
         subPlanRepository.delete(subplan);
         calculatePlanSubplanCompletion(subplan.getPlan());
     }
