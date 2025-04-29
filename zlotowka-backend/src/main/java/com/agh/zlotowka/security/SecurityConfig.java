@@ -27,6 +27,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .ignoringRequestMatchers(
@@ -34,14 +35,15 @@ public class SecurityConfig {
                                 "/auth/**",
                                 "/recurring-transaction/**",
                                 "/onetime-transaction/**",
-                                "/general-transactions/**"
+                                "/general-transactions/**",
+                                "/user/currency"
                         )
                 )
                 .sessionManagement(sess -> sess
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/auth/**").permitAll()
+                        .requestMatchers("/", "/auth/**","/user/currency").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(e -> e

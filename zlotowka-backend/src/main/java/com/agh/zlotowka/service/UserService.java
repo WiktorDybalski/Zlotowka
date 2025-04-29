@@ -33,6 +33,18 @@ public class UserService {
     private final CurrencyRepository currencyRepository;
     private final PasswordEncoder passwordEncoder;
 
+
+    @Transactional
+    public void addCurrencies() {
+        Currency currencyPLN = Currency.builder().isoCode("PLN").build();
+        Currency currencyUSD = Currency.builder().isoCode("USD").build();
+        Currency currencyEUR = Currency.builder().isoCode("EUR").build();
+
+        currencyRepository.save(currencyPLN);
+        currencyRepository.save(currencyUSD);
+        currencyRepository.save(currencyEUR);
+    }
+
     @Transactional
     public User registerUser(RegistrationRequest request) {
         if (userRepository.findByEmail(request.email()).isPresent()) {
