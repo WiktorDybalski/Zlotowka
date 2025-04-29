@@ -3,15 +3,6 @@
 import { useAuth } from "@/components/providers/AuthProvider";
 import sendToBackend from "@/lib/sendToBackend";
 
-async function getMockedResponse() {
-  //TODO delete!!!!!
-  await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate network delay
-  return {
-    token: "mocked_token",
-    userId: 1,
-  };
-}
-
 export function useLoginService() {
   const Auth = useAuth();
 
@@ -43,23 +34,18 @@ export function useLoginService() {
 
   // Login (endpoint: POST /auth/login)
   async function loginUser(credentials: { email: string; password: string }) {
-    let res = null;
-    if (credentials.email === "kamil.rudny@gmail.com") {
-      //TODO bypass delete!!!!!
-      res = await getMockedResponse();
-    } else {
-      res = await sendToBackend(
-        `auth/login`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(credentials),
+    const res = await sendToBackend(
+      `auth/login`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        "Failed to login"
-      );
-    }
+        body: JSON.stringify(credentials),
+      },
+      "Failed to login"
+    );
+
     if (res.token && res.user.userId) {
       Auth.setLogin(res.token, res.user.userId); // Set the token in the auth context
     } else {
