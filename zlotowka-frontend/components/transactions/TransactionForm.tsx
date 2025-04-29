@@ -7,42 +7,84 @@ import ConfirmButton from "@/components/general/Button";
 import dayjs from "dayjs";
 import DatePicker from "@/components/general/DatePicker";
 import GenericPopup from "@/components/general/GenericPopup";
+import { useQuery } from "@tanstack/react-query";
+import { useCurrencyService } from "@/services/CurrencyController";
+import toast from "react-hot-toast";
+import LoadingSpinner from "../general/LoadingSpinner";
 
 const inputClass =
-    "border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md min-w-76 ";
+  "border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md min-w-76 ";
+
+const defaultTransactionData: TransactionData = {
+  name: "",
+  date: dayjs().format("YYYY-MM-DD"),
+  frequency: "Raz",
+  isIncome: true,
+  amount: 0,
+  currency: {
+    currencyId: 1,
+    isoCode: "PLN",
+  },
+  description: "",
+};
 
 export default function TransactionForm({
-                                          transaction,
-                                          onClose,
-                                          header,
-                                          submitButtonText,
-                                          submitButtonIcon,
-                                        }: TransactionFormProps) {
+  transaction,
+  onClose,
+  header,
+  submitButtonText,
+  submitButtonIcon,
+  onSubmit,
+}: TransactionFormProps) {
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [formData, setFormData] = useState<TransactionData>(
-      transaction || {
-        name: "",
-        date: dayjs().format("YYYY-MM-DD"),
-        frequency: "Raz",
-        type: "expense",
-        amount: "",
-        currency: "PLN",
-      },
+    transaction || defaultTransactionData
   );
 
+  const CurrencyService = useCurrencyService();
+
+  const { data: currencyList, isSuccess: isCurrencyListReady } = useQuery({
+    queryKey: ["currencyData"],
+    queryFn: CurrencyService.getCurrencyList,
+  });
+
   const handleInputChange = (
-      e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+
+    if (name === "amount") {
+      const valueWithDot = value.replace(",", ".");
+      const parsedValue = parseFloat(valueWithDot);
+
+      if (!Number.isNaN(parsedValue)) {
+        setFormData((prevState) => ({
+          ...prevState,
+          amount: parsedValue,
+        }));
+      }
+    }
+    if (name === "currency") {
+      const selectedCurrency = currencyList.find(
+        (currency) => currency.currencyId === Number(value)
+      );
+      if (selectedCurrency) {
+        setFormData((prev) => ({
+          ...prev,
+          currency: selectedCurrency,
+        }));
+      }
+    }
   };
 
-  const handleTypeChange = (type: "income" | "expense") => {
+  const handleTypeChange = (isIncome: boolean) => {
     setFormData({
       ...formData,
-      type,
+      isIncome: isIncome,
     });
   };
 
@@ -50,127 +92,166 @@ export default function TransactionForm({
     setIsDatePickerOpen((prev) => !prev);
   };
 
+  function validateFormData(data: TransactionData) {
+    if (isNaN(data.amount)) {
+      toast.error("Price is not a number!");
+      return false;
+    } else if (!data.amount) {
+      toast.error("Price is empty!");
+      return false;
+    } else if (data.isIncome !== false && data.isIncome !== true) {
+      toast.error("Type is not selected!" + JSON.stringify(data.isIncome));
+      return false;
+    } else if (!data.name || data.name.length < 3) {
+      toast.error("Invalid name!");
+      return false;
+    }
+    return true;
+  }
+
   const handleSubmit = () => {
-    // Add form submission logic here
+    if (!validateFormData(formData)) {
+      return;
+    }
     onClose();
+    onSubmit(formData); // Call the onSubmit function with the form data
   };
 
   return (
-      <GenericPopup
-          title={header}
-          onClose={onClose}
-          showConfirm={false} // We'll use our custom button instead
-      >
-        <>
-          {/* Name */}
-          <div className="py-1">
-            <h3 className="text-md my-2 font-medium">Nazwa</h3>
-            <input
-                name="name"
-                className={inputClass}
-                type="text"
-                placeholder="Zakupy spożywcze"
-                value={formData.name}
-                onChange={handleInputChange}
-            />
-          </div>
+    <GenericPopup
+      title={header}
+      onClose={onClose}
+      showConfirm={false} // We'll use our custom button instead
+    >
+      <>
+        {/* Name */}
+        <div className="py-1">
+          <h3 className="text-md my-2 font-medium">Nazwa</h3>
+          <input
+            name="name"
+            className={inputClass}
+            type="text"
+            placeholder="Zakupy spożywcze"
+            value={formData.name}
+            onChange={handleInputChange}
+          />
+        </div>
 
-          {/* Date picker */}
-          <div className="py-1">
-            <h3 className="text-md my-2 font-medium">Data</h3>
-            <input
-                name="date"
-                className={inputClass + " font-lato"}
-                type="text"
-                value={formData.date}
-                onChange={handleInputChange}
-                onClick={toggleDatePicker}
-            />
-            <DatePicker
-                isOpen={isDatePickerOpen}
-                currentDate={dayjs(formData.date)}
-                setIsOpen={setIsDatePickerOpen}
-                setDate={(newDate) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      date: dayjs(newDate).format("YYYY-MM-DD"),
-                    }))
-                }
-            />
-          </div>
+        <div className="py-1">
+          <h3 className="text-md my-2 font-medium">Opis</h3>
+          <input
+            name="description"
+            className={inputClass}
+            type="text"
+            placeholder="Kilogram ziemniaków"
+            value={formData.description}
+            onChange={handleInputChange}
+          />
+        </div>
 
-          {/* Frequency select */}
-          <div className="py-1">
-            <h3 className="text-md my-2 font-medium">Cykliczność</h3>
-            <select
-                name="frequency"
-                value={formData.frequency}
-                onChange={handleInputChange}
-                className={inputClass + "bg-background"}
-            >
-              <option value="Raz">Raz</option>
-              <option value="Codziennie">Codziennie</option>
-              <option value="Co tydzień">Co tydzień</option>
-              <option value="Co miesiąc">Co miesiąc</option>
-            </select>
-          </div>
+        {/* Date picker */}
+        <div className="py-1">
+          <h3 className="text-md my-2 font-medium">Data</h3>
+          <input
+            name="date"
+            className={inputClass + " font-lato"}
+            type="text"
+            value={formData.date}
+            onChange={handleInputChange}
+            onClick={toggleDatePicker}
+          />
+          <DatePicker
+            isOpen={isDatePickerOpen}
+            currentDate={dayjs(formData.date)}
+            setIsOpen={setIsDatePickerOpen}
+            setDate={(newDate) =>
+              setFormData((prev) => ({
+                ...prev,
+                date: dayjs(newDate).format("YYYY-MM-DD"),
+              }))
+            }
+          />
+        </div>
 
-          {/* Income and expense radio's */}
-          <div className="flex gap-x-2 my-4">
-            <div className="flex gap-x-2">
-              <label>
-                <input
-                    type="radio"
-                    checked={formData.type === "income"}
-                    onChange={() => handleTypeChange("income")}
-                />
-              </label>
-              <h3>Przychód</h3>
-            </div>
-            <div className="flex gap-x-2">
-              <label>
-                <input
-                    type="radio"
-                    checked={formData.type === "expense"}
-                    onChange={() => handleTypeChange("expense")}
-                />
-              </label>
-              <h3>Wydatek</h3>
-            </div>
-          </div>
+        {/* Frequency select */}
+        <div className="py-1">
+          <h3 className="text-md my-2 font-medium">Cykliczność</h3>
+          <select
+            name="frequency"
+            value={formData.frequency}
+            onChange={handleInputChange}
+            className={inputClass + " bg-background"}
+          >
+            <option value="Raz">Raz</option>
+            <option value="Codziennie">Codziennie</option>
+            <option value="Co tydzień">Co tydzień</option>
+            <option value="Co miesiąc">Co miesiąc</option>
+          </select>
+        </div>
 
-          {/* Price and currency */}
+        {/* Income and expense radio's */}
+        <div className="flex gap-x-2 my-4">
+          <div className="flex gap-x-2">
+            <label>
+              <input
+                type="radio"
+                checked={formData.isIncome === true}
+                onChange={() => handleTypeChange(true)}
+              />
+            </label>
+            <h3>Przychód</h3>
+          </div>
+          <div className="flex gap-x-2">
+            <label>
+              <input
+                type="radio"
+                checked={formData.isIncome === false}
+                onChange={() => handleTypeChange(false)}
+              />
+            </label>
+            <h3>Wydatek</h3>
+          </div>
+        </div>
+
+        {/* Price and currency */}
+        {isCurrencyListReady ? (
           <div className="flex gap-x-2 min-w-72">
             <input
-                name="amount"
-                className="border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md font-lato w-full"
-                type="text"
-                placeholder="Kwota"
-                value={formData.amount}
-                onChange={handleInputChange}
+              name="amount"
+              className="border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md font-lato w-full"
+              type="text"
+              placeholder="Kwota"
+              value={formData.amount}
+              onChange={handleInputChange}
             />
+
             <select
-                name="currency"
-                value={formData.currency}
-                onChange={handleInputChange}
-                className="border-[1px] border-neutral-300 rounded-[5px] px-2 text-md bg-background"
+              name="currency"
+              value={formData.currency.isoCode}
+              onChange={handleInputChange}
+              className="border-[1px] border-neutral-300 rounded-[5px] px-2 text-md bg-background"
             >
-              <option value="PLN">PLN</option>
-              <option value="EUR">EUR</option>
-              <option value="USD">USD</option>
+              {currencyList.map((currency) => (
+                <option key={currency.currencyId} value={currency.currencyId}>
+                  {currency.isoCode}
+                </option>
+              ))}
             </select>
           </div>
+        ) : (
+          <LoadingSpinner />
+        )}
 
-          {/* Button */}
-          <ConfirmButton
-              icon={submitButtonIcon}
-              variant="dark"
-              className="mt-7"
-              onClick={handleSubmit}
-          >
-            {submitButtonText}
-          </ConfirmButton>
-        </>
-      </GenericPopup>
+        {/* Button */}
+        <ConfirmButton
+          icon={submitButtonIcon}
+          variant="dark"
+          className="mt-7"
+          onClick={handleSubmit}
+        >
+          {submitButtonText}
+        </ConfirmButton>
+      </>
+    </GenericPopup>
   );
 }

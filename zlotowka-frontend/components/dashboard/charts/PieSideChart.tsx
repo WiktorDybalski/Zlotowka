@@ -15,7 +15,7 @@ import {
   ChartTooltip,
 } from "@/components/ui/chart";
 import { useEffect, useState } from "react";
-import DashboardService from "@/services/DashboardService";
+import { useDashboardService } from "@/services/DashboardService";
 import formatMoney from "@/utils/formatMoney";
 import toast from "react-hot-toast";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
@@ -39,8 +39,10 @@ export function PieSideChart() {
   const [total, setTotal] = useState("0.00");
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  const DashboardService = useDashboardService();
+
   useEffect(() => {
-    DashboardService.getPieSideChartData(1)
+    DashboardService.getPieSideChartData()
       .then((data) => {
         const formattedChartData = [
           {

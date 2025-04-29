@@ -4,7 +4,7 @@ import ThreeElementsCard from "@/components/dashboard/cards/generic/ThreeElement
 import CardText from "@/components/dashboard/cards/generic/CardText";
 import CardNumber from "@/components/dashboard/cards/generic/CardNumber";
 import { useEffect, useState } from "react";
-import CardService from "@/services/CardService";
+import { useCardService } from "@/services/CardService";
 import formatMoney from "@/utils/formatMoney";
 import { NextTransactionResponse } from "@/interfaces/dashboard/cards/NextTransactionResponse";
 import TextNumberField from "@/components/dashboard/cards/generic/TextNumberField";
@@ -16,9 +16,10 @@ export default function NextExpenseCard() {
   const [nextExpense, setNextExpense] =
     useState<NextTransactionResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const CardService = useCardService();
 
   useEffect(() => {
-    CardService.getNextTransaction(1, false)
+    CardService.getNextTransaction(false)
       .then((response) => {
         setNextExpense(response);
       })
