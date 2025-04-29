@@ -12,6 +12,7 @@ import com.agh.zlotowka.model.RecurringTransaction;
 import com.agh.zlotowka.repository.OneTimeTransactionRepository;
 import com.agh.zlotowka.repository.RecurringTransactionRepository;
 import com.agh.zlotowka.repository.UserRepository;
+import com.agh.zlotowka.security.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -139,6 +140,12 @@ public class GeneralTransactionService {
         }
 
         return new ArrayList<>(uniqueByDate.values());
+    }
+
+    public void validateUserId(Integer userId, CustomUserDetails userDetails) {
+        if (!userId.equals(userDetails.getUser().getUserId())) {
+            throw new IllegalArgumentException("Access denied");
+        }
     }
 
     private void recurringTransactionsIntoOneTime(int userId, LocalDate startDate, LocalDate endDate, String userCurrency, List<TransactionBudgetInfo> allTransactions) {

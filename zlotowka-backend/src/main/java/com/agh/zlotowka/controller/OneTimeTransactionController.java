@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.agh.zlotowka.security.CustomUserDetails;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.util.List;
 
@@ -24,32 +26,49 @@ public class OneTimeTransactionController {
     private final OneTimeTransactionService oneTimeTransactionService;
 
     @PostMapping
-    public ResponseEntity<OneTimeTransactionDTO> createOneTimeTransaction(@Valid @RequestBody OneTimeTransactionRequest request) {
-        OneTimeTransactionDTO oneTimeTransaction = oneTimeTransactionService.createTransaction(request);
-        return ResponseEntity.ok(oneTimeTransaction);
+    public ResponseEntity<OneTimeTransactionDTO> createOneTimeTransaction(
+            @Valid @RequestBody OneTimeTransactionRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        oneTimeTransactionService.validateUserId(request.userId(), userDetails);
+        return ResponseEntity.ok(oneTimeTransactionService.createTransaction(request));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<OneTimeTransactionDTO> getOneTimeTransaction(@PathVariable Integer id) {
-        OneTimeTransactionDTO oneTimeTransaction = oneTimeTransactionService.getTransaction(id);
-        return ResponseEntity.ok(oneTimeTransaction);
+    public ResponseEntity<OneTimeTransactionDTO> getOneTimeTransaction(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        oneTimeTransactionService.validateUserId(oneTimeTransactionService
+                .getTransaction(id).userId(), userDetails);
+        return ResponseEntity.ok(oneTimeTransactionService.getTransaction(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<OneTimeTransactionDTO> updateOneTimeTransaction(@PathVariable Integer id, @Valid @RequestBody OneTimeTransactionRequest request) {
-        OneTimeTransactionDTO updatedTransaction = oneTimeTransactionService.updateOneTimeTransaction(request, id);
-        return ResponseEntity.ok(updatedTransaction);
+    public ResponseEntity<OneTimeTransactionDTO> updateOneTimeTransaction(
+            @PathVariable Integer id,
+            @Valid @RequestBody OneTimeTransactionRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        oneTimeTransactionService.validateUserId(request.userId(), userDetails);
+        return ResponseEntity.ok(oneTimeTransactionService.updateOneTimeTransaction(request, id));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> removeOneTimeTransaction(@PathVariable Integer id) {
+    public ResponseEntity<Void> removeOneTimeTransaction(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        oneTimeTransactionService.validateUserId(
+                oneTimeTransactionService.getTransaction(id).userId(), userDetails);
         oneTimeTransactionService.deleteTransaction(id);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/all/{userId}")
-    public ResponseEntity<List<OneTimeTransactionDTO>> getAllOneTimeTransactions(@PathVariable Integer userId) {
+    public ResponseEntity<List<OneTimeTransactionDTO>> getAllOneTimeTransactions(
+            @PathVariable Integer userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        oneTimeTransactionService.validateUserId(userId, userDetails);
         List<OneTimeTransactionDTO> oneTimeTransactions = oneTimeTransactionService.getAllTransactionsByUserId(userId);
         return ResponseEntity.ok(oneTimeTransactions);
     }
+
+
 }

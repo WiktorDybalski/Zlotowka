@@ -11,6 +11,9 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer> {
+
+    Optional<User> findByEmail(String email);
+
     @Query("SELECT u.currentBudget FROM User u WHERE u.userId = :userId")
     Optional<BigDecimal> getUserBudget(@Param("userId") int userId);
 
