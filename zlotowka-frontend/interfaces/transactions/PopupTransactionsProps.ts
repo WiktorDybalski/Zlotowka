@@ -1,4 +1,5 @@
 import { TransactionData } from "@/interfaces/transactions/TransactionsData";
+import { OneTimeTransaction } from "@/services/TransactionService";
 
 export interface AddTransactionProps {
   setShowAddTransaction: React.Dispatch<React.SetStateAction<boolean>>;
@@ -6,8 +7,9 @@ export interface AddTransactionProps {
 }
 
 export interface EditTransactionProps {
-  transaction: TransactionData;
+  transaction: OneTimeTransaction;
   setShowEditTransaction: React.Dispatch<React.SetStateAction<boolean>>;
+  transactionRefresh: () => void;
 }
 
 export interface TransactionFormProps {

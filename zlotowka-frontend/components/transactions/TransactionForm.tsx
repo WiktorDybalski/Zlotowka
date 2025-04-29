@@ -10,6 +10,7 @@ import GenericPopup from "@/components/general/GenericPopup";
 import { useQuery } from "@tanstack/react-query";
 import { useCurrencyService } from "@/services/CurrencyController";
 import toast from "react-hot-toast";
+import LoadingSpinner from "../general/LoadingSpinner";
 
 const inputClass =
   "border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md min-w-76 ";
@@ -42,54 +43,34 @@ export default function TransactionForm({
 
   const CurrencyService = useCurrencyService();
 
-
-  const {
-    data: currencyList,
-    isLoading: isCurrenciesLoading,
-    isError: isCurrenciecError,
-    isSuccess: isCurrenciesSuccess,
-  } = useQuery({
+  const { data: currencyList, isSuccess: isCurrencyListReady } = useQuery({
     queryKey: ["currencyData"],
     queryFn: CurrencyService.getCurrencyList,
   });
-  console.log(currencyList);
-
-  if (isCurrenciesSuccess) {
-    console.log("Waluty załadowane pomyślnie!");
-  }
-
-  if (isCurrenciesLoading) {
-    console.log("Ładowanie walut...");
-  }
-
-  if (isCurrenciecError) {
-    console.log("Wystąpił błąd podczas ładowania walut!");
-  }
 
   const handleInputChange = (
-      e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
       [name]: value,
     }));
 
-
-    if (name === 'amount') {
-      const valueWithDot = value.replace(',', '.');
+    if (name === "amount") {
+      const valueWithDot = value.replace(",", ".");
       const parsedValue = parseFloat(valueWithDot);
 
       if (!Number.isNaN(parsedValue)) {
-        setFormData(prevState => ({
+        setFormData((prevState) => ({
           ...prevState,
           amount: parsedValue,
         }));
       }
     }
-    if (name === 'currency') {
+    if (name === "currency") {
       const selectedCurrency = currencyList.find(
-          (currency) => currency.currencyId === Number(value)
+        (currency) => currency.currencyId === Number(value)
       );
       if (selectedCurrency) {
         setFormData((prev) => ({
@@ -101,28 +82,35 @@ export default function TransactionForm({
   };
 
   const handleTypeChange = (isIncome: boolean) => {
-      setFormData({
-        ...formData,
-        isIncome: isIncome,
-      });
+    setFormData({
+      ...formData,
+      isIncome: isIncome,
+    });
   };
 
   const toggleDatePicker = () => {
     setIsDatePickerOpen((prev) => !prev);
   };
 
-  const handleSubmit = () => {
-    if (isNaN(formData.amount)) {
+  function validateFormData(data: TransactionData) {
+    if (isNaN(data.amount)) {
       toast.error("Price is not a number!");
-      return;
-    } else if (!formData.amount) {
+      return false;
+    } else if (!data.amount) {
       toast.error("Price is empty!");
-      return;
-    } else if (!formData.isIncome) {
-      toast.error("Type is not selected!");
-      return;
-    } else if (!formData.name || formData.name.length < 3) {
+      return false;
+    } else if (data.isIncome !== false && data.isIncome !== true) {
+      toast.error("Type is not selected!" + JSON.stringify(data.isIncome));
+      return false;
+    } else if (!data.name || data.name.length < 3) {
       toast.error("Invalid name!");
+      return false;
+    }
+    return true;
+  }
+
+  const handleSubmit = () => {
+    if (!validateFormData(formData)) {
       return;
     }
     onClose();
@@ -152,12 +140,12 @@ export default function TransactionForm({
         <div className="py-1">
           <h3 className="text-md my-2 font-medium">Opis</h3>
           <input
-              name="description"
-              className={inputClass}
-              type="text"
-              placeholder="Kilogram ziemniaków"
-              value={formData.description}
-              onChange={handleInputChange}
+            name="description"
+            className={inputClass}
+            type="text"
+            placeholder="Kilogram ziemniaków"
+            value={formData.description}
+            onChange={handleInputChange}
           />
         </div>
 
@@ -226,28 +214,33 @@ export default function TransactionForm({
         </div>
 
         {/* Price and currency */}
-        <div className="flex gap-x-2 min-w-72">
-          <input
-            name="amount"
-            className="border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md font-lato w-full"
-            type="text"
-            placeholder="Kwota"
-            value={formData.amount}
-            onChange={handleInputChange}
-          />
-          <select
-            name="currency"
-            value={formData.currency.isoCode}
-            onChange={handleInputChange}
-            className="border-[1px] border-neutral-300 rounded-[5px] px-2 text-md bg-background"
-          >
-            {currencyList.map((currency) => (
+        {isCurrencyListReady ? (
+          <div className="flex gap-x-2 min-w-72">
+            <input
+              name="amount"
+              className="border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md font-lato w-full"
+              type="text"
+              placeholder="Kwota"
+              value={formData.amount}
+              onChange={handleInputChange}
+            />
+
+            <select
+              name="currency"
+              value={formData.currency.isoCode}
+              onChange={handleInputChange}
+              className="border-[1px] border-neutral-300 rounded-[5px] px-2 text-md bg-background"
+            >
+              {currencyList.map((currency) => (
                 <option key={currency.currencyId} value={currency.currencyId}>
                   {currency.isoCode}
                 </option>
-            ))}
-          </select>
-        </div>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <LoadingSpinner />
+        )}
 
         {/* Button */}
         <ConfirmButton

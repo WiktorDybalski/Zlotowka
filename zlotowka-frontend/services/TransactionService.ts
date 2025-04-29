@@ -7,9 +7,7 @@ import sendToBackend, {
 } from "@/lib/sendToBackend";
 import { Currency } from "./CurrencyController";
 
-export interface OneTimeTransaction {
-  transactionId: number;
-  userId: number;
+export interface NewOneTimeTransactionReq {
   name: string;
   amount: number;
   currency: Currency;
@@ -18,13 +16,13 @@ export interface OneTimeTransaction {
   description: string;
 }
 
-export interface NewOneTimeTransactionReq {
-  name: string;
-  amount: number;
-  currency: Currency;
-  isIncome: boolean;
-  date: string; // ISO date string (np. "2025-04-28")
-  description: string;
+export interface OneTimeTransaction extends NewOneTimeTransactionReq {
+  transactionId: number;
+  userId: number;
+}
+
+export interface EdittedOneTimeTransactionReq extends NewOneTimeTransactionReq {
+  transactionId: number;
 }
 
 export function useTransactionService() {
@@ -76,9 +74,33 @@ export function useTransactionService() {
     );
   }
 
+  async function editTransaction(
+    transaction: EdittedOneTimeTransactionReq
+  ): Promise<OneTimeTransaction> {
+    const req = {
+      userId: userId,
+      name: transaction.name,
+      amount: transaction.amount,
+      currencyId: transaction.currency.currencyId,
+      isIncome: transaction.isIncome,
+      date: transaction.date,
+      description: transaction.description,
+    };
+    return await sendToBackend(
+      `onetime-transaction/${transaction.transactionId}`,
+      {
+        ...withAuthHeader,
+        method: "PUT",
+        body: JSON.stringify(req),
+      },
+      "Failed to update transaction"
+    );
+  }
+
   return {
     getTransactions,
     createNewTransaction,
     deleteTransaction,
+    editTransaction,
   };
 }
