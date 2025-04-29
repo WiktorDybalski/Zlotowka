@@ -16,6 +16,7 @@ import {
 } from "@/interfaces/dashboard/cards/CardComponents";
 import NextExpenseCard from "@/components/dashboard/cards/NextExpenseCard";
 import NextIncomeCard from "@/components/dashboard/cards/NextIncomeCard";
+import { TransactionTable } from "@/components/transactions/table/TransactionTable";
 
 export default function Dashboard() {
   const [showAddTransaction, setShowAddTransaction] = useState(false);
@@ -25,6 +26,11 @@ export default function Dashboard() {
     "pinnedDream",
     "monthForecast",
   ]);
+  const [transactionRefresh, setTransactionRefresh] = useState(0);
+
+  function makeTransactionRefresh() {
+    setTransactionRefresh((prev) => prev + 1);
+  }
 
   const cardComponents: CardComponents = {
     pinnedDream: <PinnedDreamCard />,
@@ -37,7 +43,10 @@ export default function Dashboard() {
   return (
     <>
       {showAddTransaction && (
-        <AddTransaction setShowAddTransaction={setShowAddTransaction} />
+        <AddTransaction
+          setShowAddTransaction={setShowAddTransaction}
+          transactionRefresh={makeTransactionRefresh}
+        />
       )}
       {showPopup && (
         <CardsPopup
@@ -67,7 +76,9 @@ export default function Dashboard() {
           <MainChart />
         </GenericCard>
 
-        <GenericCard className="lg:col-span-2">Transactions</GenericCard>
+        <GenericCard className="lg:col-span-2">
+          <TransactionTable refresh={transactionRefresh} />
+        </GenericCard>
 
         <GenericCard>
           <PieSideChart />
@@ -77,7 +88,11 @@ export default function Dashboard() {
           <DarkButton
             icon={"add"}
             text={"Dodaj transakcje"}
-            onClick={() => setShowAddTransaction(!showAddTransaction)}
+            onClick={() => {
+              setShowAddTransaction(!showAddTransaction);
+              // Wywołaj odświeżenie TransactionTable przez zmianę stanu
+              // setTransactionRefresh((prev) => prev + 1);
+            }}
           />
         </div>
       </div>

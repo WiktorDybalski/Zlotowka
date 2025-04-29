@@ -17,6 +17,12 @@ const routes = {
   settings: {
     pathname: "/settings",
   },
+  transactions: {
+    pathname: "/transactions",
+  },
+  dreams: {
+    pathname: "/dreams",
+  },
 };
 
 export default routes;

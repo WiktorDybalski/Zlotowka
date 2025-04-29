@@ -8,6 +8,7 @@ import com.agh.zlotowka.model.User;
 import com.agh.zlotowka.repository.CurrencyRepository;
 import com.agh.zlotowka.repository.OneTimeTransactionRepository;
 import com.agh.zlotowka.repository.UserRepository;
+import com.agh.zlotowka.security.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -100,6 +101,12 @@ public class OneTimeTransactionService {
                 .collect(Collectors.toList());
     }
 
+    public void validateUserId(Integer userId, CustomUserDetails userDetails) {
+        if (!userId.equals(userDetails.getUser().getUserId())) {
+            throw new IllegalArgumentException("Access denied");
+        }
+    }
+
     private OneTimeTransactionDTO getOneTimeTransactionDTO(OneTimeTransaction transaction) {
         return OneTimeTransactionDTO.builder()
                 .transactionId(transaction.getTransactionId())
@@ -133,6 +140,33 @@ public class OneTimeTransactionService {
         if (!transaction.getDate().isAfter(LocalDate.now())) {
             userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
         }
+    }
+    public OneTimeTransactionDTO getTransactionWithUserCheck(Integer transactionId, CustomUserDetails userDetails) {
+        OneTimeTransaction transaction = oneTimeTransactionRepository.findById(transactionId)
+                .orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
+
+        if (!transaction.getUser().getUserId().equals(userDetails.getUser().getUserId())) {
+            throw new IllegalArgumentException("Access denied to this transaction");
+        }
+
+        return getOneTimeTransactionDTO(transaction);
+    }
+
+    @Transactional
+    public void deleteTransactionWithUserCheck(Integer transactionId, CustomUserDetails userDetails) {
+        OneTimeTransaction transaction = oneTimeTransactionRepository.findById(transactionId)
+                .orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
+
+        if (!transaction.getUser().getUserId().equals(userDetails.getUser().getUserId())) {
+            throw new IllegalArgumentException("Access denied to this transaction");
+        }
+
+        if (transaction.getDate().isBefore(LocalDate.now())) {
+            userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(),
+                    transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
+        }
+
+        oneTimeTransactionRepository.delete(transaction);
     }
 
     private OneTimeTransactionDTO updateTransaction(OneTimeTransactionRequest request, OneTimeTransaction transaction) {

@@ -7,11 +7,20 @@ import com.agh.zlotowka.model.OneTimeTransaction;
 import com.agh.zlotowka.model.User;
 import com.agh.zlotowka.repository.CurrencyRepository;
 import com.agh.zlotowka.repository.UserRepository;
+import com.agh.zlotowka.dto.UserResponse;
+import com.agh.zlotowka.security.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import com.agh.zlotowka.dto.RegistrationRequest;
+import jakarta.persistence.EntityExistsException;
+import java.time.LocalDate;
+
+
+
 
 import java.math.BigDecimal;
 
@@ -22,45 +31,44 @@ public class UserService {
     private final UserRepository userRepository;
     private final CurrencyService currencyService;
     private final CurrencyRepository currencyRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional
-    public User createUser() {
-        Currency currency1 = Currency.builder()
-                .isoCode("PLN")
-                .build();
+    public void addCurrencies() {
+        Currency currencyPLN = Currency.builder().isoCode("PLN").build();
+        Currency currencyUSD = Currency.builder().isoCode("USD").build();
+        Currency currencyEUR = Currency.builder().isoCode("EUR").build();
 
-        Currency currency2 = Currency.builder()
-                .isoCode("USD")
-                .build();
+        currencyRepository.save(currencyPLN);
+        currencyRepository.save(currencyUSD);
+        currencyRepository.save(currencyEUR);
+    }
 
-        Currency currency3 = Currency.builder()
-                .isoCode("EUR")
-                .build();
-        currencyRepository.save(currency1);
-        currencyRepository.save(currency2);
-        currencyRepository.save(currency3);
+    @Transactional
+    public User registerUser(RegistrationRequest request) {
+        if (userRepository.findByEmail(request.email()).isPresent()) {
+            throw new IllegalArgumentException("User with the given email address already exists");
+        }
 
-        User user1 = User.builder()
-                .firstName("Kamilek")
-                .lastName("Rudy")
-                .email("kamilek.pl")
-                .currency(currency1)
-                .currentBudget(new BigDecimal(1000))
+        Currency defaultCurrency = currencyRepository.findByIsoCode("PLN")
+                .orElseThrow(() -> new EntityNotFoundException("Default currency PLN not found"));
+
+
+        User newUser = User.builder()
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .email(request.email())
+                .password(passwordEncoder.encode(request.password()))
+                .phoneNumber("")
+                .dateOfJoining(LocalDate.now())
+                .currentBudget(new BigDecimal(0))
+                .currency(defaultCurrency)
                 .darkMode(false)
+                .notificationsByEmail(false)
+                .notificationsByPhone(false)
                 .build();
 
-        User user2 = User.builder()
-                .firstName("Jan")
-                .lastName("Nowak")
-                .email("gmail.com")
-                .currency(currency2)
-                .currentBudget(new BigDecimal(2000))
-                .darkMode(false)
-                .build();
-
-        userRepository.save(user1);
-        userRepository.save(user2);
-        return user1;
+        return userRepository.save(newUser);
     }
 
     public void removeTransactionAmountFromBudget(int currencyId, BigDecimal amount, boolean isIncome, User user) {
@@ -83,6 +91,25 @@ public class UserService {
             log.error("Unexpected Exception in CurrencyService", e);
         }
     }
+    public UserResponse getCurrentUser(CustomUserDetails userDetails) {
+        User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        return new UserResponse(
+                user.getUserId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getPhoneNumber(),
+                user.getDateOfJoining(),
+                user.getCurrentBudget(),
+                user.getCurrency(),
+                user.getDarkMode(),
+                user.getNotificationsByEmail(),
+                user.getNotificationsByPhone()
+        );
+    }
+
 
     public void addTransactionAmountToBudget(int currencyId, BigDecimal amount, boolean isIncome, User user) {
         BigDecimal budget = user.getCurrentBudget();

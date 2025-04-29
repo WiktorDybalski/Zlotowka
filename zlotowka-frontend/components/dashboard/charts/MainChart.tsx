@@ -14,12 +14,12 @@ import {
 } from "@/components/ui/chart";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import DashboardService from "@/services/DashboardService";
+import { useDashboardService } from "@/services/DashboardService";
 import DarkButton from "@/components/DarkButton";
 import RangePickerPopup from "@/components/dashboard/charts/RangePickerPopup";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import toast from "react-hot-toast";
-import dayjs, {Dayjs} from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 
 const chartConfig = {
   amount: {
@@ -27,7 +27,6 @@ const chartConfig = {
     color: "#262626",
   },
 } satisfies ChartConfig;
-
 
 export function MainChart() {
   const [padding, setPadding] = useState<{ left: number; right: number }>({
@@ -37,13 +36,20 @@ export function MainChart() {
   const [chartData, setChartData] = useState(null);
   const [showRangePicker, setShowRangePicker] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [startDate, setStartDate] = useState<Dayjs>(dayjs().subtract(30, "day"));
+  const [startDate, setStartDate] = useState<Dayjs>(
+    dayjs().subtract(30, "day")
+  );
   const [endDate, setEndDate] = useState<Dayjs>(dayjs());
+
+  const DashboardService = useDashboardService();
 
   const fetchData = async (startDate: Dayjs, endDate: Dayjs) => {
     setIsLoading(true);
     try {
-      const response = await DashboardService.getMainChartData(1, startDate.format("YYYY-MM-DD"), endDate.format("YYYY-MM-DD"));
+      const response = await DashboardService.getMainChartData(
+        startDate.format("YYYY-MM-DD"),
+        endDate.format("YYYY-MM-DD")
+      );
       setChartData(response);
     } catch (err) {
       toast.error("Failed to fetch main chart: " + err);
@@ -87,10 +93,10 @@ export function MainChart() {
   return (
     <>
       {showRangePicker && (
-          <RangePickerPopup
-              onClose={() => setShowRangePicker(false)}
-              onDateChange={handleDateChange}
-          />
+        <RangePickerPopup
+          onClose={() => setShowRangePicker(false)}
+          onDateChange={handleDateChange}
+        />
       )}
       <Card className="flex flex-col w-full h-full bg-transparent z-10 border-none">
         <CardHeader className="flex justify-between items-center">
@@ -130,7 +136,12 @@ export function MainChart() {
                 padding={padding}
                 className="font-lato"
               />
-              <YAxis axisLine={false} tickLine={false} tickMargin={16} className="font-lato" />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tickMargin={16}
+                className="font-lato"
+              />
               <ChartTooltip
                 cursor={false}
                 content={<ChartTooltipContent className="font-lato" />}

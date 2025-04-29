@@ -7,6 +7,7 @@ import com.agh.zlotowka.repository.CurrencyRepository;
 import com.agh.zlotowka.repository.OneTimeTransactionRepository;
 import com.agh.zlotowka.repository.RecurringTransactionRepository;
 import com.agh.zlotowka.repository.UserRepository;
+import com.agh.zlotowka.security.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -99,6 +100,20 @@ public class RecurringTransactionService {
         return recurringTransactionRepository.findById(transactionId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Transaction with Id %d not found", transactionId)));
+    }
+    public void validateUserId(Integer userId, CustomUserDetails userDetails) {
+        if (!userId.equals(userDetails.getUser().getUserId())) {
+            throw new IllegalArgumentException("Access denied");
+        }
+    }
+
+    public void validateOwnershipById(int transactionId, CustomUserDetails userDetails) {
+        RecurringTransaction tx = recurringTransactionRepository.findById(transactionId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format("Transaction with Id %d not found", transactionId)));
+        if (!tx.getUser().getUserId().equals(userDetails.getUser().getUserId())) {
+            throw new IllegalArgumentException("Access denied");
+        }
     }
 
     private LocalDate calculateNextPaymentDateAndAddOverDueTransaction(RecurringTransactionRequest request, User user, Currency currency, PeriodEnum interval) {
