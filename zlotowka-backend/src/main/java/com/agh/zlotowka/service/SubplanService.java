@@ -3,7 +3,10 @@ package com.agh.zlotowka.service;
 
 import com.agh.zlotowka.dto.SubplanDTO;
 import com.agh.zlotowka.dto.SubplanRequest;
-import com.agh.zlotowka.exception.CurrencyConversionException;
+import com.agh.zlotowka.exception.InsufficientBudgetException;
+import com.agh.zlotowka.exception.PlanCompletionException;
+import com.agh.zlotowka.exception.PlanOwnershipException;
+import com.agh.zlotowka.exception.PlanAmountExceededException;
 import com.agh.zlotowka.model.OneTimeTransaction;
 import com.agh.zlotowka.model.Plan;
 import com.agh.zlotowka.model.Subplan;
@@ -89,7 +92,7 @@ public class SubplanService {
         Subplan subplan = subPlanRepository.findById(subplanId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Subplan with Id %d not found", subplanId)));
 
-        validateCompletedSubPlanModifiaction(request, subplan);
+        validateCompletedSubPlanModification(request, subplan);
         validateSubplanOwnership(request.userId(), subplan.getPlan().getUser().getUserId());
         validateSubplanAmount(subplan.getPlan(), request.amount());
 
@@ -105,22 +108,22 @@ public class SubplanService {
         return getSubplanDTO(subplan);
     }
 
-    private void validateCompletedSubPlanModifiaction(SubplanRequest request, Subplan subplan) {
+    private void validateCompletedSubPlanModification(SubplanRequest request, Subplan subplan) {
         if (subplan.getCompleted() && !request.amount().equals(subplan.getRequiredAmount())) {
-            throw new IllegalArgumentException("Subplan is already completed, cannot change amount");
+            throw new PlanCompletionException("Subplan is already completed, cannot change amount");
         }
     }
 
     private void validateSubplanOwnership(Integer userId, Integer subplanUserId) {
         if (!userId.equals(subplanUserId)) {
-            throw new IllegalArgumentException(String.format("User Id %d does not match the subplan owner", userId));
+            throw new PlanOwnershipException(String.format("User Id %d does not match the subplan owner", userId));
         }
     }
 
     private void validateSubplanAmount(Plan plan, BigDecimal newAmount) {
         BigDecimal allSubplansAmount = subPlanRepository.getTotalSubPlanAmount(plan.getPlanId());
         if (allSubplansAmount.add(newAmount).compareTo(plan.getRequiredAmount()) > 0) {
-            throw new IllegalArgumentException("Total subplan amount exceeds the plan's required amount");
+            throw new PlanAmountExceededException("Total subplan amount exceeds the plan's required amount");
         }
     }
 
@@ -147,12 +150,10 @@ public class SubplanService {
 
             plan.getUser().setCurrentBudget(plan.getUser().getCurrentBudget().subtract(correctAmount));
         }
-        catch (CurrencyConversionException e) {
-            log.error("Currency conversion failed", e);
-            throw new IllegalArgumentException("Currency conversion failed");
-        } catch (Exception e) {
+        catch (Exception e) {
             log.error("Unexpected error from CurrencyService", e);
         }
+
         userRepository.save(plan.getUser());
         subPlanRepository.save(subplan);
 
@@ -171,27 +172,24 @@ public class SubplanService {
     }
 
     private void validateSubPlanBudgetSufficiency(Subplan subplan) {
-        try{
+        try {
             BigDecimal currentAmount = currencyService.convertCurrency(
                     subplan.getPlan().getUser().getCurrentBudget(),
                     subplan.getPlan().getUser().getCurrency().getIsoCode(),
                     subplan.getPlan().getCurrency().getIsoCode()
             );
             if (currentAmount.compareTo(subplan.getRequiredAmount()) < 0) {
-                throw new IllegalArgumentException("Subplan cannot be completed, required amount not reached");
+                throw new InsufficientBudgetException("Subplan cannot be completed, required amount not reached");
             }
-        } catch (CurrencyConversionException e) {
-            log.error("Currency conversion failed", e);
-            throw new IllegalArgumentException("Currency conversion failed");
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             log.error("Unexpected error from CurrencyService", e);
         }
-
     }
 
     private void validateSubPlanCompletion(Subplan subplan) {
         if (subplan.getCompleted()) {
-            throw new IllegalArgumentException("Subplan is already completed");
+            throw new PlanCompletionException("Subplan is already completed");
         }
     }
 
@@ -236,9 +234,6 @@ public class SubplanService {
                         subplan.getPlan().getUser().getCurrency().getIsoCode(),
                         subplan.getPlan().getCurrency().getIsoCode()
                 );
-            } catch (CurrencyConversionException e) {
-                log.error("Currency conversion failed", e);
-                throw new IllegalArgumentException("Currency conversion failed");
             } catch (Exception e) {
                 log.error("Unexpected error from CurrencyService", e);
             }

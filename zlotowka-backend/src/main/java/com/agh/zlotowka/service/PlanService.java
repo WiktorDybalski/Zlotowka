@@ -2,9 +2,7 @@ package com.agh.zlotowka.service;
 
 import com.agh.zlotowka.dto.PlanDTO;
 import com.agh.zlotowka.dto.PlanRequest;
-import com.agh.zlotowka.exception.BudgetInsufficientException;
-import com.agh.zlotowka.exception.CurrencyConversionException;
-import com.agh.zlotowka.exception.PlanCompletionException;
+import com.agh.zlotowka.exception.*;
 import com.agh.zlotowka.model.*;
 import com.agh.zlotowka.repository.*;
 import jakarta.persistence.EntityNotFoundException;
@@ -125,10 +123,6 @@ public class PlanService {
                 }
                 subPlanRepository.delete(subPlan);
             }
-        }
-        catch (CurrencyConversionException e) {
-            log.error("Currency conversion failed", e);
-            throw new IllegalArgumentException("Currency conversion failed");
         } catch (Exception e) {
             log.error("Unexpected error from CurrencyService", e);
         }
@@ -149,16 +143,12 @@ public class PlanService {
         plan.setDate(LocalDate.now());
         try {
             BigDecimal correctedAmount = currencyService.convertCurrency(
-                    plan.getRequiredAmount(),
+                    plan.getRequiredAmount().subtract(subPlanRepository.getTotalSubPlanAmountCompleted(plan.getPlanId())),
                     plan.getCurrency().getIsoCode(),
                     plan.getUser().getCurrency().getIsoCode()
             );
 
             plan.getUser().setCurrentBudget(plan.getUser().getCurrentBudget().subtract(correctedAmount));
-        }
-        catch (CurrencyConversionException e) {
-            log.error("Currency conversion failed", e);
-            throw new IllegalArgumentException("Currency conversion failed");
         } catch (Exception e) {
             log.error("Unexpected error from CurrencyService", e);
         }
@@ -204,7 +194,7 @@ public class PlanService {
 
     private void validatePlanOwnership(Integer requestSenderId, Integer planOwner) {
         if (!requestSenderId.equals(planOwner)) {
-            throw new IllegalArgumentException(String.format("User Id %d does not match the plan onwer", requestSenderId));
+            throw new PlanOwnershipException(String.format("User Id %d does not match the plan onwer", requestSenderId));
         }
     }
 
@@ -232,7 +222,7 @@ public class PlanService {
             boolean isCurrencyChanged = !request.currencyId().equals(plan.getCurrency().getCurrencyId());
 
             if (isAmountChanged || isCurrencyChanged) {
-                throw new IllegalArgumentException("Cannot change amount or currency of completed plan");
+                throw new PlanCompletionException("Cannot change amount or currency of completed plan");
             }
         }
     }
@@ -240,7 +230,7 @@ public class PlanService {
     private void validateSubPlanAmounts(PlanRequest request, Plan plan) {
         BigDecimal allSubPlansAmount = subPlanRepository.getTotalSubPlanAmount(plan.getPlanId());
         if (allSubPlansAmount.compareTo(request.amount()) > 0) {
-            throw new IllegalArgumentException("Total subplan amount exceeds the plan's required amount");
+            throw new PlanAmountExceededException("Total subplan amount exceeds the plan's required amount");
         }
     }
 
@@ -257,10 +247,7 @@ public class PlanService {
 
             return currentBudget.add(subPlanRepository.getTotalSubPlanAmountCompleted(plan.getPlanId()));
         }
-        catch (CurrencyConversionException e) {
-            log.error("Currency conversion failed", e);
-            throw new IllegalArgumentException("Currency conversion failed");
-        } catch (Exception e) {
+        catch (Exception e) {
             log.error("Unexpected error from CurrencyService", e);
         }
         return BigDecimal.ZERO;
