@@ -5,37 +5,39 @@ import {
   OneTimeTransaction,
   useTransactionService,
 } from "@/services/TransactionService";
-import { useMutation } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import EditTransactionButton from "./EditTransactionButton";
 import DeleteTransactionButton from "./DeleteTransactionButton";
 import EditTransaction from "../EditTransaction";
 
-interface TransactionTableProps {
-  refresh: number;
-}
-
 // Nowy grid: 4 kolumny: Data, Nazwa, Kwota, Opis
 const grid = "grid grid-cols-[10%_10%_30%_1fr] gap-4";
 
-export function TransactionTable({ refresh }: TransactionTableProps) {
+export function TransactionTable() {
   const [showEditTransaction, setShowEditTransaction] =
     useState<boolean>(false);
   const [transactionForEdit, setTransactionForEdit] =
     useState<OneTimeTransaction | null>(null);
 
   const TransactionService = useTransactionService();
+  const queryClient = useQueryClient();
 
-  const magicTransactionList = useMutation({
-    mutationFn: async () => {
-      const res = await TransactionService.getTransactions();
-      return res;
-    },
-    onError: (error) => {
-      toast.error(`Nie udało się pobrać tranzakcji: ${error.message}`);
-    },
+  const {
+    data: transactionList,
+    isError: isTransactionListError,
+    error: transactionListError,
+  } = useQuery<OneTimeTransaction[]>({
+    queryKey: ["transaction", "getTransactions"],
+    queryFn: TransactionService.getTransactions,
   });
+
+  if (isTransactionListError) {
+    toast.error(
+      `Nie udało się pobrać tranzakcji: ${transactionListError.message}`
+    );
+  }
 
   const magicTransactionDelete = useMutation({
     mutationFn: async (transactionId: number) => {
@@ -49,24 +51,18 @@ export function TransactionTable({ refresh }: TransactionTableProps) {
       return await res;
     },
     onSuccess: () => {
-      magicTransactionList.mutate();
+      queryClient.invalidateQueries({ queryKey: ["transaction"] });
+      queryClient.invalidateQueries({ queryKey: ["cardService"] }); //on dashboard
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] }); //on dashboard
     },
   });
-
-  useEffect(() => {
-    magicTransactionList.mutate();
-  }, [refresh]);
 
   return (
     <>
       {showEditTransaction && transactionForEdit && (
         <EditTransaction
           setShowEditTransaction={setShowEditTransaction}
-          transactionRefresh={() => {
-            setTransactionForEdit(null);
-            magicTransactionList.mutate();
-          }}
-          transaction={transactionForEdit} //TODO: change this!
+          transaction={transactionForEdit}
         />
       )}
       <section className="h-full text-xs xl:text-sm 2xl:text-base">
@@ -80,8 +76,8 @@ export function TransactionTable({ refresh }: TransactionTableProps) {
           </div>
           {/* Wiersze danych */}
           <div className="h-full overflow-auto">
-            {magicTransactionList.data ? (
-              magicTransactionList.data.map((transaction, idx) => (
+            {transactionList ? (
+              transactionList.map((transaction, idx) => (
                 <div
                   key={idx}
                   className={`${grid} py-2 border-b last:border-0`}

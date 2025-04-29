@@ -4,15 +4,15 @@ import {
   EdittedOneTimeTransactionReq,
   useTransactionService,
 } from "@/services/TransactionService";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 export default function EditTransaction({
   transaction,
   setShowEditTransaction,
-  transactionRefresh,
 }: EditTransactionProps) {
   const TransactionService = useTransactionService();
+  const queryClient = useQueryClient();
 
   const magic = useMutation({
     mutationFn: async (transaction: EdittedOneTimeTransactionReq) => {
@@ -26,7 +26,9 @@ export default function EditTransaction({
       return await res;
     },
     onSuccess: () => {
-      transactionRefresh(); // TODO handle it better
+      queryClient.invalidateQueries({ queryKey: ["transaction"] });
+      queryClient.invalidateQueries({ queryKey: ["cardService"] }); //on dashboard
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
   });
   return (

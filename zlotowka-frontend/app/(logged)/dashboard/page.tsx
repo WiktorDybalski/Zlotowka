@@ -26,11 +26,6 @@ export default function Dashboard() {
     "pinnedDream",
     "monthForecast",
   ]);
-  const [transactionRefresh, setTransactionRefresh] = useState(0);
-
-  function makeTransactionRefresh() {
-    setTransactionRefresh((prev) => prev + 1);
-  }
 
   const cardComponents: CardComponents = {
     pinnedDream: <PinnedDreamCard />,
@@ -43,10 +38,7 @@ export default function Dashboard() {
   return (
     <>
       {showAddTransaction && (
-        <AddTransaction
-          setShowAddTransaction={setShowAddTransaction}
-          transactionRefresh={makeTransactionRefresh}
-        />
+        <AddTransaction setShowAddTransaction={setShowAddTransaction} />
       )}
       {showPopup && (
         <CardsPopup
@@ -77,7 +69,7 @@ export default function Dashboard() {
         </GenericCard>
 
         <GenericCard className="lg:col-span-2">
-          <TransactionTable refresh={transactionRefresh} />
+          <TransactionTable />
         </GenericCard>
 
         <GenericCard>
@@ -90,8 +82,6 @@ export default function Dashboard() {
             text={"Dodaj transakcje"}
             onClick={() => {
               setShowAddTransaction(!showAddTransaction);
-              // Wywołaj odświeżenie TransactionTable przez zmianę stanu
-              // setTransactionRefresh((prev) => prev + 1);
             }}
           />
         </div>
