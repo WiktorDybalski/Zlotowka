@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public interface SubPlanRepository extends JpaRepository<Subplan, Integer> {
     @Query("SELECT sp FROM Subplan sp WHERE sp.plan.planId = :planId")
-    List<Subplan> findAllSubPlanByPlanId(@Param("planId") Integer planId);
+    List<Subplan> findAllSubPlansByPlanId(@Param("planId") Integer planId);
 
     @Query("SELECT COALESCE(SUM(sp.requiredAmount), 0) FROM Subplan sp WHERE sp.plan.planId = :planId")
     BigDecimal getTotalSubPlanAmount(@Param("planId") Integer planId);

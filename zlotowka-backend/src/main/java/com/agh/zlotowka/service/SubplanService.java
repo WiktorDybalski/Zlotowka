@@ -36,7 +36,6 @@ public class SubplanService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Plan with Id %d not found", request.planId())));
 
         validateSubplanOwnership(request.userId(), plan.getUser().getUserId());
-
         validateSubplanAmount(plan, request.amount());
 
         Subplan subplan = Subplan.builder()
@@ -79,8 +78,10 @@ public class SubplanService {
         Subplan subplan = subPlanRepository.findById(subplanId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Subplan with Id %d not found", subplanId)));
 
+        validateCompletedSubPlanModifiaction(request, subplan);
         validateSubplanOwnership(request.userId(), subplan.getPlan().getUser().getUserId());
         validateSubplanAmount(subplan.getPlan(), request.amount());
+
 
         subplan.setName(request.name());
         subplan.setRequiredAmount(request.amount());
@@ -91,6 +92,12 @@ public class SubplanService {
 
         subPlanRepository.save(subplan);
         return getSubplanDTO(subplan);
+    }
+
+    private void validateCompletedSubPlanModifiaction(SubplanRequest request, Subplan subplan) {
+        if (subplan.getCompleted() && !request.amount().equals(subplan.getRequiredAmount())) {
+            throw new IllegalArgumentException("Subplan is already completed, cannot change amount");
+        }
     }
 
     private void validateSubplanOwnership(Integer userId, Integer subplanUserId) {
@@ -112,21 +119,21 @@ public class SubplanService {
         Subplan subplan = subPlanRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Subplan with Id %d not found", id)));
 
-        if (subplan.getCompleted()) {
-            throw new IllegalArgumentException("Subplan is already completed");
-        }
-        BigDecimal currentAmount = calculateBudget(subplan.getPlan());
-        if (currentAmount.compareTo(subplan.getRequiredAmount()) < 0) {
-            throw new IllegalArgumentException("Subplan cannot be completed, required amount not reached");
-        }
+        validateSubPlanCompletion(subplan);
+        validateSubPlanBudgetSufficiency(subplan);
 
         subplan.setCompleted(true);
         subplan.setDate(LocalDate.now());
 
         Plan plan = subplan.getPlan();
         calculatePlanSubplanCompletion(plan);
+        BigDecimal correctAmount = calculateCorrectedAmount(
+                subplan.getPlan().getCurrency().getIsoCode(),
+                subplan.getPlan().getUser().getCurrency().getIsoCode(),
+                subplan.getRequiredAmount()
+        );
 
-        plan.getUser().setCurrentBudget(plan.getUser().getCurrentBudget().subtract(calculateRequiredAmount(subplan)));
+        plan.getUser().setCurrentBudget(plan.getUser().getCurrentBudget().subtract(correctAmount));
 
         userRepository.save(plan.getUser());
         subPlanRepository.save(subplan);
@@ -134,9 +141,26 @@ public class SubplanService {
         return getSubplanDTO(subplan);
     }
 
+    private void validateSubPlanBudgetSufficiency(Subplan subplan) {
+        BigDecimal currentAmount = calculateCorrectedAmount(
+                subplan.getPlan().getUser().getCurrency().getIsoCode(),
+                subplan.getPlan().getCurrency().getIsoCode(),
+                subplan.getPlan().getUser().getCurrentBudget()
+        );
+
+        if (currentAmount.compareTo(subplan.getRequiredAmount()) < 0) {
+            throw new IllegalArgumentException("Subplan cannot be completed, required amount not reached");
+        }
+    }
+
+    private void validateSubPlanCompletion(Subplan subplan) {
+        if (subplan.getCompleted()) {
+            throw new IllegalArgumentException("Subplan is already completed");
+        }
+    }
 
     public List<SubplanDTO> getAllSubplansByPlanId(Integer planId) {
-        List<Subplan> subplans = subPlanRepository.findAllSubPlanByPlanId(planId);
+        List<Subplan> subplans = subPlanRepository.findAllSubPlansByPlanId(planId);
 
         if (subplans.isEmpty()) {
             planRepository.findById(planId)
@@ -156,7 +180,12 @@ public class SubplanService {
 
         User user = subplan.getPlan().getUser();
         if (subplan.getCompleted() && !subplan.getPlan().getCompleted()) {
-            user.setCurrentBudget(user.getCurrentBudget().add(calculateRequiredAmount(subplan)));
+            BigDecimal correctedAmount = calculateCorrectedAmount(
+                    subplan.getPlan().getCurrency().getIsoCode(),
+                    user.getCurrency().getIsoCode(),
+                    subplan.getRequiredAmount()
+            );
+            user.setCurrentBudget(user.getCurrentBudget().add(correctedAmount));
         }
 
         userRepository.save(user);
@@ -176,6 +205,7 @@ public class SubplanService {
             return currencyService.convertCurrency(amount, fromCurrency, toCurrency);
         } catch (CurrencyConversionException e) {
             log.error("Currency conversion failed", e);
+            throw new IllegalArgumentException("Currency conversion failed");
         } catch (Exception e) {
             log.error("Unexpected error from CurrencyService", e);
         }
@@ -183,39 +213,17 @@ public class SubplanService {
     }
 
     private BigDecimal calculateCurrentBudget(Subplan subplan) {
-        BigDecimal currentBudget = BigDecimal.ZERO;
+        BigDecimal currentBudget;
         if (subplan.getCompleted()) {
             currentBudget = subplan.getRequiredAmount();
         }
         else {
-            try {
-                currentBudget = currencyService.convertCurrency(
-                        subplan.getPlan().getUser().getCurrentBudget(),
-                        subplan.getPlan().getUser().getCurrency().getIsoCode(),
-                        subplan.getPlan().getCurrency().getIsoCode()
-                );
-            } catch (CurrencyConversionException e) {
-                log.error("Currency conversion failed", e);
-            } catch (Exception e) {
-                log.error("Unexpected error from CurrencyService", e);
-            }
-
+            currentBudget = calculateCorrectedAmount(
+                    subplan.getPlan().getUser().getCurrency().getIsoCode(),
+                    subplan.getPlan().getCurrency().getIsoCode(),
+                    subplan.getPlan().getUser().getCurrentBudget()
+            );
         }
         return currentBudget;
-    }
-
-    private BigDecimal calculateRequiredAmount(Subplan subplan) {
-        return calculateCorrectedAmount(
-                subplan.getPlan().getCurrency().getIsoCode(),
-                subplan.getPlan().getUser().getCurrency().getIsoCode(),
-                subplan.getRequiredAmount());
-    }
-
-    BigDecimal calculateBudget(Plan plan) {
-        return calculateCorrectedAmount(
-                plan.getUser().getCurrency().getIsoCode(),
-                plan.getCurrency().getIsoCode(),
-                plan.getUser().getCurrentBudget()
-        );
     }
 }
