@@ -30,6 +30,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                         .ignoringRequestMatchers(
+                                "/",
                                 "/auth/**",
                                 "/recurring-transaction/**",
                                 "/onetime-transaction/**",
