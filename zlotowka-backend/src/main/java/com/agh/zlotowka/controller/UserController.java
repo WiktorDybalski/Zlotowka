@@ -23,4 +23,10 @@ public class UserController {
     public ResponseEntity<UserResponse> getCurrentUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
         return ResponseEntity.ok(userService.getCurrentUser(userDetails));
     }
+    @PostMapping("/currency")
+    public ResponseEntity<Void> addCurrencies() {
+        userService.addCurrencies();
+        return ResponseEntity.noContent().build();
+    }
+
 }
