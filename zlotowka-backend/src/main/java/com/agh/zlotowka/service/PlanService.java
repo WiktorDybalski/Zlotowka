@@ -2,6 +2,7 @@ package com.agh.zlotowka.service;
 
 import com.agh.zlotowka.dto.PlanDTO;
 import com.agh.zlotowka.dto.PlanRequest;
+import com.agh.zlotowka.exception.CurrencyConversionException;
 import com.agh.zlotowka.model.Currency;
 import com.agh.zlotowka.model.Plan;
 import com.agh.zlotowka.model.User;
@@ -30,6 +31,7 @@ public class PlanService {
     private final UserRepository userRepository;
     private final CurrencyRepository currencyRepository;
     private final SubPlanRepository subPlanRepository;
+    private final CurrencyService currencyService;
 
     @Transactional
     public PlanDTO createPlan(PlanRequest request){
@@ -69,7 +71,6 @@ public class PlanService {
         validatePlanOwnership(request.userId(), plan.getUser().getUserId());
 
         return updatePlanLogic(request, plan);
-
     }
 
     public List<PlanDTO> getAllPlansByUserId(Integer userId) {
@@ -103,32 +104,26 @@ public class PlanService {
                 .build();
     }
 
-    private BigDecimal calculateCurrentBudget(Plan plan) {
-        if (plan.getCompleted()) return plan.getRequiredAmount();
-        BigDecimal currentBudget = plan.getUser().getCurrentBudget();
-        return currentBudget.add(subPlanRepository.getTotalSubPlanAmountCompleted(plan.getPlanId()));
-    }
-
-    private BigDecimal calculateRequiredAmount(Plan plan) {
-        return plan.getRequiredAmount().subtract(subPlanRepository.getTotalSubPlanAmount(plan.getPlanId()));
-    }
 
     @Transactional
     public void deletePlan(Integer id) {
         log.info("Deleting plan with id: {}", id);
         Plan plan = planRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Plan with Id %d not found", id)));
+        planRepository.delete(plan);
+
+        if (plan.getCompleted()) return;
 
         List<Subplan> subPlans = subPlanRepository.findAllSubPlanByPlanId(id);
         for (Subplan subPlan : subPlans) {
             if (subPlan.getCompleted()) {
-                plan.getUser().setCurrentBudget(plan.getUser().getCurrentBudget().add(subPlan.getRequiredAmount()));
+                plan.getUser().setCurrentBudget(plan.getUser().getCurrentBudget().add(calculateSubplanAmount(subPlan)));
                 userRepository.save(plan.getUser());
             }
             subPlanRepository.delete(subPlan);
         }
-        planRepository.delete(plan);
     }
+
 
     @Transactional
     public PlanDTO completePlan(Integer id) {
@@ -142,6 +137,7 @@ public class PlanService {
         BigDecimal currentAmount = calculateCurrentBudget(plan);
         if (currentAmount.compareTo(plan.getRequiredAmount()) < 0)
             throw new IllegalArgumentException("Plan cannot be completed, required amount not reached");
+
 
         List<Subplan> subPlans = subPlanRepository.findAllSubPlanByPlanId(id);
         for (Subplan subPlan : subPlans) {
@@ -167,16 +163,17 @@ public class PlanService {
     }
 
     private PlanDTO updatePlanLogic(PlanRequest request, Plan plan) {
-        Integer totalCompletedSubplans = subPlanRepository.getCompletedSubPlanCount(plan.getPlanId());
+        Integer totalSubplansCount = subPlanRepository.getSubplanCount(plan.getPlanId());
         BigDecimal allSubPlansAmount = subPlanRepository.getTotalSubPlanAmount(plan.getPlanId());
+
+        if (totalSubplansCount > 0 && !request.currencyId().equals(plan.getCurrency().getCurrencyId())) {
+            throw new IllegalArgumentException("Cannot change currency of plan with subplans");
+        }
 
         if (allSubPlansAmount.compareTo(request.amount()) > 0) {
             throw new IllegalArgumentException("Total subplan amount exceeds the plan's required amount");
         }
 
-        if (totalCompletedSubplans > 0 && !request.currencyId().equals(plan.getCurrency().getCurrencyId())) {
-            throw new IllegalArgumentException("Cannot change currency of plan with completed subplans");
-        }
 
         if (!Objects.equals(request.currencyId(), plan.getCurrency().getCurrencyId())) {
             Currency currency = currencyRepository.findById(request.currencyId())
@@ -190,5 +187,44 @@ public class PlanService {
 
         planRepository.save(plan);
         return getPlanDTO(plan);
+    }
+
+    BigDecimal calculateCorrectedAmount(String fromCurrency, String toCurrency, BigDecimal amount) {
+        try {
+            return currencyService.convertCurrency(amount, fromCurrency, toCurrency);
+        } catch (CurrencyConversionException e) {
+            log.error("Currency conversion failed", e);
+        } catch (Exception e) {
+            log.error("Unexpected error from CurrencyService", e);
+        }
+        return BigDecimal.ZERO;
+    }
+
+    private BigDecimal calculateCurrentBudget(Plan plan) {
+        if (plan.getCompleted()) return plan.getRequiredAmount();
+
+        BigDecimal currentBudget = calculateCorrectedAmount(
+                plan.getUser().getCurrency().getIsoCode(),
+                plan.getCurrency().getIsoCode(),
+                plan.getUser().getCurrentBudget()
+        );
+
+        return currentBudget.add(subPlanRepository.getTotalSubPlanAmountCompleted(plan.getPlanId()));
+    }
+
+    private BigDecimal calculateRequiredAmount(Plan plan) {
+        return calculateCorrectedAmount(
+                plan.getCurrency().getIsoCode(),
+                plan.getUser().getCurrency().getIsoCode(),
+                plan.getRequiredAmount().subtract(subPlanRepository.getTotalSubPlanAmount(plan.getPlanId()))
+        );
+    }
+
+    private BigDecimal calculateSubplanAmount(Subplan subplan) {
+        return calculateCorrectedAmount(
+                subplan.getPlan().getCurrency().getIsoCode(),
+                subplan.getPlan().getUser().getCurrency().getIsoCode(),
+                subplan.getRequiredAmount()
+        );
     }
 }
