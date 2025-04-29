@@ -2,7 +2,9 @@ package com.agh.zlotowka.service;
 
 import com.agh.zlotowka.dto.PlanDTO;
 import com.agh.zlotowka.dto.PlanRequest;
+import com.agh.zlotowka.exception.BudgetInsufficientException;
 import com.agh.zlotowka.exception.CurrencyConversionException;
+import com.agh.zlotowka.exception.PlanCompletionException;
 import com.agh.zlotowka.model.Currency;
 import com.agh.zlotowka.model.Plan;
 import com.agh.zlotowka.model.User;
@@ -51,8 +53,7 @@ public class PlanService {
                 .build();
 
         planRepository.save(plan);
-        log.info("Created new plan successfully");
-        
+
         return getPlanDTO(plan);
     }
 
@@ -63,7 +64,6 @@ public class PlanService {
 
     @Transactional
     public PlanDTO updatePlan(PlanRequest request, Integer planId){
-        log.info("Updating plan with request: {}", request);
         Plan plan = planRepository.findById(planId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Plan with Id %d not found", planId)));
 
@@ -106,7 +106,6 @@ public class PlanService {
 
     @Transactional
     public void deletePlan(Integer id) {
-        log.info("Deleting plan with id: {}", id);
         Plan plan = planRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Plan with Id %d not found", id)));
 
@@ -118,26 +117,31 @@ public class PlanService {
 
     private void deleteSubPlans(List<Subplan> subPlans, Plan plan) {
         User user = plan.getUser();
+        try {
+            for (Subplan subPlan : subPlans) {
+                if (subPlan.getCompleted() && !plan.getCompleted()) {
+                    BigDecimal correctedAmount = currencyService.convertCurrency(subPlan.getRequiredAmount(),
+                            subPlan.getPlan().getCurrency().getIsoCode(),
+                            user.getCurrency().getIsoCode()
+                    );
 
-        for (Subplan subPlan : subPlans) {
-            if (subPlan.getCompleted() && !plan.getCompleted()) {
-                BigDecimal correctedAmount = calculateCorrectedAmount(
-                        subPlan.getPlan().getCurrency().getIsoCode(),
-                        user.getCurrency().getIsoCode(),
-                        subPlan.getRequiredAmount()
-                );
-
-                user.setCurrentBudget(user.getCurrentBudget().add(correctedAmount));
-                userRepository.save(plan.getUser());
+                    user.setCurrentBudget(user.getCurrentBudget().add(correctedAmount));
+                    userRepository.save(plan.getUser());
+                }
+                subPlanRepository.delete(subPlan);
             }
-            subPlanRepository.delete(subPlan);
+        }
+        catch (CurrencyConversionException e) {
+            log.error("Currency conversion failed", e);
+            throw new IllegalArgumentException("Currency conversion failed");
+        } catch (Exception e) {
+            log.error("Unexpected error from CurrencyService", e);
         }
     }
 
 
     @Transactional
     public PlanDTO completePlan(Integer id) {
-        log.info("Completing plan with id: {}", id);
         Plan plan = planRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Plan with Id %d not found", id)));
 
@@ -148,13 +152,21 @@ public class PlanService {
 
         plan.setCompleted(true);
         plan.setDate(LocalDate.now());
-        BigDecimal correctedAmount = calculateCorrectedAmount(
-                plan.getCurrency().getIsoCode(),
-                plan.getUser().getCurrency().getIsoCode(),
-                plan.getRequiredAmount()
-        );
-        plan.getUser().setCurrentBudget(plan.getUser().getCurrentBudget().subtract(correctedAmount));
+        try {
+            BigDecimal correctedAmount = currencyService.convertCurrency(
+                    plan.getRequiredAmount(),
+                    plan.getCurrency().getIsoCode(),
+                    plan.getUser().getCurrency().getIsoCode()
+            );
 
+            plan.getUser().setCurrentBudget(plan.getUser().getCurrentBudget().subtract(correctedAmount));
+        }
+        catch (CurrencyConversionException e) {
+            log.error("Currency conversion failed", e);
+            throw new IllegalArgumentException("Currency conversion failed");
+        } catch (Exception e) {
+            log.error("Unexpected error from CurrencyService", e);
+        }
         planRepository.save(plan);
         userRepository.save(plan.getUser());
 
@@ -163,13 +175,13 @@ public class PlanService {
 
     private void validatePlanCompletion(Plan plan) {
         if (plan.getCompleted())
-            throw new IllegalArgumentException("Plan is already completed");
+            throw new PlanCompletionException("Plan is already completed");
     }
 
     private void validateBudgetSufficiency(Plan plan) {
         BigDecimal currentAmount = calculateCurrentBudget(plan);
         if (currentAmount.compareTo(plan.getRequiredAmount()) < 0)
-            throw new IllegalArgumentException("Plan cannot be completed, required amount not reached");
+            throw new BudgetInsufficientException("Plan cannot be completed, required amount not reached");
     }
 
     private void completeSubPlans(Plan plan) {
@@ -192,7 +204,6 @@ public class PlanService {
 
     private PlanDTO updatePlanLogic(PlanRequest request, Plan plan) {
         validateCompletedPlanModification(request, plan);
-        validateCurrencyConsistency(request, plan);
         validateSubPlanAmounts(request, plan);
 
         if(!request.currencyId().equals(plan.getCurrency().getCurrencyId())) {
@@ -227,34 +238,25 @@ public class PlanService {
         }
     }
 
-    private void validateCurrencyConsistency(PlanRequest request, Plan plan) {
-        Integer totalSubPlansCount = subPlanRepository.getSubplanCount(plan.getPlanId());
-        if (totalSubPlansCount > 0 && !request.currencyId().equals(plan.getCurrency().getCurrencyId())) {
-            throw new IllegalArgumentException("Cannot change currency of plan with subplans");
-        }
-    }
+    private BigDecimal calculateCurrentBudget(Plan plan) {
+        if (plan.getCompleted()) return plan.getRequiredAmount();
 
-    BigDecimal calculateCorrectedAmount(String fromCurrency, String toCurrency, BigDecimal amount) {
         try {
-            return currencyService.convertCurrency(amount, fromCurrency, toCurrency);
-        } catch (CurrencyConversionException e) {
+            BigDecimal currentBudget = currencyService.convertCurrency(
+                    plan.getUser().getCurrentBudget(),
+                    plan.getUser().getCurrency().getIsoCode(),
+                    plan.getCurrency().getIsoCode()
+            );
+
+
+            return currentBudget.add(subPlanRepository.getTotalSubPlanAmountCompleted(plan.getPlanId()));
+        }
+        catch (CurrencyConversionException e) {
             log.error("Currency conversion failed", e);
             throw new IllegalArgumentException("Currency conversion failed");
         } catch (Exception e) {
             log.error("Unexpected error from CurrencyService", e);
         }
         return BigDecimal.ZERO;
-    }
-
-    private BigDecimal calculateCurrentBudget(Plan plan) {
-        if (plan.getCompleted()) return plan.getRequiredAmount();
-
-        BigDecimal currentBudget = calculateCorrectedAmount(
-                plan.getUser().getCurrency().getIsoCode(),
-                plan.getCurrency().getIsoCode(),
-                plan.getUser().getCurrentBudget()
-        );
-
-        return currentBudget.add(subPlanRepository.getTotalSubPlanAmountCompleted(plan.getPlanId()));
     }
 }
