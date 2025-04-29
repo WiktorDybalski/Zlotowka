@@ -44,6 +44,6 @@ public interface OneTimeTransactionRepository extends JpaRepository<OneTimeTrans
     BigDecimal getMonthlyExpensesByUser(@Param("userId") int userId, @Param("startDate") LocalDate startDate);
 
 
-    @Query("SELECT t FROM OneTimeTransaction t WHERE t.user.userId = :userId")
-    List<OneTimeTransaction> findAllByUser(@Param("userId") Integer userId);
+    @Query("SELECT t FROM OneTimeTransaction t WHERE t.user.userId = :userId AND t.date <= :now ORDER BY t.date desc")
+    List<OneTimeTransaction> findAllByUser(@Param("userId") Integer userId, @Param("now") LocalDate now);
 }

@@ -2,6 +2,7 @@ package com.agh.zlotowka.service;
 
 import com.agh.zlotowka.dto.OneTimeTransactionDTO;
 import com.agh.zlotowka.dto.OneTimeTransactionRequest;
+import com.agh.zlotowka.dto.PaginatedTransactionsDTO;
 import com.agh.zlotowka.model.Currency;
 import com.agh.zlotowka.model.OneTimeTransaction;
 import com.agh.zlotowka.model.User;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -89,16 +91,38 @@ public class OneTimeTransactionService {
         oneTimeTransactionRepository.delete(transaction);
     }
 
-    public List<OneTimeTransactionDTO> getAllTransactionsByUserId(Integer userId) {
-        List<OneTimeTransaction> transactions = oneTimeTransactionRepository.findAllByUser(userId);
+    private List<OneTimeTransaction> getAllTransactionsByUserId(Integer userId) {
+        List<OneTimeTransaction> allTransactions = oneTimeTransactionRepository.findAllByUser(userId, LocalDate.now());
 
-        if (transactions.isEmpty())
+        if (allTransactions.isEmpty())
             userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
 
-        return transactions.stream()
+        return allTransactions;
+    }
+
+    public PaginatedTransactionsDTO getPageTransactionsByUserId(Integer userId, Integer page, Integer limit) {
+        if (page < 1 || limit <= 0) {
+            throw new IllegalArgumentException("Page must be >= 1 and limit must be > 0");
+        }
+
+        List<OneTimeTransaction> allTransactions = getAllTransactionsByUserId(userId);
+        int total = allTransactions.size();
+        int totalPages = (int) Math.ceil((double) total / limit);
+
+        if (page > totalPages) {
+            return new PaginatedTransactionsDTO(Collections.emptyList(), total, page, totalPages);
+        }
+
+        int fromIndex = Math.max(0, (page - 1) * limit);
+        int toIndex = Math.min(fromIndex + limit, total);
+
+        List<OneTimeTransactionDTO> paginatedTransactions = allTransactions.subList(fromIndex, toIndex)
+                .stream()
                 .map(this::getOneTimeTransactionDTO)
                 .collect(Collectors.toList());
+
+        return new PaginatedTransactionsDTO(paginatedTransactions, total, page, totalPages);
     }
 
     public void validateUserId(Integer userId, CustomUserDetails userDetails) {

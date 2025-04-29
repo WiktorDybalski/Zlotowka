@@ -2,20 +2,14 @@ package com.agh.zlotowka.controller;
 
 import com.agh.zlotowka.dto.OneTimeTransactionDTO;
 import com.agh.zlotowka.dto.OneTimeTransactionRequest;
+import com.agh.zlotowka.dto.PaginatedTransactionsDTO;
+import com.agh.zlotowka.security.CustomUserDetails;
 import com.agh.zlotowka.service.OneTimeTransactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import com.agh.zlotowka.security.CustomUserDetails;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -62,12 +56,14 @@ public class OneTimeTransactionController {
     }
 
     @GetMapping("/all/{userId}")
-    public ResponseEntity<List<OneTimeTransactionDTO>> getAllOneTimeTransactions(
+    public ResponseEntity<PaginatedTransactionsDTO> getAllOneTimeTransactions(
             @PathVariable Integer userId,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "20") Integer limit,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         oneTimeTransactionService.validateUserId(userId, userDetails);
-        List<OneTimeTransactionDTO> oneTimeTransactions = oneTimeTransactionService.getAllTransactionsByUserId(userId);
-        return ResponseEntity.ok(oneTimeTransactions);
+        PaginatedTransactionsDTO transactions = oneTimeTransactionService.getPageTransactionsByUserId(userId, page, limit);
+        return ResponseEntity.ok(transactions);
     }
 
 
