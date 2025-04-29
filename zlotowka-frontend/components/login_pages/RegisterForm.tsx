@@ -6,8 +6,8 @@ import FormInput from "@/components/login_pages/FormInput";
 import RegisterButton from "@/components/general/Button";
 
 interface FormInputData {
-  id: string;
-  type?: string;
+  id: "firstName" | "lastName" | "email" | "password" | string;
+  type?: "password" | "email" | "text";
   placeholder: string;
   inputLeftElement?: React.ReactNode;
 }
@@ -20,10 +20,12 @@ interface LinkData {
 interface RegistrationFormProps {
   onSubmit?: (formData: Record<string, string>) => void;
   title?: string;
-  inputs: FormInputData[]; // Lista danych dla FormInput
+  inputs: FormInputData[]; // List of data for FormInput
   registerButtonText: string;
-  links?: LinkData[]; // Lista linków do wyświetlenia
+  links?: LinkData[]; // List of links to display
 }
+
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 export default function RegistrationForm({
   onSubmit,
@@ -37,7 +39,7 @@ export default function RegistrationForm({
 
   const handleChange = (id: string, value: string) => {
     setFormData((prev) => ({ ...prev, [id]: value }));
-    setErrors((prev) => ({ ...prev, [id]: "" })); // Resetuj błąd przy zmianie wartości
+    setErrors((prev) => ({ ...prev, [id]: "" })); // Reset error when value changes
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -45,15 +47,14 @@ export default function RegistrationForm({
 
     const newErrors: Record<string, string> = {};
 
-    // Walidacja danych
+    // Data validation
     inputs.forEach((input) => {
       if (!formData[input.id] || formData[input.id].trim() === "") {
         newErrors[input.id] = "To pole jest wymagane.";
-      } else if (
-        input.id === "email" &&
-        !/\S+@\S+\.\S+/.test(formData[input.id])
-      ) {
+      } else if (input.id === "email" && !emailRegex.test(formData[input.id])) {
         newErrors[input.id] = "Podaj poprawny adres email.";
+      } else if (input.id === "password" && formData[input.id].length < 6) {
+        newErrors[input.id] = "Hasło musi mieć co najmniej 6 znaków.";
       }
     });
 
@@ -63,7 +64,7 @@ export default function RegistrationForm({
     }
 
     if (onSubmit) {
-      onSubmit(formData); // Przekazanie danych do funkcji onSubmit
+      onSubmit(formData); // Pass data to the onSubmit function
     }
   };
 
@@ -72,7 +73,7 @@ export default function RegistrationForm({
       onSubmit={handleSubmit}
       className="w-full max-w-md p-8 px-13 space-y-8 bg-white rounded-lg shadow-lg border-lightAccent border-2"
     >
-      {/* Nagłówek h2 */}
+      {/* Header h2 */}
       {title && (
         <div className="text-center py-3">
           <h2 className="text-4xl font-extrabold text-[#262626]">{title}</h2>
@@ -80,7 +81,7 @@ export default function RegistrationForm({
       )}
 
       <Hstack className="space-y-6 mt-5">
-        {/* Generowanie pól FormInput na podstawie przekazanych danych */}
+        {/* Generate FormInput fields based on provided data */}
         {inputs.map((input) => (
           <FormInput
             key={input.id}
@@ -98,7 +99,7 @@ export default function RegistrationForm({
           {registerButtonText}
         </RegisterButton>
 
-        {/* Linki */}
+        {/* Links */}
         {links &&
           links.map((link, index) => (
             <LightLink key={index} href={link.href}>

@@ -11,8 +11,11 @@ const routes = {
   forgotPassword: {
     pathname: "/auth/forgot-password",
   },
-  home: {
-    pathname: "/home",
+  dashboard: {
+    pathname: "/dashboard",
+  },
+  settings: {
+    pathname: "/settings",
   },
 };
 
