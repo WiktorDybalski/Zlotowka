@@ -45,6 +45,8 @@ public class SubplanService {
 
         validateSubplanOwnership(request.userId(), plan.getUser().getUserId());
         validateSubplanAmount(plan, request.amount());
+        validatePlanCompletion(plan);
+
 
         Subplan subplan = Subplan.builder()
                 .plan(plan)
@@ -111,6 +113,12 @@ public class SubplanService {
     private void validateCompletedSubPlanModification(SubplanRequest request, Subplan subplan) {
         if (subplan.getCompleted() && !request.amount().equals(subplan.getRequiredAmount())) {
             throw new PlanCompletionException("Subplan is already completed, cannot change amount");
+        }
+    }
+
+    private void validatePlanCompletion(Plan plan) {
+        if (plan.getCompleted()) {
+            throw new PlanCompletionException("Plan is already completed, cannot add subplan");
         }
     }
 
