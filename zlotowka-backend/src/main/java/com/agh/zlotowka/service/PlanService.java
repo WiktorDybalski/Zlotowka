@@ -142,7 +142,7 @@ public class PlanService {
         OneTimeTransaction transaction = OneTimeTransaction.builder()
                 .user(plan.getUser())
                 .name("Marzenie: " + plan.getName())
-                .amount(plan.getRequiredAmount())
+                .amount(plan.getRequiredAmount().subtract(subPlanRepository.getTotalSubPlanAmountCompleted(plan.getPlanId())))
                 .currency(plan.getCurrency())
                 .isIncome(false)
                 .date(plan.getDate())
