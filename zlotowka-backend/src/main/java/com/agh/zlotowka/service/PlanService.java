@@ -88,7 +88,7 @@ public class PlanService {
                 plan.getDescription(),
                 plan.getRequiredAmount(),
                 plan.getDate(),
-                plan.getCurrency().getCurrencyId(),
+                plan.getCurrency(),
                 plan.getCompleted(),
                 currentAmount,
                 currentAmount.compareTo(plan.getRequiredAmount()) >= 0,

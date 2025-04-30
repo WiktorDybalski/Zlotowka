@@ -70,7 +70,7 @@ public class SubplanService {
                 subplan.getName(),
                 subplan.getDescription(),
                 subplan.getRequiredAmount(),
-                subplan.getPlan().getCurrency().getCurrencyId(),
+                subplan.getPlan().getCurrency(),
                 subplan.getCompleted(),
                 actualAmount,
                 canBeCompleted,
