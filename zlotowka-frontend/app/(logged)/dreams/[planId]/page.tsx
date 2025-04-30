@@ -171,7 +171,14 @@ export default function DreamDetailsPage() {
             </h2>
             <p className="font-lato text-xl mt-3 mb-2">
               <span>
-                {dream.actualAmount} {dream.currency.isoCode}
+                {Math.min(dream.actualAmount, dream.amount).toLocaleString(
+                  undefined,
+                  {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2,
+                  }
+                )}{" "}
+                {dream.currency.isoCode}
               </span>
               <span className="mx-1">/</span>
               <span>
@@ -186,24 +193,28 @@ export default function DreamDetailsPage() {
           {dream.completed && <p className="text-sm mt-1">Zrealizowano!</p>}
           <p className="mt-5">Opis: {dream.description}</p>
         </header>
-        <article className="flex-grow mt-5">
-          <h3 className="text-2xl font-bold mb-5">Składowe marzenia:</h3>
-          {dream.subplans.length === 0 && (
-            <p className="text-sm text-gray-500">Marzenie nie ma składowych</p>
-          )}
-          <div className="flex flex-col gap-5">
-            {dream.subplans.map((subDream) => (
-              <SubDreamCard
-                key={subDream.subplanId}
-                subdream={subDream}
-                onCompleteClicked={() => {
-                  completeSubDreamMutation.mutate(subDream.subplanId);
-                }}
-                onDeleteClicked={() => {
-                  deleteSubDreamMutation.mutate(subDream.subplanId);
-                }}
-              />
-            ))}
+        <article className="flex-grow mt-5 w-full h-[70vh]  overflow-hidden">
+          <div className="overflow-y-auto h-full">
+            <h3 className="text-2xl font-bold mb-5">Składowe marzenia:</h3>
+            {dream.subplans.length === 0 && (
+              <p className="text-sm text-gray-500">
+                Marzenie nie ma składowych
+              </p>
+            )}
+            <div className="flex flex-col gap-5 ">
+              {dream.subplans.map((subDream) => (
+                <SubDreamCard
+                  key={subDream.subplanId}
+                  subdream={subDream}
+                  onCompleteClicked={() => {
+                    completeSubDreamMutation.mutate(subDream.subplanId);
+                  }}
+                  onDeleteClicked={() => {
+                    deleteSubDreamMutation.mutate(subDream.subplanId);
+                  }}
+                />
+              ))}
+            </div>
           </div>
         </article>
         <footer className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-5 mt-10">

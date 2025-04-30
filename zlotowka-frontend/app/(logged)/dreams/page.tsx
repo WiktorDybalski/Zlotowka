@@ -66,11 +66,9 @@ export default function Dreams() {
         Twoje Marzenia
       </h2>
       <div className="w-full h-[70vh] mt-10 overflow-hidden">
-        <div className="h-full">
-          <div className="flex flex-wrap lg:gap-15 gap-5 overflow-auto">
-            {data &&
-              data.map((dream, idx) => <DreamCard key={idx} dream={dream} />)}
-          </div>
+        <div className="flex flex-wrap lg:gap-10 gap-5 overflow-y-auto">
+          {data &&
+            data.map((dream, idx) => <DreamCard key={idx} dream={dream} />)}
         </div>
       </div>
 

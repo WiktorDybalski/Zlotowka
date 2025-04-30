@@ -16,6 +16,10 @@ export default function DreamCard({ dream }: DreamCardProps) {
     dream.description.length > maxDescriptionLength
       ? dream.description.substring(0, 100) + "..."
       : dream.description;
+
+  let completedMessage = "";
+  if (dream.canBeCompleted) completedMessage = "Można wykonać!";
+  if (dream.completed) completedMessage = "Zrealizowano!";
   return (
     <figure style={{ width: "370px", height: "270px" }}>
       <GenericCard
@@ -31,7 +35,14 @@ export default function DreamCard({ dream }: DreamCardProps) {
                 </p>
                 <p className="font-lato text-xl mt-3 mb-2">
                   <span>
-                    {dream.actualAmount} {dream.currency.isoCode}
+                    {Math.min(dream.actualAmount, dream.amount).toLocaleString(
+                      undefined,
+                      {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: 2,
+                      }
+                    )}{" "}
+                    {dream.currency.isoCode}
                   </span>
                   <span className="mx-1">/</span>
                   <span>
@@ -44,10 +55,7 @@ export default function DreamCard({ dream }: DreamCardProps) {
             }
             middle={<></>}
             bottom={
-              <TextNumberField
-                text={dream.canBeCompleted ? "Można wykonać!" : ""}
-                number={dream.date}
-              />
+              <TextNumberField text={completedMessage} number={dream.date} />
             }
           />
         </Link>

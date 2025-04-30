@@ -30,7 +30,13 @@ export default function SubDreamCard({
                 <h3 className="text-2xl font-bold">{subdream.name}</h3>
                 <p className="font-lato text-xl mt-3 mb-2">
                   <span>
-                    {Math.min(subdream.actualAmount, subdream.amount)}{" "}
+                    {Math.min(
+                      subdream.actualAmount,
+                      subdream.amount
+                    ).toLocaleString(undefined, {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 2,
+                    })}{" "}
                     {subdream.currency.isoCode}
                   </span>
                   <span className="mx-1">/</span>
@@ -50,12 +56,15 @@ export default function SubDreamCard({
           bottom={
             <>
               <footer className="flex flex-wrap items-center justify-end gap-x-10 gap-y-4">
-                <DarkButton
-                  icon={"check_circle_outline"}
-                  text={"Zrealizuj składową marzenia"}
-                  onClick={onCompleteClicked}
-                  className="bg-blue-500 hover:bg-blue-600 text-white max-w-[300px]"
-                />
+                {subdream.canBeCompleted && !subdream.completed && (
+                  <DarkButton
+                    icon={"check_circle_outline"}
+                    text={"Zrealizuj składową marzenia"}
+                    onClick={onCompleteClicked}
+                    className="bg-blue-500 hover:bg-blue-600 text-white max-w-[300px]"
+                  />
+                )}
+
                 <DarkButton
                   icon={"delete_outline"}
                   text={"Usuń składową marzenia"}
