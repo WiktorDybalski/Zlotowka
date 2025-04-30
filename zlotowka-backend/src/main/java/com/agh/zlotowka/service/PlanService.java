@@ -135,7 +135,6 @@ public class PlanService {
         plan.setDate(LocalDate.now());
         plan.setSubplansCompleted(100.0);
 
-        completeSubPlans(plan);
         planRepository.save(plan);
         userRepository.save(plan.getUser());
 
@@ -149,6 +148,7 @@ public class PlanService {
                 .description(plan.getDescription())
                 .build();
 
+        completeSubPlans(plan);
         oneTimeTransactionRepository.save(transaction);
         return getPlanDTO(plan);
     }

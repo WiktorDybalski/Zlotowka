@@ -189,18 +189,19 @@ public class SubplanService {
     }
 
     private void validateSubPlanBudgetSufficiency(Subplan subplan) {
+        BigDecimal currentAmount = BigDecimal.ZERO;
         try {
-            BigDecimal currentAmount = currencyService.convertCurrency(
+            currentAmount = currencyService.convertCurrency(
                     subplan.getPlan().getUser().getCurrentBudget(),
                     subplan.getPlan().getUser().getCurrency().getIsoCode(),
                     subplan.getPlan().getCurrency().getIsoCode()
             );
-            if (currentAmount.compareTo(subplan.getRequiredAmount()) < 0) {
-                throw new InsufficientBudgetException("Subplan cannot be completed, required amount not reached");
-            }
         }
         catch (Exception e) {
             log.error("Unexpected error from CurrencyService", e);
+        }
+        if (currentAmount.compareTo(subplan.getRequiredAmount()) < 0) {
+            throw new InsufficientBudgetException("Subplan cannot be completed, required amount not reached");
         }
     }
 
