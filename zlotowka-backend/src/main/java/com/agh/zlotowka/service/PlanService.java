@@ -61,6 +61,8 @@ public class PlanService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Plan with Id %d not found", planId)));
 
         validatePlanOwnership(request.userId(), plan.getUser().getUserId());
+        validateCompletedPlanModification(request, plan);
+        validateSubPlanAmounts(request, plan);
 
         return updatePlanLogic(request, plan);
     }
@@ -103,29 +105,9 @@ public class PlanService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Plan with Id %d not found", id)));
 
         List<Subplan> subPlans = subPlanRepository.findAllSubPlansByPlanId(id);
+        subPlanRepository.deleteAll(subPlans);
 
-        deleteSubPlans(subPlans, plan);
         planRepository.delete(plan);
-    }
-
-    private void deleteSubPlans(List<Subplan> subPlans, Plan plan) {
-        User user = plan.getUser();
-        try {
-            for (Subplan subPlan : subPlans) {
-                if (subPlan.getCompleted() && !plan.getCompleted()) {
-                    BigDecimal correctedAmount = currencyService.convertCurrency(subPlan.getRequiredAmount(),
-                            subPlan.getPlan().getCurrency().getIsoCode(),
-                            user.getCurrency().getIsoCode()
-                    );
-
-                    user.setCurrentBudget(user.getCurrentBudget().add(correctedAmount));
-                    userRepository.save(plan.getUser());
-                }
-                subPlanRepository.delete(subPlan);
-            }
-        } catch (Exception e) {
-            log.error("Unexpected error from CurrencyService", e);
-        }
     }
 
 
@@ -137,10 +119,6 @@ public class PlanService {
         validatePlanCompletion(plan);
         validateBudgetSufficiency(plan);
 
-        completeSubPlans(plan);
-
-        plan.setCompleted(true);
-        plan.setDate(LocalDate.now());
         try {
             BigDecimal correctedAmount = currencyService.convertCurrency(
                     plan.getRequiredAmount().subtract(subPlanRepository.getTotalSubPlanAmountCompleted(plan.getPlanId())),
@@ -152,12 +130,18 @@ public class PlanService {
         } catch (Exception e) {
             log.error("Unexpected error from CurrencyService", e);
         }
+
+        plan.setCompleted(true);
+        plan.setDate(LocalDate.now());
+        plan.setSubplansCompleted(100.0);
+
+        completeSubPlans(plan);
         planRepository.save(plan);
         userRepository.save(plan.getUser());
 
         OneTimeTransaction transaction = OneTimeTransaction.builder()
                 .user(plan.getUser())
-                .name("Marzenie:" + plan.getName())
+                .name("Marzenie: " + plan.getName())
                 .amount(plan.getRequiredAmount())
                 .currency(plan.getCurrency())
                 .isIncome(false)
@@ -199,9 +183,6 @@ public class PlanService {
     }
 
     private PlanDTO updatePlanLogic(PlanRequest request, Plan plan) {
-        validateCompletedPlanModification(request, plan);
-        validateSubPlanAmounts(request, plan);
-
         if(!request.currencyId().equals(plan.getCurrency().getCurrencyId())) {
             Currency currency = currencyRepository.findById(request.currencyId())
                     .orElseThrow(() -> new EntityNotFoundException(String.format("Currency with Id %d not found", request.currencyId())));
@@ -243,7 +224,6 @@ public class PlanService {
                     plan.getUser().getCurrency().getIsoCode(),
                     plan.getCurrency().getIsoCode()
             );
-
 
             return currentBudget.add(subPlanRepository.getTotalSubPlanAmountCompleted(plan.getPlanId()));
         }

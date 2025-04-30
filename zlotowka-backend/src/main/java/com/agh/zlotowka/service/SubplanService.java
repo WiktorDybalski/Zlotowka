@@ -62,7 +62,7 @@ public class SubplanService {
 
     private SubplanDTO getSubplanDTO(Subplan subplan) {
         BigDecimal actualAmount = calculateCurrentBudget(subplan);
-        boolean canBeCompleted = subplan.getRequiredAmount().compareTo(subplan.getPlan().getUser().getCurrentBudget()) <= 0;
+        boolean canBeCompleted = actualAmount.compareTo(subplan.getRequiredAmount()) >= 0;
 
         return new SubplanDTO(
                 subplan.getPlan().getPlanId(),
@@ -94,7 +94,7 @@ public class SubplanService {
 
         validateCompletedSubPlanModification(request, subplan);
         validateSubplanOwnership(request.userId(), subplan.getPlan().getUser().getUserId());
-        validateSubplanAmount(subplan.getPlan(), request.amount());
+        validateUpdatedSubplanAmount(subplan.getPlan(), request.amount(), subplan);
 
 
         subplan.setName(request.name());
@@ -127,6 +127,14 @@ public class SubplanService {
         }
     }
 
+    private void validateUpdatedSubplanAmount(Plan plan, BigDecimal newAmount, Subplan subplan) {
+        BigDecimal allSubplansAmountMinusOld =
+                subPlanRepository.getTotalSubPlanAmount(plan.getPlanId()).subtract(subplan.getRequiredAmount());
+        if (allSubplansAmountMinusOld.add(newAmount).compareTo(plan.getRequiredAmount()) > 0) {
+            throw new PlanAmountExceededException("Total subplan amount exceeds the plan's required amount");
+        }
+    }
+
     @Transactional
     public SubplanDTO completeSubplan(Integer id) {
         Subplan subplan = subPlanRepository.findById(id)
@@ -135,11 +143,7 @@ public class SubplanService {
         validateSubPlanCompletion(subplan);
         validateSubPlanBudgetSufficiency(subplan);
 
-        subplan.setCompleted(true);
-        subplan.setDate(LocalDate.now());
-
         Plan plan = subplan.getPlan();
-        calculatePlanSubplanCompletion(plan);
 
         try {
             BigDecimal correctAmount = currencyService.convertCurrency(
@@ -153,6 +157,11 @@ public class SubplanService {
         catch (Exception e) {
             log.error("Unexpected error from CurrencyService", e);
         }
+
+        subplan.setCompleted(true);
+        subplan.setDate(LocalDate.now());
+
+        calculatePlanSubplanCompletion(plan);
 
         userRepository.save(plan.getUser());
         subPlanRepository.save(subplan);
@@ -218,7 +227,7 @@ public class SubplanService {
     void calculatePlanSubplanCompletion(Plan plan) {
         Integer totalSubplans = subPlanRepository.getSubplanCount(plan.getPlanId());
         Integer completedSubplans = subPlanRepository.getCompletedSubPlanCount(plan.getPlanId());
-        plan.setSubplansCompleted((double) completedSubplans / totalSubplans);
+        plan.setSubplansCompleted((double) completedSubplans / totalSubplans * 100);
         planRepository.save(plan);
     }
 
