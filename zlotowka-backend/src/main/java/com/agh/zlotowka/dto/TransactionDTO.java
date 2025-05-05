@@ -5,7 +5,7 @@ import com.agh.zlotowka.model.PeriodEnum;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public record TransactionDTO (
+public record TransactionDTO(
         Integer transactionId,
         Integer userId,
         String name,

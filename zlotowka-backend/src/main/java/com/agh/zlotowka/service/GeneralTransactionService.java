@@ -5,6 +5,7 @@ import com.agh.zlotowka.exception.CurrencyConversionException;
 import com.agh.zlotowka.model.OneTimeTransaction;
 import com.agh.zlotowka.model.PeriodEnum;
 import com.agh.zlotowka.model.RecurringTransaction;
+import com.agh.zlotowka.model.User;
 import com.agh.zlotowka.repository.OneTimeTransactionRepository;
 import com.agh.zlotowka.repository.RecurringTransactionRepository;
 import com.agh.zlotowka.repository.UserRepository;
@@ -116,15 +117,15 @@ public class GeneralTransactionService {
 
         for (TransactionBudgetInfo transaction : pastTransactions) {
             updatedBudget = updatedBudget.subtract(transaction.amount());
-            transactionBudgetInfoList.add(new SinglePlotData(transaction.date(), updatedBudget));
+            transactionBudgetInfoList.add(new SinglePlotData(transaction.date(), updatedBudget, userCurrency));
         }
 
         updatedBudget = budget;
-        transactionBudgetInfoList.add(new SinglePlotData(LocalDate.now(), updatedBudget));
+        transactionBudgetInfoList.add(new SinglePlotData(LocalDate.now(), updatedBudget, userCurrency));
 
         for (TransactionBudgetInfo transaction : futureTransactions) {
             updatedBudget = updatedBudget.add(transaction.amount());
-            transactionBudgetInfoList.add(new SinglePlotData(transaction.date(), updatedBudget));
+            transactionBudgetInfoList.add(new SinglePlotData(transaction.date(), updatedBudget, userCurrency));
         }
 
         Map<LocalDate, SinglePlotData> uniqueByDate = new TreeMap<>();
@@ -234,16 +235,16 @@ public class GeneralTransactionService {
             }
         }
 
-        return new RevenuesAndExpensesResponse(revenue, expenses);
+        return new RevenuesAndExpensesResponse(revenue, expenses, userCurrency);
     }
 
     public MonthlySummaryDto getMonthlySummary(Integer userId) {
-        userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
+        User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
         LocalDate startDate = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth());
 
         BigDecimal monthlyIncome = oneTimeTransactionRepository.getMonthlyIncomeByUser(userId, startDate);
         BigDecimal monthlyExpenses = oneTimeTransactionRepository.getMonthlyExpensesByUser(userId, startDate);
-        return new MonthlySummaryDto(monthlyIncome, monthlyExpenses, monthlyIncome.subtract(monthlyExpenses));
+        return new MonthlySummaryDto(monthlyIncome, monthlyExpenses, monthlyIncome.subtract(monthlyExpenses), user.getCurrency().getIsoCode());
     }
 
     public BigDecimal getCurrentBalance(Integer userId) {
