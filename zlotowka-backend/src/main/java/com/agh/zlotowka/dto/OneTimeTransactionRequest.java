@@ -1,6 +1,7 @@
 package com.agh.zlotowka.dto;
 
 import com.agh.zlotowka.validation.DateAfter2000;
+import com.agh.zlotowka.validation.MaxDecimalPlaces;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
@@ -17,6 +18,7 @@ public record OneTimeTransactionRequest(
 
         @NotNull(message = "Amount cannot be null")
         @Positive(message = "Amount must be positive")
+        @MaxDecimalPlaces(2)
         BigDecimal amount,
 
         @NotNull(message = "Currency ID cannot be null")
