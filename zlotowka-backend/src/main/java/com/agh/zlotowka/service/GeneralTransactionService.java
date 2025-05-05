@@ -1,10 +1,6 @@
 package com.agh.zlotowka.service;
 
-import com.agh.zlotowka.dto.MonthlySummaryDto;
-import com.agh.zlotowka.dto.RevenuesAndExpensesResponse;
-import com.agh.zlotowka.dto.SinglePlotData;
-import com.agh.zlotowka.dto.TransactionBudgetInfo;
-import com.agh.zlotowka.dto.UserDataInDateRangeRequest;
+import com.agh.zlotowka.dto.*;
 import com.agh.zlotowka.exception.CurrencyConversionException;
 import com.agh.zlotowka.model.OneTimeTransaction;
 import com.agh.zlotowka.model.PeriodEnum;
@@ -23,12 +19,9 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -256,5 +249,82 @@ public class GeneralTransactionService {
     public BigDecimal getCurrentBalance(Integer userId) {
         return userRepository.getUserBudget(userId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
+    }
+
+    public PaginatedTransactionsDTO getPageTransactionsByUserId(Integer userId, Integer page, Integer limit, LocalDate startDate, LocalDate endDate) {
+        if (page < 1 || limit <= 0) {
+            throw new IllegalArgumentException("Page must be >= 1 and limit must be > 0");
+        }
+
+        validateFirstAndFinalDates(startDate, endDate);
+
+        List<TransactionDTO> allTransactions = getAllTransactionsByUserId(userId, startDate, endDate);
+        int total = allTransactions.size();
+        int totalPages = (int) Math.ceil((double) total / limit);
+
+        if (page > totalPages) {
+            return new PaginatedTransactionsDTO(Collections.emptyList(), total, page, totalPages);
+        }
+
+        int fromIndex = Math.max(0, (page - 1) * limit);
+        int toIndex = Math.min(fromIndex + limit, total);
+
+        List<TransactionDTO> paginatedTransactions = allTransactions.subList(fromIndex, toIndex);
+
+        return new PaginatedTransactionsDTO(paginatedTransactions, total, page, totalPages);
+    }
+
+    private List<TransactionDTO> getAllTransactionsByUserId(Integer userId, LocalDate startDate, LocalDate endDate) {
+        List<OneTimeTransaction> oneTimeTransactions = oneTimeTransactionRepository.getTransactionsInRange(userId, startDate, endDate);
+        List<RecurringTransaction> recurringTransactions = recurringTransactionRepository.getActiveTransactionsByUser(userId, startDate, endDate);
+
+        return Stream.concat(
+                        oneTimeTransactions.stream().map(this::mapOneTimeTransaction),
+                        recurringTransactions.stream().flatMap(r -> generateRecurringTransactionInstances(r, endDate).stream())
+                ).sorted(Comparator.comparing(TransactionDTO::date))
+                .toList();
+    }
+
+    private TransactionDTO mapOneTimeTransaction(OneTimeTransaction t) {
+        return new TransactionDTO(
+                t.getTransactionId(),
+                t.getUser().getUserId(),
+                t.getName(),
+                t.getAmount(),
+                t.getCurrency().getIsoCode(),
+                t.getIsIncome(),
+                t.getDate(),
+                t.getDescription(),
+                PeriodEnum.ONCE
+        );
+    }
+
+    private List<TransactionDTO> generateRecurringTransactionInstances(RecurringTransaction recurringTransaction, LocalDate endDate) {
+        List<TransactionDTO> list = new ArrayList<>();
+        PeriodEnum period = recurringTransaction.getInterval();
+        LocalDate nextDate = recurringTransaction.getNextPaymentDate();
+
+        while (!nextDate.isAfter(endDate) && !nextDate.isAfter(recurringTransaction.getFinalPaymentDate())) {
+            list.add(new TransactionDTO(
+                    recurringTransaction.getTransactionId(),
+                    recurringTransaction.getUser().getUserId(),
+                    recurringTransaction.getName(),
+                    recurringTransaction.getAmount(),
+                    recurringTransaction.getCurrency().getIsoCode(),
+                    recurringTransaction.getIsIncome(),
+                    nextDate,
+                    recurringTransaction.getDescription(),
+                    period
+            ));
+            nextDate = period.addToDate(nextDate, recurringTransaction.getFirstPaymentDate());
+        }
+        return list;
+    }
+
+
+    private void validateFirstAndFinalDates(LocalDate startDate, LocalDate endDate) {
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("Start date cannot be after the end date");
+        }
     }
 }

@@ -2,7 +2,6 @@ package com.agh.zlotowka.controller;
 
 import com.agh.zlotowka.dto.OneTimeTransactionDTO;
 import com.agh.zlotowka.dto.OneTimeTransactionRequest;
-import com.agh.zlotowka.dto.PaginatedTransactionsDTO;
 import com.agh.zlotowka.security.CustomUserDetails;
 import com.agh.zlotowka.service.OneTimeTransactionService;
 import jakarta.validation.Valid;
@@ -10,8 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/onetime-transaction")
@@ -55,16 +52,6 @@ public class OneTimeTransactionController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/all/{userId}")
-    public ResponseEntity<PaginatedTransactionsDTO> getAllOneTimeTransactions(
-            @PathVariable Integer userId,
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "20") Integer limit,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        oneTimeTransactionService.validateUserId(userId, userDetails);
-        PaginatedTransactionsDTO transactions = oneTimeTransactionService.getPageTransactionsByUserId(userId, page, limit);
-        return ResponseEntity.ok(transactions);
-    }
 
 
 }

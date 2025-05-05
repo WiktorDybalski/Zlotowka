@@ -25,6 +25,7 @@ public class PeriodService {
             case WEEKLY -> "Tygodniowy";
             case MONTHLY -> "Miesięczny";
             case YEARLY -> "Roczny";
+            case ONCE -> "Jednorazowy";
         };
     }
 }

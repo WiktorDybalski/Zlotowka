@@ -85,7 +85,7 @@ public class OneTimeTransactionService {
         OneTimeTransaction transaction = oneTimeTransactionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Transaction with Id %d not found", id)));
 
-        if (transaction.getDate().isBefore(LocalDate.now())) {
+        if (!transaction.getDate().isAfter(LocalDate.now())) {
             userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
         }
         oneTimeTransactionRepository.delete(transaction);
@@ -99,30 +99,6 @@ public class OneTimeTransactionService {
                     .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
 
         return allTransactions;
-    }
-
-    public PaginatedTransactionsDTO getPageTransactionsByUserId(Integer userId, Integer page, Integer limit) {
-        if (page < 1 || limit <= 0) {
-            throw new IllegalArgumentException("Page must be >= 1 and limit must be > 0");
-        }
-
-        List<OneTimeTransaction> allTransactions = getAllTransactionsByUserId(userId);
-        int total = allTransactions.size();
-        int totalPages = (int) Math.ceil((double) total / limit);
-
-        if (page > totalPages) {
-            return new PaginatedTransactionsDTO(Collections.emptyList(), total, page, totalPages);
-        }
-
-        int fromIndex = Math.max(0, (page - 1) * limit);
-        int toIndex = Math.min(fromIndex + limit, total);
-
-        List<OneTimeTransactionDTO> paginatedTransactions = allTransactions.subList(fromIndex, toIndex)
-                .stream()
-                .map(this::getOneTimeTransactionDTO)
-                .collect(Collectors.toList());
-
-        return new PaginatedTransactionsDTO(paginatedTransactions, total, page, totalPages);
     }
 
     public void validateUserId(Integer userId, CustomUserDetails userDetails) {
