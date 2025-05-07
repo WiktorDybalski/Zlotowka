@@ -3,35 +3,29 @@
 import ThreeElementsCard from "@/components/dashboard/cards/generic/ThreeElementsCard";
 import CardText from "@/components/dashboard/cards/generic/CardText";
 import CardNumber from "@/components/dashboard/cards/generic/CardNumber";
-import { useEffect, useState } from "react";
-import CardService from "@/services/CardService";
+import { useCardService } from "@/services/CardService";
 import formatMoney from "@/utils/formatMoney";
-import { NextTransactionResponse } from "@/interfaces/dashboard/cards/NextTransactionResponse";
 import TextNumberField from "@/components/dashboard/cards/generic/TextNumberField";
 import toast from "react-hot-toast";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import dayjs from "dayjs";
+import { useQuery } from "@tanstack/react-query";
 
 export default function NextIncomeCard() {
-  const [nextIncome, setNextIncome] = useState<NextTransactionResponse | null>(
-    null,
-  );
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const CardService = useCardService();
 
-  useEffect(() => {
-    CardService.getNextTransaction(1, true)
-      .then((response) => {
-        setNextIncome(response);
-      })
-      .catch((err) => {
-        toast.error("Failed to fetch next income: " + err);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, []);
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["cardService", "getNextIncome"],
+    queryFn: () => CardService.getNextTransaction(true),
+  });
 
-  if (isLoading || !nextIncome) {
+  if (isError) {
+    toast.error(
+      error?.message || "Błąd podczas pobierania następnego przychodu"
+    );
+  }
+
+  if (isLoading || !data) {
     return <LoadingSpinner />;
   }
 
@@ -40,15 +34,13 @@ export default function NextIncomeCard() {
       top={<CardText text="Następny przychód" />}
       middle={
         <CardNumber
-          text={
-            formatMoney(nextIncome.amount) + " " + nextIncome.currencyIsoCode
-          }
+          text={formatMoney(data.amount) + " " + data.currencyIsoCode}
         />
       }
       bottom={
         <TextNumberField
-          text={nextIncome.transactionName}
-          number={dayjs(nextIncome.date).format("DD-MM-YYYY")}
+          text={data.transactionName}
+          number={dayjs(data.date).format("DD-MM-YYYY")}
         />
       }
     />

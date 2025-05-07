@@ -1,6 +1,9 @@
 import localFont from "next/font/local";
 import { Raleway, Lato } from "next/font/google";
+import ReactQuerryProvider from "@/components/providers/react-querry";
 import "./globals.css";
+import { AuthProvider } from "@/components/providers/AuthProvider";
+import { Toaster } from "react-hot-toast";
 
 const raleway = Raleway({
   weight: ["400", "500", "600", "700"],
@@ -34,7 +37,10 @@ export default function RootLayout({
       <body
         className={`${raleway.variable} ${lato.variable} ${materialSymbols.variable} font-(family-name:--font-raleway) bg-background`}
       >
-        {children}
+        <Toaster position="top-center" reverseOrder={false} />
+        <ReactQuerryProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </ReactQuerryProvider>
       </body>
     </html>
   );

@@ -14,12 +14,13 @@ import {
 } from "@/components/ui/chart";
 import * as React from "react";
 import { useEffect, useState } from "react";
-import DashboardService from "@/services/DashboardService";
+import { useDashboardService } from "@/services/DashboardService";
 import DarkButton from "@/components/DarkButton";
 import RangePickerPopup from "@/components/dashboard/charts/RangePickerPopup";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import toast from "react-hot-toast";
-import dayjs, {Dayjs} from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
+import { useQuery } from "@tanstack/react-query";
 
 const chartConfig = {
   amount: {
@@ -28,43 +29,45 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-
 export function MainChart() {
   const [padding, setPadding] = useState<{ left: number; right: number }>({
     left: 30,
     right: 30,
   });
-  const [chartData, setChartData] = useState(null);
   const [showRangePicker, setShowRangePicker] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [startDate, setStartDate] = useState<Dayjs>(dayjs().subtract(30, "day"));
+  const [startDate, setStartDate] = useState<Dayjs>(
+    dayjs().subtract(30, "day")
+  );
   const [endDate, setEndDate] = useState<Dayjs>(dayjs());
 
-  const fetchData = async (startDate: Dayjs, endDate: Dayjs) => {
-    setIsLoading(true);
-    try {
-      const response = await DashboardService.getMainChartData(1, startDate.format("YYYY-MM-DD"), endDate.format("YYYY-MM-DD"));
-      setChartData(response);
-    } catch (err) {
-      toast.error("Failed to fetch main chart: " + err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const DashboardService = useDashboardService();
 
-  const handleDateChange = (newStartDate: Dayjs, newEndDate: Dayjs) => {
-    setStartDate(newStartDate);
-    setEndDate(newEndDate);
-  };
+  const {
+    data: chartData,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: [
+      "dashboard",
+      "mainChartData",
+      startDate.format("YYYY-MM-DD"),
+      endDate.format("YYYY-MM-DD"),
+    ],
+    queryFn: () =>
+      DashboardService.getMainChartData(
+        startDate.format("YYYY-MM-DD"),
+        endDate.format("YYYY-MM-DD")
+      ),
+  });
 
-  useEffect(() => {
-    fetchData(startDate, endDate);
-  }, [startDate, endDate]);
+  if (isError) {
+    toast.error("Failed to fetch main chart data: " + error.message);
+  }
 
   useEffect(() => {
     const updatePadding = () => {
       const width = window.innerWidth;
-
       if (width <= 640) {
         setPadding({ left: 0, right: 40 });
       } else if (width <= 1500) {
@@ -80,6 +83,11 @@ export function MainChart() {
     return () => window.removeEventListener("resize", updatePadding);
   }, []);
 
+  const handleDateChange = (newStartDate: Dayjs, newEndDate: Dayjs) => {
+    setStartDate(newStartDate);
+    setEndDate(newEndDate);
+  };
+
   if (isLoading || !chartData) {
     return <LoadingSpinner />;
   }
@@ -87,10 +95,10 @@ export function MainChart() {
   return (
     <>
       {showRangePicker && (
-          <RangePickerPopup
-              onClose={() => setShowRangePicker(false)}
-              onDateChange={handleDateChange}
-          />
+        <RangePickerPopup
+          onClose={() => setShowRangePicker(false)}
+          onDateChange={handleDateChange}
+        />
       )}
       <Card className="flex flex-col w-full h-full bg-transparent z-10 border-none">
         <CardHeader className="flex justify-between items-center">
@@ -130,7 +138,12 @@ export function MainChart() {
                 padding={padding}
                 className="font-lato"
               />
-              <YAxis axisLine={false} tickLine={false} tickMargin={16} className="font-lato" />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tickMargin={16}
+                className="font-lato"
+              />
               <ChartTooltip
                 cursor={false}
                 content={<ChartTooltipContent className="font-lato" />}

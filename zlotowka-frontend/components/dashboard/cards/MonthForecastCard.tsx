@@ -2,12 +2,12 @@
 
 import CardText from "@/components/dashboard/cards/generic/CardText";
 import ThreeElementsCard from "@/components/dashboard/cards/generic/ThreeElementsCard";
-import { useEffect, useState } from "react";
-import CardService from "@/services/CardService";
+import { useCardService } from "@/services/CardService";
 import formatMoney from "@/utils/formatMoney";
 import CardNumber from "@/components/dashboard/cards/generic/CardNumber";
 import toast from "react-hot-toast";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
+import { useQuery } from "@tanstack/react-query";
 
 const Value = ({ estimatedBalance }: { estimatedBalance: string }) => (
   <div className="flex items-baseline">
@@ -20,25 +20,18 @@ const Value = ({ estimatedBalance }: { estimatedBalance: string }) => (
 );
 
 export default function MonthForecastCard() {
-  const [estimatedBalance, setEstimatedBalance] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const CardService = useCardService();
 
-  useEffect(() => {
-    CardService.getMonthEstimatedBalance(1)
-      .then((response) => {
-        setEstimatedBalance(response.estimatedBalance);
-        console.log(response);
-      })
-      .catch((err) => {
-        toast.error("Failed to fetch estimated balance: " + err);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
-  }, []);
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["cardService", "getMonthEstimatedBalance"],
+    queryFn: CardService.getMonthEstimatedBalance,
+  });
 
-  console.log(estimatedBalance);
-  if (isLoading || !estimatedBalance) {
+  if (isError) {
+    toast.error(error.message || "Błąd podczas pobierania prognozy finansowej");
+  }
+
+  if (isLoading || !data) {
     return <LoadingSpinner />;
   }
 
@@ -46,7 +39,7 @@ export default function MonthForecastCard() {
     <ThreeElementsCard
       top={<CardText text="Prognoza finansowa" />}
       middle={
-        <Value estimatedBalance={formatMoney(estimatedBalance) + " zł"} />
+        <Value estimatedBalance={formatMoney(data.estimatedBalance) + " zł"} />
       }
       bottom={<CardText text="Szacowane saldo na koniec miesiąca" />}
     />
