@@ -1,11 +1,8 @@
 package com.agh.zlotowka.controller;
 
-import com.agh.zlotowka.dto.MonthlySummaryDto;
-import com.agh.zlotowka.dto.RevenuesAndExpensesResponse;
-import com.agh.zlotowka.dto.SinglePlotData;
-import com.agh.zlotowka.dto.TransactionBudgetInfo;
-import com.agh.zlotowka.dto.UserDataInDateRangeRequest;
+import com.agh.zlotowka.dto.*;
 import com.agh.zlotowka.service.GeneralTransactionService;
+import com.agh.zlotowka.validation.DateAfter2000;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.agh.zlotowka.security.CustomUserDetails;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
-
+import java.time.LocalDate;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -79,6 +76,20 @@ public class GeneralTransactionController {
         generalTransactionService.validateUserId(userId, userDetails);
         BigDecimal currentBalance = generalTransactionService.getCurrentBalance(userId);
         return ResponseEntity.ok(Map.of("currentBalance", currentBalance));
+    }
+
+    @GetMapping("/all/{userId}")
+    public ResponseEntity<PaginatedTransactionsDTO> getAllTransactions(
+            @PathVariable Integer userId,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "20") Integer limit,
+            @RequestParam(defaultValue = "2025-01-01") @DateAfter2000 LocalDate startDate,
+            @RequestParam(defaultValue = "2025-07-01") @DateAfter2000 LocalDate endDate,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        generalTransactionService.validateUserId(userId, userDetails);
+        PaginatedTransactionsDTO transactions = generalTransactionService.getPageTransactionsByUserId(userId, page, limit, startDate, endDate);
+        return ResponseEntity.ok(transactions);
     }
 
 }

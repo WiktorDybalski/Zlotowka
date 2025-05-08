@@ -2,6 +2,7 @@ package com.agh.zlotowka.service;
 
 import com.agh.zlotowka.dto.OneTimeTransactionDTO;
 import com.agh.zlotowka.dto.OneTimeTransactionRequest;
+import com.agh.zlotowka.dto.PaginatedTransactionsDTO;
 import com.agh.zlotowka.model.Currency;
 import com.agh.zlotowka.model.OneTimeTransaction;
 import com.agh.zlotowka.model.User;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -83,22 +85,20 @@ public class OneTimeTransactionService {
         OneTimeTransaction transaction = oneTimeTransactionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Transaction with Id %d not found", id)));
 
-        if (transaction.getDate().isBefore(LocalDate.now())) {
+        if (!transaction.getDate().isAfter(LocalDate.now())) {
             userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
         }
         oneTimeTransactionRepository.delete(transaction);
     }
 
-    public List<OneTimeTransactionDTO> getAllTransactionsByUserId(Integer userId) {
-        List<OneTimeTransaction> transactions = oneTimeTransactionRepository.findAllByUser(userId);
+    private List<OneTimeTransaction> getAllTransactionsByUserId(Integer userId) {
+        List<OneTimeTransaction> allTransactions = oneTimeTransactionRepository.findAllByUser(userId, LocalDate.now());
 
-        if (transactions.isEmpty())
+        if (allTransactions.isEmpty())
             userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
 
-        return transactions.stream()
-                .map(this::getOneTimeTransactionDTO)
-                .collect(Collectors.toList());
+        return allTransactions;
     }
 
     public void validateUserId(Integer userId, CustomUserDetails userDetails) {
