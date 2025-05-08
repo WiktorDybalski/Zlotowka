@@ -18,8 +18,8 @@ import java.util.List;
 public class GeneralPlansController {
     private final GeneralPlansService generalPlansService;
 
-    @GetMapping("/all/{id}")
-    public ResponseEntity<List<GeneralPlanDTO>> getAllPlans(@PathVariable Integer id) {
+    @GetMapping("/chart-data/{id}")
+    public ResponseEntity<List<GeneralPlanDTO>> getPlansChartData(@PathVariable Integer id) {
         List<GeneralPlanDTO> plans = generalPlansService.getAllUncompletedPlans(id);
         return ResponseEntity.ok(plans);
     }

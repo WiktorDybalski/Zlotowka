@@ -1,6 +1,5 @@
 package com.agh.zlotowka.dto;
 
-import com.agh.zlotowka.validation.DateAfter2000;
 import com.agh.zlotowka.validation.MaxDecimalPlaces;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,7 +7,6 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 public record SubplanRequest (
     @NotNull(message = "User Id cannot be null")
@@ -24,17 +22,11 @@ public record SubplanRequest (
     @MaxDecimalPlaces(2)
     BigDecimal amount,
 
-    @NotNull(message = "Currency Id cannot be null")
-    Integer currencyId,
-
     @Size(max = 512, message = "Description cannot exceed 512 characters")
     String description,
 
     @NotNull(message = "Plan Id cannot be null")
     @Positive(message = "Plan Id must be positive")
-    Integer planId,
-
-    @DateAfter2000
-    LocalDate date
+    Integer planId
 ) {
 }

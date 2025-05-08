@@ -1,3 +1,4 @@
+
 package com.agh.zlotowka.service;
 
 import com.agh.zlotowka.dto.GeneralPlanDTO;
@@ -6,14 +7,16 @@ import com.agh.zlotowka.model.PlanType;
 import com.agh.zlotowka.model.Subplan;
 import com.agh.zlotowka.repository.PlanRepository;
 import com.agh.zlotowka.repository.SubPlanRepository;
+import com.agh.zlotowka.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -21,36 +24,67 @@ import java.util.stream.Stream;
 public class GeneralPlansService {
     private final PlanRepository planRepository;
     private final SubPlanRepository subPlanRepository;
+    private final UserRepository userRepository;
+    private final CurrencyService currencyService;
 
     public List<GeneralPlanDTO> getAllUncompletedPlans(Integer userId) {
+        String userCurrencyCode = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("User with ID %d not found", userId)))
+                .getCurrency()
+                .getIsoCode();
+
         List<Plan> plans = planRepository.findAllUncompletedByUser(userId);
-        List<Subplan> subplans = subPlanRepository.findAllUncompletedSubPlansByUserId(userId);
+        List<GeneralPlanDTO> result = new ArrayList<>();
 
-        return Stream.concat(
-                plans.stream().map(this::getGeneralPlanDTO),
-                subplans.stream().map(this::getGeneralPlanDTO)
-        )
+        for (Plan plan : plans) {
+            String planCurrencyCode = plan.getCurrency().getIsoCode();
+
+            GeneralPlanDTO generalPlanDTO = createPlanDTO(plan, planCurrencyCode, userCurrencyCode);
+
+            List<Subplan> subplans = subPlanRepository.findAllUncompletedSubPlansByPlanId(plan.getPlanId());
+            for (Subplan subplan : subplans) {
+                generalPlanDTO.subplans().add(createSubplanDTO(subplan, planCurrencyCode, userCurrencyCode));
+            }
+            result.add(generalPlanDTO);
+        }
+
+        return result.stream()
                 .sorted(Comparator.comparing(GeneralPlanDTO::requiredAmount))
-                .collect(Collectors.toList());
+                .toList();
     }
 
-    private GeneralPlanDTO getGeneralPlanDTO(Plan plan) {
+    private GeneralPlanDTO createPlanDTO(Plan plan, String planCurrencyCode, String userCurrencyCode) {
+        BigDecimal convertedAmount = convertAmount(plan.getRequiredAmount(), planCurrencyCode, userCurrencyCode);
+
         return new GeneralPlanDTO(
-                plan.getRequiredAmount(),
+                convertedAmount,
                 plan.getName(),
-                plan.getDescription(),
-                plan.getCurrency(),
-                PlanType.PLAN
+                PlanType.PLAN,
+                new ArrayList<>()
         );
     }
 
-    private GeneralPlanDTO getGeneralPlanDTO(Subplan subplan) {
+    private GeneralPlanDTO createSubplanDTO(Subplan subplan, String planCurrencyCode, String userCurrencyCode) {
+        BigDecimal convertedAmount = convertAmount(subplan.getRequiredAmount(), planCurrencyCode, userCurrencyCode);
+
         return new GeneralPlanDTO(
-                subplan.getRequiredAmount(),
+                convertedAmount,
                 subplan.getName(),
-                subplan.getDescription(),
-                subplan.getPlan().getCurrency(),
-                PlanType.SUBPLAN
+                PlanType.SUBPLAN,
+                null
         );
+    }
+
+    private BigDecimal convertAmount(BigDecimal amount, String sourceCurrencyCode, String targetCurrencyCode) {
+        if (sourceCurrencyCode.equals(targetCurrencyCode)) {
+            return amount;
+        }
+        BigDecimal convertedAmount = BigDecimal.ZERO;
+        try {
+            convertedAmount = currencyService.convertCurrency(amount, sourceCurrencyCode, targetCurrencyCode);
+        } catch (Exception e) {
+            log.error("Unexpected error from CurrencyService", e);
+        }
+        return convertedAmount;
     }
 }
