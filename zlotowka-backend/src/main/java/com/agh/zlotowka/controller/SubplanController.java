@@ -4,11 +4,13 @@ package com.agh.zlotowka.controller;
 import com.agh.zlotowka.dto.SubplanDTO;
 import com.agh.zlotowka.dto.SubplanRequest;
 import com.agh.zlotowka.service.SubplanService;
+import com.agh.zlotowka.validation.DateAfter2000;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -36,8 +38,11 @@ public class SubplanController {
     }
 
     @PostMapping("/complete/{id}")
-    public ResponseEntity<SubplanDTO> completeSubplan(@PathVariable Integer id) {
-        SubplanDTO completedSubplan = subplanService.completeSubplan(id);
+    public ResponseEntity<SubplanDTO> completeSubplan(
+            @PathVariable Integer id,
+            @RequestParam(required = false) @DateAfter2000 LocalDate completionDate
+            ) {
+        SubplanDTO completedSubplan = subplanService.completeSubplan(id, completionDate);
         return ResponseEntity.ok(completedSubplan);
     }
 

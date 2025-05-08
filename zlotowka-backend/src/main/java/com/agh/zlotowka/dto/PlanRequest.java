@@ -1,9 +1,11 @@
 package com.agh.zlotowka.dto;
 
+import com.agh.zlotowka.validation.DateAfter2000;
 import com.agh.zlotowka.validation.MaxDecimalPlaces;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public record PlanRequest (
     @NotNull(message = "User Id cannot be null")
@@ -23,6 +25,9 @@ public record PlanRequest (
     Integer currencyId,
 
     @Size(max = 512, message = "Description cannot exceed 512 characters")
-    String description
+    String description,
+
+    @DateAfter2000
+    LocalDate date
 ) {
 }

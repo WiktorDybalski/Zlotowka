@@ -112,12 +112,13 @@ public class PlanService {
 
 
     @Transactional
-    public PlanDTO completePlan(Integer id) {
+    public PlanDTO completePlan(Integer id, LocalDate completionDate) {
         Plan plan = planRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Plan with Id %d not found", id)));
 
         validatePlanCompletion(plan);
         validateBudgetSufficiency(plan);
+        validateCompletionDate(completionDate);
 
         try {
             BigDecimal correctedAmount = currencyService.convertCurrency(
@@ -131,8 +132,11 @@ public class PlanService {
             log.error("Unexpected error from CurrencyService", e);
         }
 
+        if (completionDate == null)
+            completionDate = LocalDate.now();
+
         plan.setCompleted(true);
-        plan.setDate(LocalDate.now());
+        plan.setDate(completionDate);
         plan.setSubplansCompleted(100.0);
 
         planRepository.save(plan);
@@ -151,6 +155,12 @@ public class PlanService {
         completeSubPlans(plan);
         oneTimeTransactionRepository.save(transaction);
         return getPlanDTO(plan);
+    }
+
+    private void validateCompletionDate(LocalDate completionDate) {
+        if (completionDate != null && completionDate.isAfter(LocalDate.now())) {
+            throw new PlanCompletionException("Completion date cannot be in the future");
+        }
     }
 
     private void validatePlanCompletion(Plan plan) {
