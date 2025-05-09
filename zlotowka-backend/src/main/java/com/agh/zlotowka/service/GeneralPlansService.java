@@ -1,4 +1,3 @@
-
 package com.agh.zlotowka.service;
 
 import com.agh.zlotowka.dto.GeneralPlanDTO;
@@ -34,18 +33,30 @@ public class GeneralPlansService {
                 .getIsoCode();
 
         List<Plan> plans = planRepository.findAllUncompletedByUser(userId);
+
         List<GeneralPlanDTO> result = new ArrayList<>();
 
         for (Plan plan : plans) {
             String planCurrencyCode = plan.getCurrency().getIsoCode();
 
-            GeneralPlanDTO generalPlanDTO = createPlanDTO(plan, planCurrencyCode, userCurrencyCode);
+            result.add(createPlanDTO(
+                    plan.getRequiredAmount(),
+                    plan.getName(),
+                    planCurrencyCode,
+                    userCurrencyCode,
+                    PlanType.PLAN)
+            );
 
             List<Subplan> subplans = subPlanRepository.findAllUncompletedSubPlansByPlanId(plan.getPlanId());
-            for (Subplan subplan : subplans) {
-                generalPlanDTO.subplans().add(createSubplanDTO(subplan, planCurrencyCode, userCurrencyCode));
-            }
-            result.add(generalPlanDTO);
+
+            for (Subplan subplan : subplans)
+                result.add(createPlanDTO(
+                        subplan.getRequiredAmount(),
+                        subplan.getName(),
+                        planCurrencyCode,
+                        userCurrencyCode,
+                        PlanType.SUBPLAN)
+                );
         }
 
         return result.stream()
@@ -53,25 +64,19 @@ public class GeneralPlansService {
                 .toList();
     }
 
-    private GeneralPlanDTO createPlanDTO(Plan plan, String planCurrencyCode, String userCurrencyCode) {
-        BigDecimal convertedAmount = convertAmount(plan.getRequiredAmount(), planCurrencyCode, userCurrencyCode);
+    private GeneralPlanDTO createPlanDTO(
+            BigDecimal amount,
+            String name,
+            String planCurrencyCode,
+            String userCurrencyCode,
+            PlanType planType
+    ) {
+        BigDecimal convertedAmount = convertAmount(amount, planCurrencyCode, userCurrencyCode);
 
         return new GeneralPlanDTO(
                 convertedAmount,
-                plan.getName(),
-                PlanType.PLAN,
-                new ArrayList<>()
-        );
-    }
-
-    private GeneralPlanDTO createSubplanDTO(Subplan subplan, String planCurrencyCode, String userCurrencyCode) {
-        BigDecimal convertedAmount = convertAmount(subplan.getRequiredAmount(), planCurrencyCode, userCurrencyCode);
-
-        return new GeneralPlanDTO(
-                convertedAmount,
-                subplan.getName(),
-                PlanType.SUBPLAN,
-                null
+                name,
+                planType
         );
     }
 
