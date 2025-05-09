@@ -38,7 +38,8 @@ public class SecurityConfig {
                                 "/general-transactions/**",
                                 "/user/currency",
                                 "/plan/**",
-                                "/subplan/**"
+                                "/subplan/**",
+                                "/general-plans/**"
                         )
                 )
                 .sessionManagement(sess -> sess

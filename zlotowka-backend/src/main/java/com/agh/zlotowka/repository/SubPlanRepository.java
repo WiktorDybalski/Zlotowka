@@ -25,4 +25,7 @@ public interface SubPlanRepository extends JpaRepository<Subplan, Integer> {
 
     @Query("SELECT COUNT(sp) FROM Subplan sp WHERE sp.plan.planId = :planId")
     Integer getSubplanCount(@Param("planId") Integer planId);
+
+    @Query("SELECT sp FROM Subplan sp WHERE sp.plan.planId = :planId AND sp.completed = false")
+    List<Subplan> findAllUncompletedSubPlansByPlanId(@Param("planId") Integer planId);
 }

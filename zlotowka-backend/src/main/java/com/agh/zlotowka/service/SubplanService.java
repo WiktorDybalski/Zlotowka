@@ -3,10 +3,7 @@ package com.agh.zlotowka.service;
 
 import com.agh.zlotowka.dto.SubplanDTO;
 import com.agh.zlotowka.dto.SubplanRequest;
-import com.agh.zlotowka.exception.InsufficientBudgetException;
-import com.agh.zlotowka.exception.PlanCompletionException;
-import com.agh.zlotowka.exception.PlanOwnershipException;
-import com.agh.zlotowka.exception.PlanAmountExceededException;
+import com.agh.zlotowka.exception.*;
 import com.agh.zlotowka.model.OneTimeTransaction;
 import com.agh.zlotowka.model.Plan;
 import com.agh.zlotowka.model.Subplan;
@@ -144,12 +141,13 @@ public class SubplanService {
     }
 
     @Transactional
-    public SubplanDTO completeSubplan(Integer id) {
+    public SubplanDTO completeSubplan(Integer id, LocalDate completionDate) {
         Subplan subplan = subPlanRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Subplan with Id %d not found", id)));
 
         validateSubPlanCompletion(subplan);
         validateSubPlanBudgetSufficiency(subplan);
+        validateCompletionDate(completionDate);
 
         Plan plan = subplan.getPlan();
 
@@ -162,12 +160,15 @@ public class SubplanService {
 
             plan.getUser().setCurrentBudget(plan.getUser().getCurrentBudget().subtract(correctAmount));
         }
-        catch (Exception e) {
+        catch (CurrencyConversionException e) {
             log.error("Unexpected error from CurrencyService", e);
         }
 
+        if (completionDate == null)
+            completionDate = LocalDate.now();
+
         subplan.setCompleted(true);
-        subplan.setDate(LocalDate.now());
+        subplan.setDate(completionDate);
 
         calculatePlanSubplanCompletion(plan);
 
@@ -188,6 +189,12 @@ public class SubplanService {
         return getSubplanDTO(subplan);
     }
 
+    private void validateCompletionDate(LocalDate completionDate) {
+        if (completionDate != null && completionDate.isAfter(LocalDate.now())) {
+            throw new PlanCompletionException("Completion date cannot be in the future");
+        }
+    }
+
     private void validateSubPlanBudgetSufficiency(Subplan subplan) {
         BigDecimal currentAmount = BigDecimal.ZERO;
         try {
@@ -197,7 +204,7 @@ public class SubplanService {
                     subplan.getPlan().getCurrency().getIsoCode()
             );
         }
-        catch (Exception e) {
+        catch (CurrencyConversionException e) {
             log.error("Unexpected error from CurrencyService", e);
         }
         if (currentAmount.compareTo(subplan.getRequiredAmount()) < 0) {
@@ -252,7 +259,7 @@ public class SubplanService {
                         subplan.getPlan().getUser().getCurrency().getIsoCode(),
                         subplan.getPlan().getCurrency().getIsoCode()
                 );
-            } catch (Exception e) {
+            } catch (CurrencyConversionException e) {
                 log.error("Unexpected error from CurrencyService", e);
             }
         }

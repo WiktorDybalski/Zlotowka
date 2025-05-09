@@ -22,9 +22,6 @@ public record SubplanRequest (
     @MaxDecimalPlaces(2)
     BigDecimal amount,
 
-    @NotNull(message = "Currency Id cannot be null")
-    Integer currencyId,
-
     @Size(max = 512, message = "Description cannot exceed 512 characters")
     String description,
 
