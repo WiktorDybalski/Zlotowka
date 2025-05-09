@@ -172,8 +172,6 @@ public class GeneralTransactionService {
             ));
         } catch (CurrencyConversionException e) {
             log.error("Currency conversion failed", e);
-        } catch (Exception e) {
-            log.error("Unexpected error from CurrencyService", e);
         }
     }
 
@@ -202,8 +200,6 @@ public class GeneralTransactionService {
 
             } catch (CurrencyConversionException e) {
                 log.error("Currency conversion failed", e);
-            } catch (Exception e) {
-                log.error("Unexpected error from CurrencyService", e);
             }
         }
     }
@@ -292,7 +288,7 @@ public class GeneralTransactionService {
                 t.getUser().getUserId(),
                 t.getName(),
                 t.getAmount(),
-                t.getCurrency().getIsoCode(),
+                t.getCurrency(),
                 t.getIsIncome(),
                 t.getDate(),
                 t.getDescription(),
@@ -311,7 +307,7 @@ public class GeneralTransactionService {
                     recurringTransaction.getUser().getUserId(),
                     recurringTransaction.getName(),
                     recurringTransaction.getAmount(),
-                    recurringTransaction.getCurrency().getIsoCode(),
+                    recurringTransaction.getCurrency(),
                     recurringTransaction.getIsIncome(),
                     nextDate,
                     recurringTransaction.getDescription(),

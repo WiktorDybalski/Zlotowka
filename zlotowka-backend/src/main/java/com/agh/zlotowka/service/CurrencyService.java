@@ -31,15 +31,15 @@ public class CurrencyService {
         return currencyRepository.findAll();
     }
 
-    public BigDecimal convertCurrency(BigDecimal amount, String fromCurrency, String toCurrency) throws Exception {
+    public BigDecimal convertCurrency(BigDecimal amount, String fromCurrency, String toCurrency) throws CurrencyConversionException {
         if (fromCurrency.equals(toCurrency)) return amount;
         try {
             BigDecimal exchangeRate = fetchExchangeRate(fromCurrency.toLowerCase(), toCurrency.toLowerCase());
             BigDecimal converted = amount.multiply(exchangeRate);
             return converted.setScale(2, RoundingMode.HALF_UP);
-        } catch (IOException e) {
+        } catch (IOException | CurrencyConversionException e) {
             log.error("CurrencyService: Currency conversion failed: ", e);
-            throw new IOException("CurrencyService: Currency conversion failed", e);
+            throw new CurrencyConversionException("CurrencyService: Currency conversion failed");
         }
     }
 
