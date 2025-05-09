@@ -21,6 +21,13 @@ export interface OneTimeTransaction extends NewOneTimeTransactionReq {
   userId: number;
 }
 
+export interface PaginatedTransactionsResponse {
+  transactions: OneTimeTransaction[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
 export interface EdittedOneTimeTransactionReq extends NewOneTimeTransactionReq {
   transactionId: number;
 }
@@ -34,9 +41,17 @@ export function useTransactionService() {
 
   async function getTransactions(): Promise<Array<OneTimeTransaction>> {
     return await sendToBackend(
-      `onetime-transaction/all/${userId}`,
+      `general-transactions/all/${userId}`,
       withAuthHeader,
       "Failed to fetch transactions"
+    );
+  }
+
+  async function getTransactionsFromRange(startDate: string, endDate: string): Promise<PaginatedTransactionsResponse> {
+    return await sendToBackend(
+        `general-transactions/all/${userId}?startDate=${startDate}&endDate=${endDate}&page=1&limit=1000`,
+        withAuthHeader,
+        "Failed to fetch transactions"
     );
   }
 
@@ -99,6 +114,7 @@ export function useTransactionService() {
 
   return {
     getTransactions,
+    getTransactionsFromRange,
     createNewTransaction,
     deleteTransaction,
     editTransaction,

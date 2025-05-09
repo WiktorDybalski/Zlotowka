@@ -17,6 +17,7 @@ import {
 import NextExpenseCard from "@/components/dashboard/cards/NextExpenseCard";
 import NextIncomeCard from "@/components/dashboard/cards/NextIncomeCard";
 import { TransactionTable } from "@/components/transactions/table/TransactionTable";
+import MainChartProvider from "@/components/dashboard/charts/MainChartContext";
 
 export default function Dashboard() {
   const [showAddTransaction, setShowAddTransaction] = useState(false);
@@ -64,12 +65,15 @@ export default function Dashboard() {
           );
         })}
 
-        <GenericCard className="lg:col-span-3">
-          <MainChart />
-        </GenericCard>
+        <MainChartProvider>
+          <GenericCard className="lg:col-span-3">
+            <MainChart />
+          </GenericCard>
+        </MainChartProvider>
 
         <GenericCard className="lg:col-span-2">
-          <TransactionTable />
+          {/*<TransactionTable />*/}
+          <div></div>
         </GenericCard>
 
         <GenericCard>

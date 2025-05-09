@@ -31,6 +31,7 @@ export default function AddTransaction({
       queryClient.invalidateQueries({ queryKey: ["transaction"] });
       queryClient.invalidateQueries({ queryKey: ["cardService"] }); //on dashboard
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["allTransactionsFromRange"] });
     },
   });
   return (

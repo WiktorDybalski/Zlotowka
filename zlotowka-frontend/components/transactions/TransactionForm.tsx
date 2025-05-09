@@ -120,7 +120,7 @@ export default function TransactionForm({
   return (
     <GenericPopup
       title={header}
-      onClose={onClose}
+      onCloseAction={onClose}
       showConfirm={false} // We'll use our custom button instead
     >
       <>
@@ -163,8 +163,8 @@ export default function TransactionForm({
           <DatePicker
             isOpen={isDatePickerOpen}
             currentDate={dayjs(formData.date)}
-            setIsOpen={setIsDatePickerOpen}
-            setDate={(newDate) =>
+            setIsOpenAction={setIsDatePickerOpen}
+            setDateAction={(newDate) =>
               setFormData((prev) => ({
                 ...prev,
                 date: dayjs(newDate).format("YYYY-MM-DD"),

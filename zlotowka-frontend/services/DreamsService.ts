@@ -1,9 +1,6 @@
-import { useAuth } from "@/components/providers/AuthProvider";
-import sendToBackend, {
-  getAuthHeader,
-  sendToBackendWithoutReturningJson,
-} from "@/lib/sendToBackend";
-import { Currency } from "./CurrencyController";
+import {useAuth} from "@/components/providers/AuthProvider";
+import sendToBackend, {getAuthHeader, sendToBackendWithoutReturningJson,} from "@/lib/sendToBackend";
+import {Currency} from "./CurrencyController";
 
 export interface Dream {
   planId: number;
@@ -59,6 +56,29 @@ export function useDreamsService() {
   if (!token) throw new Error("User Logged Out (Token not provided)!");
 
   const withAuthHeader = getAuthHeader(token);
+
+  async function getAllDreamsWithSubplans(): Promise<Array<DreamWithSubplans>> {
+    const dreams: Array<Dream> = await sendToBackend(
+        `plan/all/${userId}`,
+        withAuthHeader,
+        "Failed to fetch dreams"
+    );
+
+    return await Promise.all(
+        dreams.map(async (dream) => {
+          const subplans: Array<SubDream> = await sendToBackend(
+              `subplan/all/${dream.planId}`,
+              withAuthHeader,
+              `Failed to fetch subplans for dream ${dream.planId}`
+          );
+
+          return {
+            ...dream,
+            subplans,
+          };
+        })
+    );
+  }
 
   async function getAllDreams(): Promise<Array<Dream>> {
     return await sendToBackend(
@@ -155,6 +175,7 @@ export function useDreamsService() {
 
   return {
     getAllDreams,
+    getAllDreamsWithSubplans,
     getDream,
     completeDream,
     deleteDream,

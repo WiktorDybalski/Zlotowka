@@ -19,9 +19,9 @@ export default function TransactionsPage() {
           Twoje transakcje
         </h2>
         <div className="w-full h-[70vh] mt-10 overflow-hidden">
-          <GenericCard>
-            <TransactionTable />
-          </GenericCard>
+          {/*<GenericCard>*/}
+          {/*  <TransactionTable />*/}
+          {/*</GenericCard>*/}
         </div>
 
         <div className="w-full sm:w-52 h-10 mt-10">

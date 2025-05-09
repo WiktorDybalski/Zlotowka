@@ -33,11 +33,11 @@ export function TransactionTable() {
     queryFn: TransactionService.getTransactions,
   });
 
-  if (isTransactionListError) {
-    toast.error(
-      `Nie udało się pobrać tranzakcji: ${transactionListError.message}`
-    );
-  }
+  // if (isTransactionListError) {
+  //   toast.error(
+  //     `Nie udało się pobrać transakcji: ${transactionListError.message}`
+  //   );
+  // }
 
   const magicTransactionDelete = useMutation({
     mutationFn: async (transactionId: number) => {

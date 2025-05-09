@@ -4,8 +4,8 @@ import { useState, useEffect, ReactNode } from "react";
 import DarkButton from "@/components/DarkButton";
 
 interface GenericPopupProps {
-  onClose: () => void;
-  onConfirm?: () => void;
+  onCloseAction: () => void;
+  onConfirmAction?: () => void;
   title: string;
   children: ReactNode;
   confirmText?: string;
@@ -14,8 +14,8 @@ interface GenericPopupProps {
 }
 
 export default function GenericPopup({
-                                       onClose,
-                                       onConfirm,
+                                       onCloseAction,
+                                       onConfirmAction,
                                        title,
                                        children,
                                        confirmText = "Potwierdź",
@@ -26,12 +26,12 @@ export default function GenericPopup({
 
   const handleClose = () => {
     setIsVisible(false);
-    setTimeout(() => onClose(), 300);
+    setTimeout(() => onCloseAction(), 300);
   };
 
   const handleConfirm = () => {
-    if (onConfirm) {
-      onConfirm();
+    if (onConfirmAction) {
+      onConfirmAction();
     } else {
       handleClose();
     }
