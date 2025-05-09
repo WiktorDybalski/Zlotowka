@@ -17,8 +17,6 @@ export default function CustomChartTooltip({
       .filter((tx) => tx.date === hoveredDate)
       .sort((a, b) => a.amount - b.amount);
 
-  console.log(dayTransactions);
-
   return (
       <div className="bg-white p-2 rounded shadow-md text-sm font-lato">
         <div className="font-bold mb-1">
@@ -30,7 +28,7 @@ export default function CustomChartTooltip({
                   <li key={tx.transactionId}>
               <span
                   className={`text-xs ${
-                      tx.isIncome ? "text-green-600" : "#c82026"
+                      tx.isIncome ? "text-green-600" : "text-[#c82026]"
                   }`}
               >
                 {tx.isIncome ? "+" : "-"}

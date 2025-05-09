@@ -6,6 +6,8 @@ import sendToBackend, {
   sendToBackendWithoutReturningJson,
 } from "@/lib/sendToBackend";
 import { Currency } from "./CurrencyController";
+import {TransactionData} from "@/interfaces/transactions/TransactionsData";
+import {mapFrequencyToPeriodType} from "@/lib/utils";
 
 export interface NewOneTimeTransactionReq {
   name: string;
@@ -14,6 +16,18 @@ export interface NewOneTimeTransactionReq {
   isIncome: boolean;
   date: string; // ISO date string (np. "2025-04-28")
   description: string;
+}
+
+export interface NewRecurringTransactionReq {
+  userId: number;
+  name: string;
+  amount: number;
+  currencyId: number;
+  isIncome: boolean;
+  interval: string;
+  firstPaymentDate: string;
+  lastPaymentDate: string;
+  description?: string;
 }
 
 export interface OneTimeTransaction extends NewOneTimeTransactionReq {
@@ -56,7 +70,7 @@ export function useTransactionService() {
   }
 
   async function createNewTransaction(
-    transaction: NewOneTimeTransactionReq
+    transaction: TransactionData
   ): Promise<OneTimeTransaction> {
     const req = {
       userId: userId,
@@ -67,6 +81,8 @@ export function useTransactionService() {
       date: transaction.date,
       description: transaction.description,
     };
+
+    console.log(req);
     return await sendToBackend(
       `onetime-transaction`,
       {
@@ -75,6 +91,34 @@ export function useTransactionService() {
         body: JSON.stringify(req),
       },
       "Failed to create new transaction"
+    );
+  }
+
+  async function createNewRecurringTransaction(
+      transaction: TransactionData
+  ): Promise<NewRecurringTransactionReq> {
+    const recurringReq: NewRecurringTransactionReq = {
+      userId: userId,
+      name: transaction.name,
+      amount: transaction.amount,
+      currencyId: transaction.currency.currencyId,
+      isIncome: transaction.isIncome,
+      firstPaymentDate: transaction.startDate,
+      lastPaymentDate: transaction.endDate,
+      interval: mapFrequencyToPeriodType(transaction.frequency),
+      description: transaction.description,
+    };
+
+    console.log(recurringReq);
+
+    return await sendToBackend(
+        `recurring-transaction`,
+        {
+          ...withAuthHeader,
+          method: "POST",
+          body: JSON.stringify(recurringReq),
+        },
+        "Failed to create new transaction"
     );
   }
 
@@ -116,6 +160,7 @@ export function useTransactionService() {
     getTransactions,
     getTransactionsFromRange,
     createNewTransaction,
+    createNewRecurringTransaction,
     deleteTransaction,
     editTransaction,
   };

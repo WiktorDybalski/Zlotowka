@@ -12,8 +12,8 @@ export interface EditTransactionProps {
 
 export interface TransactionFormProps {
   transaction?: TransactionData;
-  onSubmit: (data: TransactionData) => void;
-  onClose: () => void;
+  onSubmitAction: (data: TransactionData) => void;
+  onCloseAction: () => void;
   header: string;
   submitButtonText: string;
   submitButtonIcon: string;

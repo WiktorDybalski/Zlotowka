@@ -26,8 +26,8 @@ export function TransactionTable() {
 
   const {
     data: transactionList,
-    isError: isTransactionListError,
-    error: transactionListError,
+    // isError: isTransactionListError,
+    // error: transactionListError,
   } = useQuery<OneTimeTransaction[]>({
     queryKey: ["transaction", "getTransactions"],
     queryFn: TransactionService.getTransactions,

@@ -50,6 +50,13 @@ export interface DreamWithSubplans extends Dream {
   subplans: Array<SubDream>;
 }
 
+export interface ChartDreamsData {
+  id: number;
+  name: string;
+  requiredAmount: number;
+  planType: "PLAN" | "SUBPLAN";
+}
+
 export function useDreamsService() {
   const { token, userId } = useAuth();
 
@@ -57,27 +64,13 @@ export function useDreamsService() {
 
   const withAuthHeader = getAuthHeader(token);
 
-  async function getAllDreamsWithSubplans(): Promise<Array<DreamWithSubplans>> {
-    const dreams: Array<Dream> = await sendToBackend(
-        `plan/all/${userId}`,
+  async function getChartDreamsData(): Promise<Array<ChartDreamsData>> {
+    return await sendToBackend(
+        `general-plans/chart-data/${userId}`,
         withAuthHeader,
         "Failed to fetch dreams"
     );
 
-    return await Promise.all(
-        dreams.map(async (dream) => {
-          const subplans: Array<SubDream> = await sendToBackend(
-              `subplan/all/${dream.planId}`,
-              withAuthHeader,
-              `Failed to fetch subplans for dream ${dream.planId}`
-          );
-
-          return {
-            ...dream,
-            subplans,
-          };
-        })
-    );
   }
 
   async function getAllDreams(): Promise<Array<Dream>> {
@@ -175,7 +168,7 @@ export function useDreamsService() {
 
   return {
     getAllDreams,
-    getAllDreamsWithSubplans,
+    getChartDreamsData,
     getDream,
     completeDream,
     deleteDream,

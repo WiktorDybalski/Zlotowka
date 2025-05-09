@@ -1,4 +1,4 @@
-import {CartesianGrid, Label, Line, LineChart, Tooltip, XAxis, YAxis} from "recharts";
+import {CartesianGrid, Label, Line, LineChart, XAxis, YAxis} from "recharts";
 import {
   Card,
   CardContent,
@@ -24,6 +24,7 @@ import {MainChartContext} from "@/components/dashboard/charts/MainChartContext";
 import {MainChartConfig} from "@/components/dashboard/charts/chartsConfig";
 import {useDreamsService} from "@/services/DreamsService";
 import { ReferenceLine } from "recharts";
+import {getRoundedDomain} from "@/lib/utils";
 
 export function MainChart() {
   const [showMainChartPopup, setShowMainChartPopup] = useState<boolean>(false);
@@ -57,7 +58,7 @@ export function MainChart() {
 
   const { data: dreams } = useQuery({
     queryKey: ["dreamsWithSubplans"],
-    queryFn: () => DreamsService.getAllDreamsWithSubplans()
+    queryFn: () => DreamsService.getChartDreamsData(),
   });
 
   if (isError) {
@@ -68,13 +69,13 @@ export function MainChart() {
     return <LoadingSpinner />;
   }
 
-  let dreamAmounts = [];
-  if (showDreams || showSubDreams) {
-      dreamAmounts = dreams?.map(d => d.amount * 1.05) ?? [];
-  }
-  const dataAmounts = chartData.map(d => d.amount);
-  const allMax = Math.max(...dataAmounts, ...dreamAmounts);
-  const allMin = Math.min(...dataAmounts, ...dreamAmounts);
+  const domain = showDreams && showSubDreams
+      ? getRoundedDomain(dreams)
+      : showSubDreams
+          ? getRoundedDomain(dreams, 100, 'SUBPLAN')
+          : showDreams
+              ? getRoundedDomain(dreams, 100, 'PLAN')
+              : ['auto', 'auto'];
 
   return (
     <>
@@ -125,8 +126,9 @@ export function MainChart() {
                 axisLine={false}
                 tickLine={false}
                 tickMargin={16}
+                tickFormatter={(value) => (Math.round(value / 50) * 50).toString()}
                 className="font-lato"
-                domain={[allMin, allMax]}
+                domain={domain}
               />
               <ChartTooltip
                   cursor={false}
@@ -143,10 +145,11 @@ export function MainChart() {
                 strokeWidth={2}
                 dot={true}
               />
-              {showDreams && dreams?.map((dream, i) => (
+              {showDreams && dreams?.filter(dream => dream.planType === 'PLAN')
+                  .map((dream, i) => (
                   <ReferenceLine
-                      key={`dream-line-${i}`}
-                      y={dream.amount}
+                      key={`dream-line-${i}-${dream.name}`}
+                      y={dream.requiredAmount}
                       stroke="#c82026"
                       strokeDasharray="3 3"
                   >
@@ -159,22 +162,22 @@ export function MainChart() {
                   </ReferenceLine>
               ))}
 
-              {showSubDreams && dreams?.flatMap((dream, i) =>
-                  dream.subplans.map((sub, j) => (
+              {showSubDreams && dreams?.filter(dream => dream.planType === 'SUBPLAN')
+                  .map((dream, i) => (
                       <ReferenceLine
-                          key={`subdream-line-${i}-${j}`}
-                          y={sub.amount}
+                          key={`subdream-line-${i}-${dream.name}`}
+                          y={dream.requiredAmount}
                           stroke="#c82026"
                           strokeDasharray="2 4"
                       >
                         <Label
-                            value={sub.name}
+                            value={dream.name}
                             position="insideTopLeft"
                             fill="#c82026"
                             fontSize={12}
                         />
                       </ReferenceLine>
-                  ))
+                  )
               )}
             </LineChart>
           </ChartContainer>

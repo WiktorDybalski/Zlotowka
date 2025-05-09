@@ -16,7 +16,6 @@ import {
 } from "@/interfaces/dashboard/cards/CardComponents";
 import NextExpenseCard from "@/components/dashboard/cards/NextExpenseCard";
 import NextIncomeCard from "@/components/dashboard/cards/NextIncomeCard";
-import { TransactionTable } from "@/components/transactions/table/TransactionTable";
 import MainChartProvider from "@/components/dashboard/charts/MainChartContext";
 
 export default function Dashboard() {

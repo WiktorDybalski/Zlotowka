@@ -1,9 +1,7 @@
 "use client";
 
 import DarkButton from "@/components/DarkButton";
-import GenericCard from "@/components/dashboard/cards/generic/GenericCard";
 import AddTransaction from "@/components/transactions/AddTransaction";
-import { TransactionTable } from "@/components/transactions/table/TransactionTable";
 import { useState } from "react";
 
 export default function TransactionsPage() {
