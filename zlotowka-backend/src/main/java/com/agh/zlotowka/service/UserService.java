@@ -87,8 +87,6 @@ public class UserService {
             addTransactionToBudget(user, budget, amountInUserCurrency, !isIncome);
         } catch (CurrencyConversionException e) {
             log.error("Currency conversion failed", e);
-        } catch (Exception e) {
-            log.error("Unexpected Exception in CurrencyService", e);
         }
     }
     public UserResponse getCurrentUser(CustomUserDetails userDetails) {
@@ -127,8 +125,6 @@ public class UserService {
             addTransactionToBudget(user, budget, amountInUserCurrency, isIncome);
         } catch (CurrencyConversionException e) {
             log.error("Currency conversion failed", e);
-        } catch (Exception e) {
-            log.error("Unexpected Exception in CurrencyService", e);
         }
     }
 

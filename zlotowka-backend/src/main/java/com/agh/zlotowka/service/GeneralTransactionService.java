@@ -172,8 +172,6 @@ public class GeneralTransactionService {
             ));
         } catch (CurrencyConversionException e) {
             log.error("Currency conversion failed", e);
-        } catch (Exception e) {
-            log.error("Unexpected error from CurrencyService", e);
         }
     }
 
@@ -202,8 +200,6 @@ public class GeneralTransactionService {
 
             } catch (CurrencyConversionException e) {
                 log.error("Currency conversion failed", e);
-            } catch (Exception e) {
-                log.error("Unexpected error from CurrencyService", e);
             }
         }
     }
