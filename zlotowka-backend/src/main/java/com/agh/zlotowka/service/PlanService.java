@@ -128,7 +128,7 @@ public class PlanService {
             );
 
             plan.getUser().setCurrentBudget(plan.getUser().getCurrentBudget().subtract(correctedAmount));
-        } catch (Exception e) {
+        } catch (CurrencyConversionException e) {
             log.error("Unexpected error from CurrencyService", e);
         }
 
@@ -237,7 +237,7 @@ public class PlanService {
 
             return currentBudget.add(subPlanRepository.getTotalSubPlanAmountCompleted(plan.getPlanId()));
         }
-        catch (Exception e) {
+        catch (CurrencyConversionException e) {
             log.error("Unexpected error from CurrencyService", e);
         }
         return BigDecimal.ZERO;

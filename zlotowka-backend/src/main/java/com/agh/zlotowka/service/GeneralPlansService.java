@@ -1,6 +1,7 @@
 package com.agh.zlotowka.service;
 
 import com.agh.zlotowka.dto.GeneralPlanDTO;
+import com.agh.zlotowka.exception.CurrencyConversionException;
 import com.agh.zlotowka.model.Plan;
 import com.agh.zlotowka.model.PlanType;
 import com.agh.zlotowka.model.Subplan;
@@ -87,7 +88,7 @@ public class GeneralPlansService {
         BigDecimal convertedAmount = BigDecimal.ZERO;
         try {
             convertedAmount = currencyService.convertCurrency(amount, sourceCurrencyCode, targetCurrencyCode);
-        } catch (Exception e) {
+        } catch (CurrencyConversionException e) {
             log.error("Unexpected error from CurrencyService", e);
         }
         return convertedAmount;

@@ -3,10 +3,7 @@ package com.agh.zlotowka.service;
 
 import com.agh.zlotowka.dto.SubplanDTO;
 import com.agh.zlotowka.dto.SubplanRequest;
-import com.agh.zlotowka.exception.InsufficientBudgetException;
-import com.agh.zlotowka.exception.PlanCompletionException;
-import com.agh.zlotowka.exception.PlanOwnershipException;
-import com.agh.zlotowka.exception.PlanAmountExceededException;
+import com.agh.zlotowka.exception.*;
 import com.agh.zlotowka.model.OneTimeTransaction;
 import com.agh.zlotowka.model.Plan;
 import com.agh.zlotowka.model.Subplan;
@@ -163,7 +160,7 @@ public class SubplanService {
 
             plan.getUser().setCurrentBudget(plan.getUser().getCurrentBudget().subtract(correctAmount));
         }
-        catch (Exception e) {
+        catch (CurrencyConversionException e) {
             log.error("Unexpected error from CurrencyService", e);
         }
 
@@ -207,7 +204,7 @@ public class SubplanService {
                     subplan.getPlan().getCurrency().getIsoCode()
             );
         }
-        catch (Exception e) {
+        catch (CurrencyConversionException e) {
             log.error("Unexpected error from CurrencyService", e);
         }
         if (currentAmount.compareTo(subplan.getRequiredAmount()) < 0) {
@@ -262,7 +259,7 @@ public class SubplanService {
                         subplan.getPlan().getUser().getCurrency().getIsoCode(),
                         subplan.getPlan().getCurrency().getIsoCode()
                 );
-            } catch (Exception e) {
+            } catch (CurrencyConversionException e) {
                 log.error("Unexpected error from CurrencyService", e);
             }
         }
