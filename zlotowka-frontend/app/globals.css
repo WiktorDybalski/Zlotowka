@@ -35,3 +35,7 @@ p {
   display: inline-block;
   line-height: 1;
 }
+
+input {
+  font-family: var(--font-lato);
+}

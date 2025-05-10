@@ -10,26 +10,26 @@ dayjs.locale("pl");
 
 interface DatePickerProps {
   isOpen: boolean;
-  currentDate: Dayjs;
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setDate: (newDate: Dayjs) => void;
+  currentDate: string;
+  setIsOpenAction: React.Dispatch<React.SetStateAction<boolean>>;
+  setDateAction: (newDate: Dayjs) => void;
 }
 
 export default function DatePicker({
   isOpen,
   currentDate,
-  setIsOpen,
-  setDate,
+  setIsOpenAction,
+  setDateAction,
 }: DatePickerProps) {
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pl">
       {isOpen && (
         <DateCalendar
           className="border-border-color border-[1px] rounded-[5px] min-w-76 absolute z-[9999] bg-background overflow-y-auto"
-          value={currentDate}
+          value={dayjs(currentDate)}
           onChange={(newValue) => {
-            setDate(newValue);
-            setIsOpen(false);
+            setDateAction(newValue);
+            setIsOpenAction(false);
           }}
           sx={{
             width: 300,

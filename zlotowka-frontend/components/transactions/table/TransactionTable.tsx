@@ -26,18 +26,18 @@ export function TransactionTable() {
 
   const {
     data: transactionList,
-    isError: isTransactionListError,
-    error: transactionListError,
+    // isError: isTransactionListError,
+    // error: transactionListError,
   } = useQuery<OneTimeTransaction[]>({
     queryKey: ["transaction", "getTransactions"],
     queryFn: TransactionService.getTransactions,
   });
 
-  if (isTransactionListError) {
-    toast.error(
-      `Nie udało się pobrać tranzakcji: ${transactionListError.message}`
-    );
-  }
+  // if (isTransactionListError) {
+  //   toast.error(
+  //     `Nie udało się pobrać transakcji: ${transactionListError.message}`
+  //   );
+  // }
 
   const magicTransactionDelete = useMutation({
     mutationFn: async (transactionId: number) => {

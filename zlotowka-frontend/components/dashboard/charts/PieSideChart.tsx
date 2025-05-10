@@ -10,7 +10,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import {
-  type ChartConfig,
   ChartContainer,
   ChartTooltip,
 } from "@/components/ui/chart";
@@ -19,20 +18,8 @@ import formatMoney from "@/utils/formatMoney";
 import toast from "react-hot-toast";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import { useQuery } from "@tanstack/react-query";
-
-const chartConfig = {
-  value: {
-    label: "Value",
-  },
-  Income: {
-    label: "Przychody",
-    color: "#262626",
-  },
-  Expenses: {
-    label: "Wydatki",
-    color: "#e9e9e9",
-  },
-} satisfies ChartConfig;
+import {PieChartConfig} from "@/components/dashboard/charts/chartsConfig";
+import CustomLabel from "@/components/dashboard/charts/CustomLabel";
 
 export function PieSideChart() {
   const DashboardService = useDashboardService();
@@ -50,17 +37,16 @@ export function PieSideChart() {
     return <LoadingSpinner />;
   }
 
-  // Przygotowanie danych do wykresu
   const formattedChartData = [
     {
-      category: chartConfig.Income.label,
+      category: PieChartConfig.Income.label,
       value: data.monthlyIncome,
-      fill: chartConfig.Income.color,
+      fill: PieChartConfig.Income.color,
     },
     {
-      category: chartConfig.Expenses.label,
+      category: PieChartConfig.Expenses.label,
       value: data.monthlyExpenses,
-      fill: chartConfig.Expenses.color,
+      fill: PieChartConfig.Expenses.color,
     },
   ];
   const total = data.monthlyBalance;
@@ -73,7 +59,7 @@ export function PieSideChart() {
 
       <CardContent className="flex-1 flex items-center justify-center p-0">
         <ChartContainer
-          config={chartConfig}
+          config={PieChartConfig}
           className="w-full h-full max-w-md mx-auto"
         >
           <PieChart>
@@ -101,36 +87,7 @@ export function PieSideChart() {
                 stroke="#fa"
                 paddingAngle={4}
               >
-                <Label
-                  content={({ viewBox }) => {
-                    if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                      return (
-                        <text
-                          x={viewBox.cx}
-                          y={viewBox.cy}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                        >
-                          <tspan
-                            x={viewBox.cx}
-                            y={viewBox.cy}
-                            className="text-lg sm:text-xl md:text-2xl font-lato"
-                          >
-                            {formatMoney(Number(total))} PLN
-                          </tspan>
-                          <tspan
-                            x={viewBox.cx}
-                            y={(viewBox.cy || 0) + 24}
-                            className="text-sm"
-                          >
-                            Suma
-                          </tspan>
-                        </text>
-                      );
-                    }
-                    return null;
-                  }}
-                />
+                <Label content={(props) => <CustomLabel {...props} total={total} />} />
               </Pie>
             ) : (
               <text

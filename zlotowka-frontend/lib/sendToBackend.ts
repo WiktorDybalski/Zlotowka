@@ -25,12 +25,12 @@ export default async function sendToBackend(
   init?: RequestInit,
   errorMessage: string = "Error fetching data"
 ) {
-  const responce = await sendToBackendWithoutReturningJson(
+  const response = await sendToBackendWithoutReturningJson(
     input,
     init,
     errorMessage
   );
-  return await responce.json();
+  return await response.json();
 }
 
 export function getAuthHeader(token: string) {

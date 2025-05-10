@@ -34,7 +34,6 @@ export default function Dreams() {
       return await res;
     },
     onSuccess: () => {
-      // Invalidate queries to refetch data after mutation
       queryClient.invalidateQueries({ queryKey: ["dreams"] });
     },
   });

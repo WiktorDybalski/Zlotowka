@@ -12,10 +12,6 @@ import { useQuery } from "@tanstack/react-query";
 const Value = ({ estimatedBalance }: { estimatedBalance: string }) => (
   <div className="flex items-baseline">
     <CardNumber text={estimatedBalance} />
-    <CardNumber
-      text="(-40%)"
-      className="text-base font-medium ml-3 text-red-700"
-    />
   </div>
 );
 
