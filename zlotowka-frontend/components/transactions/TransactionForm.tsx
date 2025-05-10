@@ -193,6 +193,7 @@ export default function TransactionForm({
                     value={formData.startDate}
                     onChange={handleInputChange}
                     onClick={() => setIsStartDatePickerOpen((prev) => !prev)}
+                    readOnly={true}
                 />
                   <DatePicker
                       isOpen={isStartDatePickerOpen}
@@ -215,6 +216,7 @@ export default function TransactionForm({
                     value={formData.endDate}
                     onChange={handleInputChange}
                     onClick={() => setIsEndDatePickerOpen((prev) => !prev)}
+                    readOnly={true}
                 />
                   <DatePicker
                       isOpen={isEndDatePickerOpen}
@@ -239,6 +241,7 @@ export default function TransactionForm({
                   value={formData.date}
                   onChange={handleInputChange}
                   onClick={() => setIsStartDatePickerOpen((prev) => !prev)}
+                  readOnly={true}
               />
               <DatePicker
                   isOpen={isStartDatePickerOpen}

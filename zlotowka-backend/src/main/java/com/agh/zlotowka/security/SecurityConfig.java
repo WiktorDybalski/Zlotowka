@@ -36,7 +36,7 @@ public class SecurityConfig {
                                 "/recurring-transaction/**",
                                 "/onetime-transaction/**",
                                 "/general-transactions/**",
-                                "/user/currency",
+                                "/user/**",
                                 "/plan/**",
                                 "/subplan/**",
                                 "/general-plans/**"
