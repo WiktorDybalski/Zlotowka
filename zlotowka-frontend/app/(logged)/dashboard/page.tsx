@@ -17,6 +17,7 @@ import {
 import NextExpenseCard from "@/components/dashboard/cards/NextExpenseCard";
 import NextIncomeCard from "@/components/dashboard/cards/NextIncomeCard";
 import MainChartProvider from "@/components/dashboard/charts/MainChartContext";
+import {DreamProvider} from "@/components/dreams/DreamsContext";
 
 export default function Dashboard() {
   const [showAddTransaction, setShowAddTransaction] = useState(false);
@@ -37,6 +38,7 @@ export default function Dashboard() {
 
   return (
     <>
+      <DreamProvider>
       {showAddTransaction && (
         <AddTransaction setShowAddTransaction={setShowAddTransaction} />
       )}
@@ -89,6 +91,7 @@ export default function Dashboard() {
           />
         </div>
       </div>
+      </DreamProvider>
     </>
   );
 }

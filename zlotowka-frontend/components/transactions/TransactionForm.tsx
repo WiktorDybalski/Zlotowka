@@ -2,7 +2,11 @@
 
 import {useEffect, useRef, useState} from "react";
 import { TransactionFormProps } from "@/interfaces/transactions/PopupTransactionsProps";
-import { TransactionData } from "@/interfaces/transactions/TransactionsData";
+import {
+  NewOneTimeTransactionReq,
+  NewRecurringTransactionReq, Period,
+  TransactionData
+} from "@/interfaces/transactions/TransactionsData";
 import ConfirmButton from "@/components/general/Button";
 import dayjs from "dayjs";
 import DatePicker from "@/components/general/DatePicker";
@@ -10,8 +14,7 @@ import GenericPopup from "@/components/general/GenericPopup";
 import { useQuery } from "@tanstack/react-query";
 import { useCurrencyService } from "@/services/CurrencyController";
 import toast from "react-hot-toast";
-import LoadingSpinner from "../general/LoadingSpinner";
-import {NewOneTimeTransactionReq, NewRecurringTransactionReq} from "@/services/TransactionService";
+import {useTransactionService} from "@/services/TransactionService";
 
 const inputClass =
   "border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md w-full lg:min-w-76 ";
@@ -25,7 +28,10 @@ const defaultTransactionData: TransactionData = {
   },
   isIncome: true,
   description: "",
-  frequency: "Raz",
+  frequency: {
+    "name": "Raz",
+    "code": "No period"
+  },
   date: dayjs().format("YYYY-MM-DD"),
   startDate: dayjs().format("YYYY-MM-DD"),
   endDate: dayjs().format("YYYY-MM-DD"),
@@ -48,10 +54,16 @@ export default function TransactionForm({
   );
 
   const CurrencyService = useCurrencyService();
+  const TransactionService = useTransactionService();
 
   const { data: currencyList, isSuccess: isCurrencyListReady } = useQuery({
     queryKey: ["currencyData"],
     queryFn: CurrencyService.getCurrencyList,
+  });
+
+  const { data: periodList, isSuccess: isPeriodListReady } = useQuery({
+    queryKey: ["periodData"],
+    queryFn: TransactionService.getPeriods
   });
 
   const handleInputChange = (
@@ -64,6 +76,14 @@ export default function TransactionForm({
       const parsed = parseFloat(value.replace(",", "."));
       if (!Number.isNaN(parsed)) {
         setFormData((prev) => ({ ...prev, amount: parsed }));
+      }
+      return;
+    }
+
+    if (name === "frequency") {
+      const selectedFrequency = periodList.find((period) => period.name === value);
+      if (selectedFrequency) {
+        setFormData((prev) => ({ ...prev, frequency: selectedFrequency }));
       }
       return;
     }
@@ -171,18 +191,22 @@ export default function TransactionForm({
           <h3 className="text-md my-2 font-medium">Cykliczność</h3>
           <select
               name="frequency"
-              value={formData.frequency}
+              value={formData.frequency.name}
               onChange={handleInputChange}
               className={inputClass + " bg-background"}
           >
-            <option value="Raz">Raz</option>
-            <option value="Codziennie">Codziennie</option>
-            <option value="Co tydzień">Co tydzień</option>
-            <option value="Co miesiąc">Co miesiąc</option>
+            {isPeriodListReady && periodList.length > 0 ? (
+                periodList.map((period: Period) => (
+                    <option key={period.name} value={period.name}>
+                      {period.name}
+                    </option>
+                ))
+            ) : null }
           </select>
         </div>
 
-        {formData.frequency !== "Raz" ? (
+
+        {formData.frequency.code !== "No period" ? (
             <>
               <div className="py-1">
                 <h3 className="text-md my-2 font-medium">Data początkowa</h3>
@@ -306,9 +330,7 @@ export default function TransactionForm({
               ))}
             </select>
           </div>
-        ) : (
-          <LoadingSpinner />
-        )}
+        ) : null}
 
         <ConfirmButton
           icon={submitButtonIcon}

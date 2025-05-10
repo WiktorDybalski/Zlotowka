@@ -29,21 +29,6 @@ export function getRoundedDomain(
   return [roundedMin, roundedMax];
 }
 
-export function mapFrequencyToPeriodType(frequency: string): string {
-  switch (frequency) {
-    case "Codziennie":
-      return "P1D"
-    case "Co tydzień":
-      return "P1W"
-    case "Co miesiąc":
-      return "P1M"
-    case "Co rok":
-      return "P1Y"
-    default:
-      return "";
-  }
-}
-
 export function createPayload(
     fieldName: string | undefined,
     value: string,

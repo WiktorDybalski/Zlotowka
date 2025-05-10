@@ -6,8 +6,8 @@ import toast from "react-hot-toast";
 export default function UserInfo() {
   const UserService = useUserService();
   const { data } = useQuery({
-    queryKey: ["user", "getUserData"],
-    queryFn: UserService.getUserData,
+    queryKey: ["user"],
+    queryFn: UserService.fetchUserData,
   });
 
   const dispalyedName =
