@@ -11,7 +11,7 @@ import {
   ChartTooltip,
 } from "@/components/ui/chart";
 import * as React from "react";
-import {useContext, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import { useDashboardService } from "@/services/DashboardService";
 import DarkButton from "@/components/DarkButton";
 import MainChartPopup from "@/components/dashboard/charts/MainChartPopup";
@@ -28,6 +28,7 @@ import {getRoundedDomain} from "@/lib/utils";
 
 export function MainChart() {
   const [showMainChartPopup, setShowMainChartPopup] = useState<boolean>(false);
+  const [padding, setPadding] = useState<{ left: number; right: number }>({left: 0, right: 0});
   const { startDate, endDate, showDreams, showSubDreams } = useContext(MainChartContext);
   const DashboardService = useDashboardService();
   const TransactionService = useTransactionService();
@@ -46,6 +47,27 @@ export function MainChart() {
         endDate.format("YYYY-MM-DD")
       ),
   });
+
+  useEffect(() => {
+    const updatePadding = () => {
+      const width = window.innerWidth;
+
+      if (!showDreams && !showSubDreams) {
+        setPadding({ left: 20, right: 40 });
+      } else if (width <= 640) {
+        setPadding({ left: 90, right: 40 });
+      } else {
+        setPadding({ left: 100, right: 50 });
+      }
+    };
+
+    updatePadding();
+
+    window.addEventListener("resize", updatePadding);
+    return () => {
+      window.removeEventListener("resize", updatePadding);
+    };
+  }, [showDreams, showSubDreams]);
 
   const { data: allTransactionsFromRange } = useQuery({
     queryKey: ["allTransactionsFromRange", startDate.format("YYYY-MM-DD"), endDate.format("YYYY-MM-DD")],
@@ -120,7 +142,7 @@ export function MainChart() {
                   })
                 }
                 className="font-lato"
-                padding={{ left: 80, right: 50 }}
+                padding={padding}
               />
               <YAxis
                 axisLine={false}

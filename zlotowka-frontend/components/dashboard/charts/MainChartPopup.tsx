@@ -65,7 +65,7 @@ export default function MainChartPopup({ onCloseAction }: MainChartPopupProps) {
           onConfirmAction={handleConfirm}
           confirmText="Potwierdź"
       >
-        <div className="text-md font-medium">
+        <div className="text-md font-medium relative">
           <div className="py-1 flex justify-between">
             <h3 className="my-2">Marzenia</h3>
             <div className="flex gap-2 flex-wrap font-lato">

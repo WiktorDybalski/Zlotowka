@@ -32,7 +32,6 @@ export function useUserService() {
   }
 
   async function fetchUserData(): Promise<UserData> {
-    //TODO
     return await sendToBackend(
       `user/account`,
       withAuthHeader,
