@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import {useEffect, useRef, useState} from "react";
 import { TransactionFormProps } from "@/interfaces/transactions/PopupTransactionsProps";
 import { TransactionData } from "@/interfaces/transactions/TransactionsData";
 import ConfirmButton from "@/components/general/Button";
@@ -14,7 +14,7 @@ import LoadingSpinner from "../general/LoadingSpinner";
 import {NewOneTimeTransactionReq, NewRecurringTransactionReq} from "@/services/TransactionService";
 
 const inputClass =
-  "border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md min-w-76 ";
+  "border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md w-full lg:min-w-76 ";
 
 const defaultTransactionData: TransactionData = {
   name: "",
@@ -42,6 +42,7 @@ export default function TransactionForm({
   const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
   const [formData, setFormData] = useState<TransactionData>(transaction || defaultTransactionData);
+  const formRef = useRef<HTMLDivElement>(null);
   const [amountInput, setAmountInput] = useState<string>(
       (transaction?.amount ?? 0).toString()
   );
@@ -91,6 +92,23 @@ export default function TransactionForm({
     });
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+          formRef.current &&
+          !formRef.current.contains(event.target as Node)
+      ) {
+        setIsStartDatePickerOpen(false);
+        setIsEndDatePickerOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   function validateFormData(data: NewOneTimeTransactionReq | NewRecurringTransactionReq) {
     if (isNaN(data.amount)) {
       toast.error("Price is not a number!");
@@ -122,9 +140,9 @@ export default function TransactionForm({
       onCloseAction={onCloseAction}
       showConfirm={false} // We'll use our custom button instead
     >
-      <>
+      <div ref={formRef}>
         {/* Name */}
-        <div className="py-1">
+        <div className="py-1" >
           <h3 className="text-md my-2 font-medium">Nazwa</h3>
           <input
             name="name"
@@ -175,18 +193,19 @@ export default function TransactionForm({
                     value={formData.startDate}
                     onChange={handleInputChange}
                     onClick={() => setIsStartDatePickerOpen((prev) => !prev)}
+                    readOnly={true}
                 />
-                <DatePicker
-                    isOpen={isStartDatePickerOpen}
-                    currentDate={formData.startDate}
-                    setIsOpenAction={setIsStartDatePickerOpen}
-                    setDateAction={(newDate) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          startDate: dayjs(newDate).format("YYYY-MM-DD"),
-                        }))
-                    }
-                />
+                  <DatePicker
+                      isOpen={isStartDatePickerOpen}
+                      currentDate={formData.startDate}
+                      setIsOpenAction={setIsStartDatePickerOpen}
+                      setDateAction={(newDate) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            startDate: dayjs(newDate).format("YYYY-MM-DD"),
+                          }))
+                      }
+                  />
               </div>
               <div className="py-1">
                 <h3 className="text-md my-2 font-medium">Data końcowa</h3>
@@ -197,18 +216,19 @@ export default function TransactionForm({
                     value={formData.endDate}
                     onChange={handleInputChange}
                     onClick={() => setIsEndDatePickerOpen((prev) => !prev)}
+                    readOnly={true}
                 />
-                <DatePicker
-                    isOpen={isEndDatePickerOpen}
-                    currentDate={formData.endDate}
-                    setIsOpenAction={setIsEndDatePickerOpen}
-                    setDateAction={(newDate) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          endDate: dayjs(newDate).format("YYYY-MM-DD"),
-                        }))
-                    }
-                />
+                  <DatePicker
+                      isOpen={isEndDatePickerOpen}
+                      currentDate={formData.endDate}
+                      setIsOpenAction={setIsEndDatePickerOpen}
+                      setDateAction={(newDate) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            endDate: dayjs(newDate).format("YYYY-MM-DD"),
+                          }))
+                      }
+                  />
               </div>
             </>
         ) : (
@@ -221,6 +241,7 @@ export default function TransactionForm({
                   value={formData.date}
                   onChange={handleInputChange}
                   onClick={() => setIsStartDatePickerOpen((prev) => !prev)}
+                  readOnly={true}
               />
               <DatePicker
                   isOpen={isStartDatePickerOpen}
@@ -297,7 +318,7 @@ export default function TransactionForm({
         >
           {submitButtonText}
         </ConfirmButton>
-      </>
+      </div>
     </GenericPopup>
   );
 }
