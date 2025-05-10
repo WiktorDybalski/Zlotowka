@@ -33,7 +33,15 @@ export default function PinnedDreamCard() {
     }
   }, [data, pickedDream]);
 
-  if (isLoading || !dream) {
+  if (!dream) {
+    return <ThreeElementsCard
+        top={<CardText text="Twój wybrany cel" />}
+        middle={<p className="text-sm">Nie masz żadnych wybranych marzeń</p>}
+        bottom={<div></div>}
+    />
+  }
+
+  if (isLoading) {
     return <LoadingSpinner />
   }
 
