@@ -24,7 +24,7 @@ export default function Dashboard() {
   const [showPopup, setShowPopup] = useState(false);
   const [selectedCards, setSelectedCards] = useState<CardId[]>([
     "nextExpense",
-    "pinnedDream",
+    "currentBalance",
     "monthForecast",
   ]);
 
