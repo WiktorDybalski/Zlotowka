@@ -2,7 +2,6 @@ package com.agh.zlotowka.service;
 
 import com.agh.zlotowka.dto.OneTimeTransactionDTO;
 import com.agh.zlotowka.dto.OneTimeTransactionRequest;
-import com.agh.zlotowka.dto.PaginatedTransactionsDTO;
 import com.agh.zlotowka.model.Currency;
 import com.agh.zlotowka.model.OneTimeTransaction;
 import com.agh.zlotowka.model.User;
@@ -17,10 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -141,6 +138,7 @@ public class OneTimeTransactionService {
             userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
         }
     }
+
     public OneTimeTransactionDTO getTransactionWithUserCheck(Integer transactionId, CustomUserDetails userDetails) {
         OneTimeTransaction transaction = oneTimeTransactionRepository.findById(transactionId)
                 .orElseThrow(() -> new EntityNotFoundException("Transaction not found"));

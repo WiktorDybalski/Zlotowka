@@ -1,28 +1,23 @@
 package com.agh.zlotowka.service;
 
-import com.agh.zlotowka.dto.OneTimeTransactionRequest;
+import com.agh.zlotowka.dto.RegistrationRequest;
+import com.agh.zlotowka.dto.UserResponse;
 import com.agh.zlotowka.exception.CurrencyConversionException;
 import com.agh.zlotowka.model.Currency;
-import com.agh.zlotowka.model.OneTimeTransaction;
 import com.agh.zlotowka.model.User;
 import com.agh.zlotowka.repository.CurrencyRepository;
 import com.agh.zlotowka.repository.UserRepository;
-import com.agh.zlotowka.dto.UserResponse;
 import com.agh.zlotowka.security.CustomUserDetails;
+import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import com.agh.zlotowka.dto.RegistrationRequest;
-import jakarta.persistence.EntityExistsException;
-import java.time.LocalDate;
-
-
-
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -33,15 +28,11 @@ public class UserService {
     private final CurrencyRepository currencyRepository;
     private final PasswordEncoder passwordEncoder;
 
-    @Transactional
-    public void addCurrencies() {
-        Currency currencyPLN = Currency.builder().isoCode("PLN").build();
-        Currency currencyUSD = Currency.builder().isoCode("USD").build();
-        Currency currencyEUR = Currency.builder().isoCode("EUR").build();
-
-        currencyRepository.save(currencyPLN);
-        currencyRepository.save(currencyUSD);
-        currencyRepository.save(currencyEUR);
+    @PostConstruct
+    public void initializeCurrencies() {
+        if (currencyRepository.findAll().isEmpty()) {
+            currencyService.addCurrencies();
+        }
     }
 
     @Transactional
@@ -89,6 +80,7 @@ public class UserService {
             log.error("Currency conversion failed", e);
         }
     }
+
     public UserResponse getCurrentUser(CustomUserDetails userDetails) {
         User user = userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
