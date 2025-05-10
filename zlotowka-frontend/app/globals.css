@@ -25,7 +25,7 @@ p {
 }
 
 .material-symbols {
-  font-family: var(--font-family-symbols);
+  font-family: var(--font-family-symbols), serif;
   font-variation-settings:
     "FILL" 0,
     "wght" 400,
@@ -37,5 +37,9 @@ p {
 }
 
 input {
-  font-family: var(--font-lato);
+  font-family: var(--font-lato), serif;
+}
+
+.custom-scroll::-webkit-scrollbar {
+  display: none;
 }

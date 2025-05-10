@@ -22,27 +22,27 @@ export default function DatePicker({
   setDateAction,
 }: DatePickerProps) {
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pl">
-      {isOpen && (
-        <DateCalendar
-          className="border-border-color border-[1px] rounded-[5px] min-w-76 absolute z-[9999] bg-background overflow-y-auto"
-          value={dayjs(currentDate)}
-          onChange={(newValue) => {
-            setDateAction(newValue);
-            setIsOpenAction(false);
-          }}
-          sx={{
-            width: 300,
-            overflow: "auto",
-            ".Mui-selected": {
-              backgroundColor: "#262626 !important",
-              "&:focus": {
-                backgroundColor: "#262626 !important",
-              },
-            },
-          }}
-        />
-      )}
-    </LocalizationProvider>
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pl">
+          {isOpen && (
+            <DateCalendar
+              className="border-border-color border-[1px] rounded-[5px] max-w-67 lg:max-w-76 absolute z-[9999] bg-background"
+              value={dayjs(currentDate)}
+              onChange={(newValue) => {
+                setDateAction(newValue);
+                setIsOpenAction(false);
+              }}
+              sx={{
+                width: "300",
+                overflow: "hidden",
+                ".Mui-selected": {
+                  backgroundColor: "#262626 !important",
+                  "&:focus": {
+                    backgroundColor: "#262626 !important",
+                  },
+                },
+              }}
+            />
+          )}
+        </LocalizationProvider>
   );
 }

@@ -16,7 +16,7 @@ export default function UserInfo() {
       : "Użytkownik...";
   const displayedEmail = data?.email ? data.email : "Email...";
   return (
-    <div className="flex items-center justify-between w-full">
+    <div className="flex ml-4 xl:ml-0 items-center justify-between w-full">
       <div className="flex items-center">
         <div className="hidden xl:block mr-3 ">
           <Image
