@@ -10,6 +10,8 @@ import {NotificationsSection} from "@/components/settings/NotificationSection";
 import {AccountOption, EditingFieldProps, UserDetailsRequest} from "@/interfaces/settings/Settings";
 import EditFieldPopup from "@/components/settings/EditFieldPopup";
 import {useSettingsService} from "@/services/SettingsService";
+import {createPayload} from "@/lib/utils";
+import toast from "react-hot-toast";
 
 const scrollToSection = (id: string) => {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -36,6 +38,9 @@ export default function Settings(): JSX.Element {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user", "getUserData"] });
     },
+    onError: () => {
+      toast.error("Nie udało się zmienić danych!");
+    }
   });
 
   useEffect(() => {
@@ -62,33 +67,21 @@ export default function Settings(): JSX.Element {
     });
   };
 
-  const handleSaveField = (value: string) => {
+  const handleSaveField = (value: string, fieldName?: string) => {
     if (!data) return;
-
-    let firstName = data.firstName;
-    let lastName = data.lastName;
-    if (editingField.fieldName === "name") {
-      const parts = value.trim().split(" ");
-      firstName = parts[0];
-      lastName = parts.slice(1).join(" ") || "";
-    }
-
-    const payload: UserDetailsRequest = {
-      firstName:   editingField.fieldName === "firstName"   ? value : firstName,
-      lastName:    editingField.fieldName === "lastName"    ? value : lastName,
-      email:       editingField.fieldName === "email"       ? value : data.email,
-      phoneNumber: editingField.fieldName === "phoneNumber" ? value : data.phoneNumber,
-      darkMode:    darkMode ? "true" : "false",
-      notificationsByEmail: notificationsByEmail ? "true" : "false",
-      notificationsByPhone: notificationsByPhone ? "true" : "false",
-    };
-
-    mutation.mutate(payload);
+    const payload = createPayload(fieldName || editingField.fieldName, value, data, darkMode, notificationsByEmail, notificationsByPhone);
+    mutation.mutate(payload, {
+      onSuccess: () => {
+        toast.success("Udało się zmienić dane!");
+      }
+    });
   };
 
   useEffect(() => {
-    handleSaveField("");
-  }, [notificationsByEmail, notificationsByPhone, darkMode])
+    if (!data) return;
+    const payload = createPayload(undefined, "", data, darkMode, notificationsByEmail, notificationsByPhone);
+    mutation.mutate(payload);
+  }, [notificationsByEmail, notificationsByPhone, darkMode]);
 
   const accountOptions: AccountOption[] = [
     {
@@ -102,7 +95,7 @@ export default function Settings(): JSX.Element {
               className="rounded-full"
           />
       ),
-      onClick: () => openEditPopup("avatar", "Edytuj zdjęcie profilowe"),
+      onClick: () => {toast.error("Not implemented")},
       fieldName: "avatar"
     },
     {
