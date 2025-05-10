@@ -11,9 +11,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import {useDreamContext} from "@/components/dreams/DreamsContext";
 
 export default function DreamDetailsPage() {
   const { planId } = useParams();
+  const { pickedDream, handlePickDream } = useDreamContext();
   const DreamService = useDreamsService();
   const numericPlanId = Number(planId);
 
@@ -23,7 +25,7 @@ export default function DreamDetailsPage() {
 
   useEffect(() => {
     if (isNaN(numericPlanId)) {
-      redirect(routes.dreams.pathname); // redirect to the dreams page if planId is not valid
+      redirect(routes.dreams.pathname);
     }
   }, [numericPlanId]);
 
@@ -166,9 +168,16 @@ export default function DreamDetailsPage() {
       <div className="flex flex-col h-full">
         <header>
           <div className="flex flex-row items-center justify-between mb-5">
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold">
-              {dream.name}
-            </h2>
+            <div className="flex items-center gap-x-2">
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold">
+                {dream.name}
+              </h2>
+              <span
+                  className={`${dream.planId === pickedDream ? "material-symbol-outlined" : "material-symbols"}`}
+                  onClick={() => handlePickDream(dream.planId)}>
+                keep
+              </span>
+            </div>
             <p className="font-lato text-xl mt-3 mb-2">
               <span>
                 {Math.min(dream.actualAmount, dream.amount).toLocaleString(

@@ -12,7 +12,7 @@ export async function submitTransaction(
 ): Promise<void> {
 
   let promise;
-  if (data.frequency === "Raz") {
+  if (data.frequency.code === "No period") {
     promise = TransactionService.createNewTransaction(data);
   } else {
     promise = TransactionService.createNewRecurringTransaction(data);

@@ -28,7 +28,7 @@ export default function Settings(): JSX.Element {
   const [editingField, setEditingField] = useState<EditingFieldProps>({isOpen: false, fieldName: "", title: "", value: ""});
 
   const { data } = useQuery<UserData>({
-    queryKey: ["user", "getUserData"],
+    queryKey: ["user"],
     queryFn: UserService.fetchUserData,
     staleTime: 0,
   });
@@ -36,7 +36,7 @@ export default function Settings(): JSX.Element {
   const mutation = useMutation({
     mutationFn: (details: UserDetailsRequest) => settingsService.updateUserDetails(details),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user", "getUserData"] });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
     },
     onError: () => {
       toast.error("Nie udało się zmienić danych!");
@@ -77,6 +77,7 @@ export default function Settings(): JSX.Element {
     });
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!data) return;
     const payload = createPayload(undefined, "", data, darkMode, notificationsByEmail, notificationsByPhone);

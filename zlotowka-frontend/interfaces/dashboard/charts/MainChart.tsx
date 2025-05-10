@@ -1,8 +1,9 @@
-import {OneTimeTransaction} from "@/services/TransactionService";
+
 import {LabelProps, TooltipProps} from "recharts";
 import {NameType, ValueType} from "recharts/types/component/DefaultTooltipContent";
 import {Dayjs} from "dayjs";
 import {Dispatch, SetStateAction} from "react";
+import {OneTimeTransaction} from "@/interfaces/transactions/TransactionsData";
 
 export interface CustomChartTooltipProps extends TooltipProps<ValueType, NameType> {
   transactions: OneTimeTransaction[];

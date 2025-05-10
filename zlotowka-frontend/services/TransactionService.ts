@@ -5,46 +5,15 @@ import sendToBackend, {
   getAuthHeader,
   sendToBackendWithoutReturningJson,
 } from "@/lib/sendToBackend";
-import { Currency } from "./CurrencyController";
-import {TransactionData} from "@/interfaces/transactions/TransactionsData";
-import {mapFrequencyToPeriodType} from "@/lib/utils";
+import {
+  EdittedOneTimeTransactionReq,
+  NewRecurringTransactionReq,
+  OneTimeTransaction,
+  PaginatedTransactionsResponse,
+  Period,
+  TransactionData
+} from "@/interfaces/transactions/TransactionsData";
 
-export interface NewOneTimeTransactionReq {
-  name: string;
-  amount: number;
-  currency: Currency;
-  isIncome: boolean;
-  date: string; // ISO date string (np. "2025-04-28")
-  description: string;
-}
-
-export interface NewRecurringTransactionReq {
-  userId: number;
-  name: string;
-  amount: number;
-  currencyId: number;
-  isIncome: boolean;
-  interval: string;
-  firstPaymentDate: string;
-  lastPaymentDate: string;
-  description?: string;
-}
-
-export interface OneTimeTransaction extends NewOneTimeTransactionReq {
-  transactionId: number;
-  userId: number;
-}
-
-export interface PaginatedTransactionsResponse {
-  transactions: OneTimeTransaction[];
-  total: number;
-  page: number;
-  totalPages: number;
-}
-
-export interface EdittedOneTimeTransactionReq extends NewOneTimeTransactionReq {
-  transactionId: number;
-}
 
 export function useTransactionService() {
   const { token, userId } = useAuth();
@@ -52,6 +21,14 @@ export function useTransactionService() {
   if (!token) throw new Error("User Logged Out (Token not provided)!");
 
   const withAuthHeader = getAuthHeader(token);
+
+  async function getPeriods(): Promise<Array<Period>> {
+    return await sendToBackend(
+        `period/all`,
+        withAuthHeader,
+        "Failed to fetch transactions"
+    );
+  }
 
   async function getTransactions(): Promise<Array<OneTimeTransaction>> {
     return await sendToBackend(
@@ -81,8 +58,6 @@ export function useTransactionService() {
       date: transaction.date,
       description: transaction.description,
     };
-
-    console.log(req);
     return await sendToBackend(
       `onetime-transaction`,
       {
@@ -105,10 +80,9 @@ export function useTransactionService() {
       isIncome: transaction.isIncome,
       firstPaymentDate: transaction.startDate,
       lastPaymentDate: transaction.endDate,
-      interval: mapFrequencyToPeriodType(transaction.frequency),
+      interval: transaction.frequency.code,
       description: transaction.description,
     };
-
     console.log(recurringReq);
 
     return await sendToBackend(
@@ -163,5 +137,6 @@ export function useTransactionService() {
     createNewRecurringTransaction,
     deleteTransaction,
     editTransaction,
+    getPeriods
   };
 }

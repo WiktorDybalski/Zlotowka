@@ -27,7 +27,7 @@ export default function EditTransaction({
 
   return (
     <TransactionForm
-      transaction={{ ...transaction, frequency: "Raz" }}
+      transaction={{ ...transaction, frequency: { "name": "Codziennie", "code": "P1D" }}}
       onCloseAction={() => setShowEditTransaction(false)}
       onSubmitAction={(data) => mutation.mutate(data)}
       header="Edytuj transakcje"
