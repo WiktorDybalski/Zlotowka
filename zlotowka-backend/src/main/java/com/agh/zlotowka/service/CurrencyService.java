@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,6 +27,17 @@ public class CurrencyService {
     @Value("${CURRENCY_API_URL}")
     private String apiUrl;
     private final CurrencyRepository currencyRepository;
+
+    @Transactional
+    public void addCurrencies() {
+        Currency currencyPLN = Currency.builder().isoCode("PLN").build();
+        Currency currencyUSD = Currency.builder().isoCode("USD").build();
+        Currency currencyEUR = Currency.builder().isoCode("EUR").build();
+
+        currencyRepository.save(currencyPLN);
+        currencyRepository.save(currencyUSD);
+        currencyRepository.save(currencyEUR);
+    }
 
     public List<Currency> getAllCurrencies() {
         return currencyRepository.findAll();
