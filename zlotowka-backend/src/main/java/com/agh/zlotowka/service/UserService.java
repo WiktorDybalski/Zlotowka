@@ -1,6 +1,8 @@
 package com.agh.zlotowka.service;
 
 import com.agh.zlotowka.dto.RegistrationRequest;
+import com.agh.zlotowka.dto.UpdatePasswordRequest;
+import com.agh.zlotowka.dto.UserDetailsRequest;
 import com.agh.zlotowka.dto.UserResponse;
 import com.agh.zlotowka.exception.CurrencyConversionException;
 import com.agh.zlotowka.model.Currency;
@@ -12,6 +14,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -127,5 +130,90 @@ public class UserService {
             user.setCurrentBudget(budget.subtract(amount));
         }
         userRepository.save(user);
+    }
+
+    @Transactional
+    public UserResponse updateUserDetails(UserDetails userDetails, UserDetailsRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Update request cannot be null");
+        }
+
+        User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        if (request.email() != null && !request.email().equals(user.getEmail()) &&
+                userRepository.findByEmail(request.email()).isPresent()) {
+            throw new IllegalArgumentException("Email is already in use");
+        }
+
+        if (request.firstName() != null) {
+            user.setFirstName(request.firstName());
+        }
+
+        if (request.lastName() != null) {
+            user.setLastName(request.lastName());
+        }
+
+        if (request.email() != null) {
+            user.setEmail(request.email());
+        }
+
+        if (request.phoneNumber() != null) {
+            user.setPhoneNumber(request.phoneNumber());
+        }
+
+        if (request.darkMode() != null) {
+            user.setDarkMode(Boolean.parseBoolean(request.darkMode()));
+        }
+
+        if (request.notificationsByEmail() != null) {
+            user.setNotificationsByEmail(Boolean.parseBoolean(request.notificationsByEmail()));
+        }
+
+        if (request.notificationsByPhone() != null) {
+            user.setNotificationsByPhone(Boolean.parseBoolean(request.notificationsByPhone()));
+        }
+
+        User updatedUser = userRepository.save(user);
+        return new UserResponse(
+                updatedUser.getUserId(),
+                updatedUser.getFirstName(),
+                updatedUser.getLastName(),
+                updatedUser.getEmail(),
+                updatedUser.getPhoneNumber(),
+                updatedUser.getDateOfJoining(),
+                updatedUser.getCurrentBudget(),
+                updatedUser.getCurrency(),
+                updatedUser.getDarkMode(),
+                updatedUser.getNotificationsByEmail(),
+                updatedUser.getNotificationsByPhone()
+        );
+    }
+
+    @Transactional
+    public void updateUserPassword(UserDetails userDetails, UpdatePasswordRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Password update request cannot be null");
+        }
+
+        if (request.newPassword() == null || request.oldPassword() == null || request.confirmNewPassword() == null) {
+            throw new IllegalArgumentException("Passwords cannot be null");
+        }
+
+        User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+
+        if (!request.newPassword().equals(request.confirmNewPassword())) {
+            throw new IllegalArgumentException("New password and confirmation do not match");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+
+        log.info("Password updated successfully for user ID: {}", user.getUserId());
     }
 }
