@@ -116,9 +116,11 @@ public class GeneralTransactionService {
         BigDecimal updatedBudget = budget;
 
         for (TransactionBudgetInfo transaction : pastTransactions) {
-            updatedBudget = updatedBudget.subtract(transaction.amount());
             transactionBudgetInfoList.add(new SinglePlotData(transaction.date(), updatedBudget, userCurrency));
+            updatedBudget = updatedBudget.subtract(transaction.amount());
         }
+
+        transactionBudgetInfoList.add(new SinglePlotData(request.startDate(), updatedBudget, userCurrency));
 
         updatedBudget = budget;
         transactionBudgetInfoList.add(new SinglePlotData(LocalDate.now(), updatedBudget, userCurrency));
@@ -127,6 +129,8 @@ public class GeneralTransactionService {
             updatedBudget = updatedBudget.add(transaction.amount());
             transactionBudgetInfoList.add(new SinglePlotData(transaction.date(), updatedBudget, userCurrency));
         }
+
+        transactionBudgetInfoList.add(new SinglePlotData(request.endDate(), updatedBudget, userCurrency));
 
         Map<LocalDate, SinglePlotData> uniqueByDate = new TreeMap<>();
         for (SinglePlotData data : transactionBudgetInfoList) {
