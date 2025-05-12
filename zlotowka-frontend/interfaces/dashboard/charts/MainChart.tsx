@@ -18,6 +18,8 @@ export interface MainChartContextType {
   setShowDreams: Dispatch<SetStateAction<boolean>>;
   showSubDreams: boolean;
   setShowSubDreams: Dispatch<SetStateAction<boolean>>;
+  equalDates: boolean;
+  setEqualDates: Dispatch<SetStateAction<boolean>>;
 }
 
 export interface MainChartPopupProps {
