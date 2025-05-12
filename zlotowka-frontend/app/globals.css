@@ -56,3 +56,11 @@ input {
 .custom-scroll::-webkit-scrollbar {
   display: none;
 }
+
+.chart-options-buttons {
+  @apply px-3 py-1 border-[1px] rounded border-border-color transition-colors duration-200 hover:bg-accent hover:text-background hover:cursor-pointer;
+}
+
+.form-input {
+  @apply border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-base w-full lg:min-w-76;
+}

@@ -77,11 +77,11 @@ export default function Settings(): JSX.Element {
     });
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (!data) return;
+    if (!data || darkMode === null || notificationsByEmail === null || notificationsByPhone === null) return;
     const payload = createPayload(undefined, "", data, darkMode, notificationsByEmail, notificationsByPhone);
     mutation.mutate(payload);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [notificationsByEmail, notificationsByPhone, darkMode]);
 
   const accountOptions: AccountOption[] = [
