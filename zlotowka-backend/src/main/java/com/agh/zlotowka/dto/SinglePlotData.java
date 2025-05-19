@@ -4,4 +4,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 
-public record SinglePlotData(LocalDate date, BigDecimal amount) {}
+public record SinglePlotData(
+        LocalDate date,
+        BigDecimal amount,
+        String currencyIsoCode
+) {
+}

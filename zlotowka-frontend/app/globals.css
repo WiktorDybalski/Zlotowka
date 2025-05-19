@@ -6,6 +6,7 @@ p {
 
 :root {
   --font-family-symbols: "Material Symbols Rounded";
+  --font-family-symbols-outlined: "Material Symbols Outlined";
   --font-lato: "Lato", sans-serif;
   --font-raleway: "Raleway", sans-serif;
 }
@@ -25,7 +26,7 @@ p {
 }
 
 .material-symbols {
-  font-family: var(--font-family-symbols);
+  font-family: var(--font-family-symbols), serif;
   font-variation-settings:
     "FILL" 0,
     "wght" 400,
@@ -34,4 +35,24 @@ p {
   font-size: 24px;
   display: inline-block;
   line-height: 1;
+}
+
+.material-symbol-outlined {
+  font-family: var(--font-family-symbols-outlined), serif;
+  font-variation-settings:
+          "FILL" 1,
+          "wght" 400,
+          "GRAD" 0,
+          "opsz" 48;
+  font-size: 24px;
+  display: inline-block;
+  line-height: 1;
+}
+
+input {
+  font-family: var(--font-lato), serif;
+}
+
+.custom-scroll::-webkit-scrollbar {
+  display: none;
 }

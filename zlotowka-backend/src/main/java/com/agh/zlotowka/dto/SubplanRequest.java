@@ -1,5 +1,6 @@
 package com.agh.zlotowka.dto;
 
+import com.agh.zlotowka.validation.MaxDecimalPlaces;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -18,10 +19,8 @@ public record SubplanRequest (
 
     @NotNull(message = "Amount cannot be null")
     @Positive(message = "Amount must be positive")
+    @MaxDecimalPlaces(2)
     BigDecimal amount,
-
-    @NotNull(message = "Currency Id cannot be null")
-    Integer currencyId,
 
     @Size(max = 512, message = "Description cannot exceed 512 characters")
     String description,

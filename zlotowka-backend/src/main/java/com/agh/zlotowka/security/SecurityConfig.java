@@ -36,9 +36,10 @@ public class SecurityConfig {
                                 "/recurring-transaction/**",
                                 "/onetime-transaction/**",
                                 "/general-transactions/**",
-                                "/user/currency",
+                                "/user/**",
                                 "/plan/**",
-                                "/subplan/**"
+                                "/subplan/**",
+                                "/general-plans/**"
                         )
                 )
                 .sessionManagement(sess -> sess

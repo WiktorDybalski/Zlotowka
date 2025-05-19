@@ -11,7 +11,8 @@ public enum PeriodEnum {
     YEARLY(Period.ofYears(1)),
     MONTHLY(Period.ofMonths(1)),
     WEEKLY(Period.ofWeeks(1)),
-    DAILY(Period.ofDays(1));
+    DAILY(Period.ofDays(1)),
+    ONCE(null);
 
     private final Period period;
 
@@ -33,6 +34,10 @@ public enum PeriodEnum {
 
 
     public LocalDate addToDate(LocalDate previousDate, LocalDate startDate) {
+        if (this == ONCE) {
+            return previousDate;
+        }
+
         LocalDate newDate = previousDate.plus(period);
 
         if (this == MONTHLY && newDate.getDayOfMonth() < startDate.getDayOfMonth()) {

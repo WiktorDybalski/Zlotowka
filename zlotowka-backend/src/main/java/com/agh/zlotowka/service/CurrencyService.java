@@ -8,11 +8,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
@@ -26,18 +28,30 @@ public class CurrencyService {
     private String apiUrl;
     private final CurrencyRepository currencyRepository;
 
+    @Transactional
+    public void addCurrencies() {
+        Currency currencyPLN = Currency.builder().isoCode("PLN").build();
+        Currency currencyUSD = Currency.builder().isoCode("USD").build();
+        Currency currencyEUR = Currency.builder().isoCode("EUR").build();
+
+        currencyRepository.save(currencyPLN);
+        currencyRepository.save(currencyUSD);
+        currencyRepository.save(currencyEUR);
+    }
+
     public List<Currency> getAllCurrencies() {
         return currencyRepository.findAll();
     }
 
-    public BigDecimal convertCurrency(BigDecimal amount, String fromCurrency, String toCurrency) throws Exception {
+    public BigDecimal convertCurrency(BigDecimal amount, String fromCurrency, String toCurrency) throws CurrencyConversionException {
         if (fromCurrency.equals(toCurrency)) return amount;
         try {
             BigDecimal exchangeRate = fetchExchangeRate(fromCurrency.toLowerCase(), toCurrency.toLowerCase());
-            return amount.multiply(exchangeRate);
-        } catch (IOException e) {
+            BigDecimal converted = amount.multiply(exchangeRate);
+            return converted.setScale(2, RoundingMode.HALF_UP);
+        } catch (IOException | CurrencyConversionException e) {
             log.error("CurrencyService: Currency conversion failed: ", e);
-            throw new IOException("CurrencyService: Currency conversion failed", e);
+            throw new CurrencyConversionException("CurrencyService: Currency conversion failed");
         }
     }
 

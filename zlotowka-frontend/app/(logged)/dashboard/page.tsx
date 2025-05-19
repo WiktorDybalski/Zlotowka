@@ -16,14 +16,15 @@ import {
 } from "@/interfaces/dashboard/cards/CardComponents";
 import NextExpenseCard from "@/components/dashboard/cards/NextExpenseCard";
 import NextIncomeCard from "@/components/dashboard/cards/NextIncomeCard";
-import { TransactionTable } from "@/components/transactions/table/TransactionTable";
+import MainChartProvider from "@/components/dashboard/charts/MainChartContext";
+import {DreamProvider} from "@/components/dreams/DreamsContext";
 
 export default function Dashboard() {
   const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [selectedCards, setSelectedCards] = useState<CardId[]>([
     "nextExpense",
-    "pinnedDream",
+    "currentBalance",
     "monthForecast",
   ]);
 
@@ -37,6 +38,7 @@ export default function Dashboard() {
 
   return (
     <>
+      <DreamProvider>
       {showAddTransaction && (
         <AddTransaction setShowAddTransaction={setShowAddTransaction} />
       )}
@@ -64,12 +66,15 @@ export default function Dashboard() {
           );
         })}
 
-        <GenericCard className="lg:col-span-3">
-          <MainChart />
-        </GenericCard>
+        <MainChartProvider>
+          <GenericCard className="lg:col-span-3">
+            <MainChart />
+          </GenericCard>
+        </MainChartProvider>
 
         <GenericCard className="lg:col-span-2">
-          <TransactionTable />
+          {/*<TransactionTable />*/}
+          <div></div>
         </GenericCard>
 
         <GenericCard>
@@ -86,6 +91,7 @@ export default function Dashboard() {
           />
         </div>
       </div>
+      </DreamProvider>
     </>
   );
 }

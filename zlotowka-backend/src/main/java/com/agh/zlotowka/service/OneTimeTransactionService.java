@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -83,22 +82,20 @@ public class OneTimeTransactionService {
         OneTimeTransaction transaction = oneTimeTransactionRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Transaction with Id %d not found", id)));
 
-        if (transaction.getDate().isBefore(LocalDate.now())) {
+        if (!transaction.getDate().isAfter(LocalDate.now())) {
             userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
         }
         oneTimeTransactionRepository.delete(transaction);
     }
 
-    public List<OneTimeTransactionDTO> getAllTransactionsByUserId(Integer userId) {
-        List<OneTimeTransaction> transactions = oneTimeTransactionRepository.findAllByUser(userId);
+    private List<OneTimeTransaction> getAllTransactionsByUserId(Integer userId) {
+        List<OneTimeTransaction> allTransactions = oneTimeTransactionRepository.findAllByUser(userId, LocalDate.now());
 
-        if (transactions.isEmpty())
+        if (allTransactions.isEmpty())
             userRepository.findById(userId)
                     .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
 
-        return transactions.stream()
-                .map(this::getOneTimeTransactionDTO)
-                .collect(Collectors.toList());
+        return allTransactions;
     }
 
     public void validateUserId(Integer userId, CustomUserDetails userDetails) {
@@ -141,6 +138,7 @@ public class OneTimeTransactionService {
             userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
         }
     }
+
     public OneTimeTransactionDTO getTransactionWithUserCheck(Integer transactionId, CustomUserDetails userDetails) {
         OneTimeTransaction transaction = oneTimeTransactionRepository.findById(transactionId)
                 .orElseThrow(() -> new EntityNotFoundException("Transaction not found"));

@@ -20,6 +20,8 @@ export default function DreamCard({ dream }: DreamCardProps) {
   let completedMessage = "";
   if (dream.canBeCompleted) completedMessage = "Można wykonać!";
   if (dream.completed) completedMessage = "Zrealizowano!";
+
+
   return (
     <figure style={{ width: "370px", height: "270px" }}>
       <GenericCard
@@ -29,7 +31,8 @@ export default function DreamCard({ dream }: DreamCardProps) {
           <ThreeElementsCard
             top={
               <>
-                <p className="text-3xl font-semibold">
+                <p className="text-3xl font-semibold flex">
+
                   <span className="mr-4">#</span>
                   <span>{dream.name}</span>
                 </p>

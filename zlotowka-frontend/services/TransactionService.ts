@@ -5,25 +5,15 @@ import sendToBackend, {
   getAuthHeader,
   sendToBackendWithoutReturningJson,
 } from "@/lib/sendToBackend";
-import { Currency } from "./CurrencyController";
+import {
+  EdittedOneTimeTransactionReq,
+  NewRecurringTransactionReq,
+  OneTimeTransaction,
+  PaginatedTransactionsResponse,
+  Period,
+  TransactionData
+} from "@/interfaces/transactions/TransactionsData";
 
-export interface NewOneTimeTransactionReq {
-  name: string;
-  amount: number;
-  currency: Currency;
-  isIncome: boolean;
-  date: string; // ISO date string (np. "2025-04-28")
-  description: string;
-}
-
-export interface OneTimeTransaction extends NewOneTimeTransactionReq {
-  transactionId: number;
-  userId: number;
-}
-
-export interface EdittedOneTimeTransactionReq extends NewOneTimeTransactionReq {
-  transactionId: number;
-}
 
 export function useTransactionService() {
   const { token, userId } = useAuth();
@@ -32,16 +22,32 @@ export function useTransactionService() {
 
   const withAuthHeader = getAuthHeader(token);
 
+  async function getPeriods(): Promise<Array<Period>> {
+    return await sendToBackend(
+        `period/all`,
+        withAuthHeader,
+        "Failed to fetch transactions"
+    );
+  }
+
   async function getTransactions(): Promise<Array<OneTimeTransaction>> {
     return await sendToBackend(
-      `onetime-transaction/all/${userId}`,
+      `general-transactions/all/${userId}`,
       withAuthHeader,
       "Failed to fetch transactions"
     );
   }
 
+  async function getTransactionsFromRange(startDate: string, endDate: string): Promise<PaginatedTransactionsResponse> {
+    return await sendToBackend(
+        `general-transactions/all/${userId}?startDate=${startDate}&endDate=${endDate}&page=1&limit=1000`,
+        withAuthHeader,
+        "Failed to fetch transactions"
+    );
+  }
+
   async function createNewTransaction(
-    transaction: NewOneTimeTransactionReq
+    transaction: TransactionData
   ): Promise<OneTimeTransaction> {
     const req = {
       userId: userId,
@@ -60,6 +66,33 @@ export function useTransactionService() {
         body: JSON.stringify(req),
       },
       "Failed to create new transaction"
+    );
+  }
+
+  async function createNewRecurringTransaction(
+      transaction: TransactionData
+  ): Promise<NewRecurringTransactionReq> {
+    const recurringReq: NewRecurringTransactionReq = {
+      userId: userId,
+      name: transaction.name,
+      amount: transaction.amount,
+      currencyId: transaction.currency.currencyId,
+      isIncome: transaction.isIncome,
+      firstPaymentDate: transaction.startDate,
+      lastPaymentDate: transaction.endDate,
+      interval: transaction.frequency.code,
+      description: transaction.description,
+    };
+    console.log(recurringReq);
+
+    return await sendToBackend(
+        `recurring-transaction`,
+        {
+          ...withAuthHeader,
+          method: "POST",
+          body: JSON.stringify(recurringReq),
+        },
+        "Failed to create new transaction"
     );
   }
 
@@ -99,8 +132,11 @@ export function useTransactionService() {
 
   return {
     getTransactions,
+    getTransactionsFromRange,
     createNewTransaction,
+    createNewRecurringTransaction,
     deleteTransaction,
     editTransaction,
+    getPeriods
   };
 }

@@ -86,7 +86,7 @@ export default function AddSubDreamComponentPopup({
   return (
     <GenericPopup
       title="Dodaj składową marzenia"
-      onClose={onClose}
+      onCloseAction={onClose}
       showConfirm={false}
     >
       <>
@@ -119,7 +119,7 @@ export default function AddSubDreamComponentPopup({
             placeholder="Kwota"
             value={formData.amount || ""}
             onChange={handleInputChange}
-            className="border border-neutral-300 rounded px-4 py-2 w-full"
+            className="border border-neutral-300 rounded px-4 py-2 w-full font-lato"
           />
 
           <select

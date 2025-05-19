@@ -1,5 +1,6 @@
 package com.agh.zlotowka.dto;
 
+import com.agh.zlotowka.validation.MaxDecimalPlaces;
 import jakarta.validation.constraints.*;
 
 import java.math.BigDecimal;
@@ -15,6 +16,7 @@ public record PlanRequest (
 
     @NotNull(message = "Amount cannot be null")
     @Positive(message = "Amount must be positive")
+    @MaxDecimalPlaces(2)
     BigDecimal amount,
 
     @NotNull(message = "Currency Id cannot be null")

@@ -12,4 +12,7 @@ import java.util.List;
 public interface PlanRepository extends JpaRepository<Plan, Integer> {
     @Query("SELECT p FROM Plan p WHERE p.user.userId = :userId")
     List<Plan> findAllByUser(@Param("userId") Integer userId);
+
+    @Query("SELECT p FROM Plan p WHERE p.user.userId = :userId AND p.completed = false")
+    List<Plan> findAllUncompletedByUser(@Param("userId") Integer userId);
 }

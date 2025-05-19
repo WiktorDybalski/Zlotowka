@@ -2,7 +2,6 @@
 
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import {
-  OneTimeTransaction,
   useTransactionService,
 } from "@/services/TransactionService";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -11,6 +10,7 @@ import toast from "react-hot-toast";
 import EditTransactionButton from "./EditTransactionButton";
 import DeleteTransactionButton from "./DeleteTransactionButton";
 import EditTransaction from "../EditTransaction";
+import {OneTimeTransaction} from "@/interfaces/transactions/TransactionsData";
 
 // Nowy grid: 4 kolumny: Data, Nazwa, Kwota, Opis
 const grid = "grid grid-cols-[10%_10%_30%_1fr] gap-4";
@@ -26,18 +26,18 @@ export function TransactionTable() {
 
   const {
     data: transactionList,
-    isError: isTransactionListError,
-    error: transactionListError,
+    // isError: isTransactionListError,
+    // error: transactionListError,
   } = useQuery<OneTimeTransaction[]>({
     queryKey: ["transaction", "getTransactions"],
     queryFn: TransactionService.getTransactions,
   });
 
-  if (isTransactionListError) {
-    toast.error(
-      `Nie udało się pobrać tranzakcji: ${transactionListError.message}`
-    );
-  }
+  // if (isTransactionListError) {
+  //   toast.error(
+  //     `Nie udało się pobrać transakcji: ${transactionListError.message}`
+  //   );
+  // }
 
   const magicTransactionDelete = useMutation({
     mutationFn: async (transactionId: number) => {

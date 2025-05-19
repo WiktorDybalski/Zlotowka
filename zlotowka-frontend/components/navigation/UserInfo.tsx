@@ -6,8 +6,8 @@ import toast from "react-hot-toast";
 export default function UserInfo() {
   const UserService = useUserService();
   const { data } = useQuery({
-    queryKey: ["user", "getUserData"],
-    queryFn: UserService.getUserData,
+    queryKey: ["user"],
+    queryFn: UserService.fetchUserData,
   });
 
   const dispalyedName =
@@ -16,7 +16,7 @@ export default function UserInfo() {
       : "Użytkownik...";
   const displayedEmail = data?.email ? data.email : "Email...";
   return (
-    <div className="flex items-center justify-between w-full">
+    <div className="flex ml-4 xl:ml-0 items-center justify-between w-full">
       <div className="flex items-center">
         <div className="hidden xl:block mr-3 ">
           <Image

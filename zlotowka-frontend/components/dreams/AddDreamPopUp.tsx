@@ -100,7 +100,7 @@ export default function AddDreamComponentPopup({
   return (
     <GenericPopup
       title="Dodaj nowe marzenie"
-      onClose={onClose}
+      onCloseAction={onClose}
       showConfirm={false}
     >
       <>
@@ -120,7 +120,7 @@ export default function AddDreamComponentPopup({
           <input
             name="description"
             type="text"
-            placeholder="Opisz składową"
+            placeholder="Opisz marzenie"
             value={formData.description}
             onChange={handleInputChange}
             className="border border-neutral-300 rounded px-4 py-2 w-full"
@@ -133,7 +133,7 @@ export default function AddDreamComponentPopup({
             placeholder="Kwota"
             value={formData.amount || ""}
             onChange={handleInputChange}
-            className="border border-neutral-300 rounded px-4 py-2 w-full"
+            className="border border-neutral-300 rounded px-4 py-2 w-full font-lato"
           />
           {isCurrencyListReady ? (
             <select

@@ -14,17 +14,18 @@ public class PeriodService {
         return Arrays.stream(PeriodEnum.values())
                 .map(period -> Map.of(
                         "name", getPolishName(period),
-                        "code", period.getPeriod().toString()
+                        "code", period.getPeriod() != null ? period.getPeriod().toString() : "No period"
                 ))
                 .collect(Collectors.toList());
     }
 
     private String getPolishName(PeriodEnum period) {
         return switch (period) {
-            case DAILY -> "Dzienny";
-            case WEEKLY -> "Tygodniowy";
-            case MONTHLY -> "Miesięczny";
-            case YEARLY -> "Roczny";
+            case DAILY -> "Codziennie";
+            case WEEKLY -> "Co tydzień";
+            case MONTHLY -> "Co miesiąc";
+            case YEARLY -> "Co rok";
+            case ONCE -> "Raz";
         };
     }
 }

@@ -4,8 +4,8 @@ import { useState, useEffect, ReactNode } from "react";
 import DarkButton from "@/components/DarkButton";
 
 interface GenericPopupProps {
-  onClose: () => void;
-  onConfirm?: () => void;
+  onCloseAction: () => void;
+  onConfirmAction?: () => void;
   title: string;
   children: ReactNode;
   confirmText?: string;
@@ -14,8 +14,8 @@ interface GenericPopupProps {
 }
 
 export default function GenericPopup({
-                                       onClose,
-                                       onConfirm,
+                                       onCloseAction,
+                                       onConfirmAction,
                                        title,
                                        children,
                                        confirmText = "Potwierdź",
@@ -26,12 +26,12 @@ export default function GenericPopup({
 
   const handleClose = () => {
     setIsVisible(false);
-    setTimeout(() => onClose(), 300);
+    setTimeout(() => onCloseAction(), 300);
   };
 
   const handleConfirm = () => {
-    if (onConfirm) {
-      onConfirm();
+    if (onConfirmAction) {
+      onConfirmAction();
     } else {
       handleClose();
     }
@@ -59,7 +59,7 @@ export default function GenericPopup({
 
         {/* Modal container */}
         <div
-            className={`bg-background border-[1px] border-[rgba(38,38,38,0.5)] px-10 py-10 rounded-[10px] z-10 transition-all duration-200 ease-in-out transform ${
+            className={`bg-background border-[1px] max-w-[350px] overflow-y-auto max-h-[100dvh] custom-scroll lg:max-w-full border-[rgba(38,38,38,0.5)] px-10 py-10 rounded-[10px] z-10 transition-all duration-200 ease-in-out transform ${
                 isVisible ? "scale-100 opacity-100" : "scale-90 opacity-0"
             }`}
         >
@@ -68,11 +68,11 @@ export default function GenericPopup({
           </div>
 
           {/* Popup content */}
-          <div className="popup-content">{children}</div>
+          <div>{children}</div>
 
           {/* Confirmation button (optional) */}
           {showConfirm && (
-              <div className="mt-7 w-full">
+              <div className="mt-6 w-full">
                 <DarkButton
                     onClick={handleConfirm}
                     text={confirmText}

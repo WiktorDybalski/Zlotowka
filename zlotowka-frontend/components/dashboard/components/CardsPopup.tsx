@@ -39,8 +39,8 @@ export default function CardsPopup({
   return (
       <GenericPopup
           title="Wybierz dokładnie trzy karty"
-          onClose={onClose}
-          onConfirm={handleConfirm}
+          onCloseAction={onClose}
+          onConfirmAction={handleConfirm}
           confirmText="Zatwierdź"
       >
         <div className="space-y-4">
