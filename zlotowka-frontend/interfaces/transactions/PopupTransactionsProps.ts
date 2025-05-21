@@ -20,4 +20,5 @@ export interface TransactionFormProps {
   submitButtonText: string;
   submitButtonIcon: string;
   onDeleteAction?: () => void | undefined;
+  isEdditingRecurringTransaction?: "yes" | "no" | "not editing";
 }

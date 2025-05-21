@@ -43,6 +43,7 @@ export default function TransactionForm({
   submitButtonIcon,
   onSubmitAction,
   onDeleteAction = undefined,
+  isEdditingRecurringTransaction = "not editing",
 }: TransactionFormProps) {
   const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
@@ -195,23 +196,25 @@ export default function TransactionForm({
         </div>
 
         {/* Frequency select */}
-        <div className="py-1">
-          <h3 className="text-md my-2 font-medium">Cykliczność</h3>
-          <select
-            name="frequency"
-            value={formData.frequency.name}
-            onChange={handleInputChange}
-            className={"form-input" + " bg-background"}
-          >
-            {isPeriodListReady && periodList.length > 0
-              ? periodList.map((period: Period) => (
-                  <option key={period.name} value={period.name}>
-                    {period.name}
-                  </option>
-                ))
-              : null}
-          </select>
-        </div>
+        {isEdditingRecurringTransaction !== "no" && (
+          <div className="py-1">
+            <h3 className="text-md my-2 font-medium">Cykliczność</h3>
+            <select
+              name="frequency"
+              value={formData.frequency.name}
+              onChange={handleInputChange}
+              className={"form-input" + " bg-background"}
+            >
+              {isPeriodListReady && periodList.length > 0
+                ? periodList.map((period: Period) => (
+                    <option key={period.name} value={period.name}>
+                      {period.name}
+                    </option>
+                  ))
+                : null}
+            </select>
+          </div>
+        )}
 
         {formData.frequency.code !== "No period" ? (
           <>

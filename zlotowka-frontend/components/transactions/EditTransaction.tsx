@@ -43,7 +43,7 @@ export default function EditTransaction({
           isRecurring ? "rekurencyjnej" : "jednorazowej"
         }...`,
         success: `Transakcja ${
-          isRecurring ? "rekurencyjnej" : "jednorazowej"
+          isRecurring ? "rekurencyjna" : "jednorazowa"
         } zmodyfikowana pomyślnie!`,
         error: (error: Error) =>
           `Błąd przy dodawaniu transakcji ${
@@ -122,6 +122,9 @@ export default function EditTransaction({
           header="Edytuj transakcje"
           submitButtonText="Edytuj transakcje"
           submitButtonIcon="edit"
+          isEdditingRecurringTransaction={
+            transaction.period != "ONCE" ? "yes" : "no"
+          }
         />
       )}
     </>
