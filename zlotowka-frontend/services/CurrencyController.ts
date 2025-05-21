@@ -19,7 +19,7 @@ export function useCurrencyService() {
     return await sendToBackend(
       `currency/all`,
       withAuthHeader,
-      "Failed to fetch currency list"
+      "Nie udało się pobrać listy walut"
     );
   }
 

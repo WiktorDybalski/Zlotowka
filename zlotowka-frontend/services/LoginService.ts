@@ -22,12 +22,11 @@ export function useLoginService() {
         },
         body: JSON.stringify(userData),
       },
-      "Failed to register user"
+      "Nie udało się zarejestrować użytkownika"
     );
     if (res.token && res.user.userId) {
       Auth.setLogin(res.token, res.user.userId); //  Set the token in the auth context
       Auth.setUserDataWithinSameToken(res.user);
-
     } else {
       throw new Error("Token not found in response");
     }
@@ -45,7 +44,7 @@ export function useLoginService() {
         },
         body: JSON.stringify(credentials),
       },
-      "Failed to login"
+      "Nie udało się zalogować użytkownika"
     );
 
     if (res.token && res.user.userId) {

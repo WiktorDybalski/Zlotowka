@@ -11,9 +11,8 @@ import {
   OneTimeTransaction,
   PaginatedTransactionsResponse,
   Period,
-  TransactionData
+  TransactionData,
 } from "@/interfaces/transactions/TransactionsData";
-
 
 export function useTransactionService() {
   const { token, userId } = useAuth();
@@ -24,9 +23,9 @@ export function useTransactionService() {
 
   async function getPeriods(): Promise<Array<Period>> {
     return await sendToBackend(
-        `period/all`,
-        withAuthHeader,
-        "Failed to fetch transactions"
+      `period/all`,
+      withAuthHeader,
+      "Nie udało się pobrać okresów dla transakcji"
     );
   }
 
@@ -34,15 +33,18 @@ export function useTransactionService() {
     return await sendToBackend(
       `general-transactions/all/${userId}`,
       withAuthHeader,
-      "Failed to fetch transactions"
+      "Nie udało się pobrać transakcji"
     );
   }
 
-  async function getTransactionsFromRange(startDate: string, endDate: string): Promise<PaginatedTransactionsResponse> {
+  async function getTransactionsFromRange(
+    startDate: string,
+    endDate: string
+  ): Promise<PaginatedTransactionsResponse> {
     return await sendToBackend(
-        `general-transactions/all/${userId}?startDate=${startDate}&endDate=${endDate}&page=1&limit=1000`,
-        withAuthHeader,
-        "Failed to fetch transactions"
+      `general-transactions/all/${userId}?startDate=${startDate}&endDate=${endDate}&page=1&limit=1000`,
+      withAuthHeader,
+      "Nie udało się pobrać transakcji z podanego zakresu"
     );
   }
 
@@ -65,12 +67,12 @@ export function useTransactionService() {
         method: "POST",
         body: JSON.stringify(req),
       },
-      "Failed to create new transaction"
+      "Nie udało się dodać transakcji"
     );
   }
 
   async function createNewRecurringTransaction(
-      transaction: TransactionData
+    transaction: TransactionData
   ): Promise<NewRecurringTransactionReq> {
     const recurringReq: NewRecurringTransactionReq = {
       userId: userId,
@@ -86,13 +88,13 @@ export function useTransactionService() {
     console.log(recurringReq);
 
     return await sendToBackend(
-        `recurring-transaction`,
-        {
-          ...withAuthHeader,
-          method: "POST",
-          body: JSON.stringify(recurringReq),
-        },
-        "Failed to create new transaction"
+      `recurring-transaction`,
+      {
+        ...withAuthHeader,
+        method: "POST",
+        body: JSON.stringify(recurringReq),
+      },
+      "Nie udało się dodać transakcji cyklicznej"
     );
   }
 
@@ -103,7 +105,7 @@ export function useTransactionService() {
         ...withAuthHeader,
         method: "DELETE",
       },
-      "Failed to delete transaction"
+      "Nie udało się usunąć transakcji"
     );
   }
 
@@ -126,7 +128,7 @@ export function useTransactionService() {
         method: "PUT",
         body: JSON.stringify(req),
       },
-      "Failed to update transaction"
+      "Nie udało się edytować transakcji"
     );
   }
 
@@ -137,6 +139,6 @@ export function useTransactionService() {
     createNewRecurringTransaction,
     deleteTransaction,
     editTransaction,
-    getPeriods
+    getPeriods,
   };
 }

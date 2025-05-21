@@ -35,7 +35,7 @@ export function useUserService() {
     return await sendToBackend(
       `user/account`,
       withAuthHeader,
-      "Failed to fetch user data"
+      "Nie udało się pobrać danych użytkownika"
     );
   }
 
