@@ -4,9 +4,9 @@ import { useState } from "react";
 import GenericPopup from "@/components/general/GenericPopup";
 import DarkButton from "@/components/DarkButton";
 import { useCurrencyService } from "@/services/CurrencyController";
-import { useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import toast from "react-hot-toast";
+import { useQueryWithToast } from "@/lib/data-grabbers";
 
 export interface DreamComponentData {
   componentName: string;
@@ -41,10 +41,11 @@ export default function AddDreamComponentPopup({
     defaultDreamComponentData
   );
   const CurrencyService = useCurrencyService();
-  const { data: currencyList, isSuccess: isCurrencyListReady } = useQuery({
-    queryKey: ["currencyData"],
-    queryFn: CurrencyService.getCurrencyList,
-  });
+  const { data: currencyList, isSuccess: isCurrencyListReady } =
+    useQueryWithToast({
+      queryKey: ["currencyData"],
+      queryFn: CurrencyService.getCurrencyList,
+    });
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>

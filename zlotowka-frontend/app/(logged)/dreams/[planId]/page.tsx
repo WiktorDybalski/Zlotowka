@@ -7,11 +7,12 @@ import LoadingSpinner from "@/components/general/LoadingSpinner";
 import { ProgressBar } from "@/components/general/ProgressBar";
 import routes from "@/routes";
 import { NewSubDreamReq, useDreamsService } from "@/services/DreamsService";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import {useDreamContext} from "@/components/dreams/DreamsContext";
+import { useDreamContext } from "@/components/dreams/DreamsContext";
+import { useQueryWithToast } from "@/lib/data-grabbers";
 
 export default function DreamDetailsPage() {
   const { planId } = useParams();
@@ -29,21 +30,10 @@ export default function DreamDetailsPage() {
     }
   }, [numericPlanId]);
 
-  const {
-    data: dream,
-    error,
-    isLoading,
-  } = useQuery({
+  const { data: dream, isLoading } = useQueryWithToast({
     queryKey: ["dreams", "getDreamById", planId],
     queryFn: () => DreamService.getDream(numericPlanId),
   });
-
-  useEffect(() => {
-    if (error) {
-      toast.error(`Nie udało się pobrać marzenia: ${error.message}`);
-      redirect(routes.dreams.pathname); // redirect to the dreams page if there is an error
-    }
-  }, [error]);
 
   const completeDreamMutation = useMutation({
     mutationFn: async ({ dreamId }: { dreamId: number }) => {
@@ -72,7 +62,7 @@ export default function DreamDetailsPage() {
         loading: "Dodawanie składowej marzenia...",
         success: "Składowa marzenia dodana!",
         error: (error) =>
-          `Wystąpił błąd podczas dodawania składowej marzenia marzenia: ${error.message}`,
+          `Wystąpił błąd podczas dodawania składowej marzenia: ${error.message}`,
       });
       return await res;
     },
@@ -173,8 +163,13 @@ export default function DreamDetailsPage() {
                 {dream.name}
               </h2>
               <span
-                  className={`${dream.planId === pickedDream ? "material-symbol-outlined" : "material-symbols"}`}
-                  onClick={() => handlePickDream(dream.planId)}>
+                className={`${
+                  dream.planId === pickedDream
+                    ? "material-symbol-outlined"
+                    : "material-symbols"
+                }`}
+                onClick={() => handlePickDream(dream.planId)}
+              >
                 keep
               </span>
             </div>

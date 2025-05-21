@@ -1,20 +1,21 @@
 "use client";
 
-import {useEffect, useRef, useState} from "react";
+import { useEffect, useRef, useState } from "react";
 import { TransactionFormProps } from "@/interfaces/transactions/PopupTransactionsProps";
 import {
   NewOneTimeTransactionReq,
-  NewRecurringTransactionReq, Period,
-  TransactionData
+  NewRecurringTransactionReq,
+  Period,
+  TransactionData,
 } from "@/interfaces/transactions/TransactionsData";
 import ConfirmButton from "@/components/general/Button";
 import dayjs from "dayjs";
 import DatePicker from "@/components/general/DatePicker";
 import GenericPopup from "@/components/general/GenericPopup";
-import { useQuery } from "@tanstack/react-query";
 import { useCurrencyService } from "@/services/CurrencyController";
 import toast from "react-hot-toast";
-import {useTransactionService} from "@/services/TransactionService";
+import { useTransactionService } from "@/services/TransactionService";
+import { useQueryWithToast } from "@/lib/data-grabbers";
 
 const defaultTransactionData: TransactionData = {
   name: "",
@@ -26,8 +27,8 @@ const defaultTransactionData: TransactionData = {
   isIncome: true,
   description: "",
   frequency: {
-    "name": "Raz",
-    "code": "No period"
+    name: "Raz",
+    code: "No period",
   },
   date: dayjs().format("YYYY-MM-DD"),
   startDate: dayjs().format("YYYY-MM-DD"),
@@ -44,27 +45,30 @@ export default function TransactionForm({
 }: TransactionFormProps) {
   const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
-  const [formData, setFormData] = useState<TransactionData>(transaction || defaultTransactionData);
+  const [formData, setFormData] = useState<TransactionData>(
+    transaction || defaultTransactionData
+  );
   const formRef = useRef<HTMLDivElement>(null);
   const [amountInput, setAmountInput] = useState<string>(
-      (transaction?.amount ?? 0).toString()
+    (transaction?.amount ?? 0).toString()
   );
 
   const CurrencyService = useCurrencyService();
   const TransactionService = useTransactionService();
 
-  const { data: currencyList, isSuccess: isCurrencyListReady } = useQuery({
-    queryKey: ["currencyData"],
-    queryFn: CurrencyService.getCurrencyList,
-  });
+  const { data: currencyList, isSuccess: isCurrencyListReady } =
+    useQueryWithToast({
+      queryKey: ["currencyData"],
+      queryFn: CurrencyService.getCurrencyList,
+    });
 
-  const { data: periodList, isSuccess: isPeriodListReady } = useQuery({
+  const { data: periodList, isSuccess: isPeriodListReady } = useQueryWithToast({
     queryKey: ["periodData"],
-    queryFn: TransactionService.getPeriods
+    queryFn: TransactionService.getPeriods,
   });
 
   const handleInputChange = (
-      e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
 
@@ -78,7 +82,9 @@ export default function TransactionForm({
     }
 
     if (name === "frequency") {
-      const selectedFrequency = periodList.find((period) => period.name === value);
+      const selectedFrequency = periodList.find(
+        (period) => period.name === value
+      );
       if (selectedFrequency) {
         setFormData((prev) => ({ ...prev, frequency: selectedFrequency }));
       }
@@ -87,7 +93,7 @@ export default function TransactionForm({
 
     if (name === "currency") {
       const selectedCurrency = currencyList.find(
-          (currency) => currency.currencyId === Number(value)
+        (currency) => currency.currencyId === Number(value)
       );
       if (selectedCurrency) {
         setFormData((prev) => ({ ...prev, currency: selectedCurrency }));
@@ -111,10 +117,7 @@ export default function TransactionForm({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-          formRef.current &&
-          !formRef.current.contains(event.target as Node)
-      ) {
+      if (formRef.current && !formRef.current.contains(event.target as Node)) {
         setIsStartDatePickerOpen(false);
         setIsEndDatePickerOpen(false);
       }
@@ -126,7 +129,9 @@ export default function TransactionForm({
     };
   }, []);
 
-  function validateFormData(data: NewOneTimeTransactionReq | NewRecurringTransactionReq) {
+  function validateFormData(
+    data: NewOneTimeTransactionReq | NewRecurringTransactionReq
+  ) {
     if (isNaN(data.amount)) {
       toast.error("Price is not a number!");
       return false;
@@ -159,7 +164,7 @@ export default function TransactionForm({
     >
       <div ref={formRef}>
         {/* Name */}
-        <div className="py-1" >
+        <div className="py-1">
           <h3 className="text-md my-2 font-medium">Nazwa</h3>
           <input
             name="name"
@@ -187,95 +192,94 @@ export default function TransactionForm({
         <div className="py-1">
           <h3 className="text-md my-2 font-medium">Cykliczność</h3>
           <select
-              name="frequency"
-              value={formData.frequency.name}
-              onChange={handleInputChange}
-              className={"form-input" + " bg-background"}
+            name="frequency"
+            value={formData.frequency.name}
+            onChange={handleInputChange}
+            className={"form-input" + " bg-background"}
           >
-            {isPeriodListReady && periodList.length > 0 ? (
-                periodList.map((period: Period) => (
-                    <option key={period.name} value={period.name}>
-                      {period.name}
-                    </option>
+            {isPeriodListReady && periodList.length > 0
+              ? periodList.map((period: Period) => (
+                  <option key={period.name} value={period.name}>
+                    {period.name}
+                  </option>
                 ))
-            ) : null }
+              : null}
           </select>
         </div>
 
-
         {formData.frequency.code !== "No period" ? (
-            <>
-              <div className="py-1">
-                <h3 className="text-md my-2 font-medium">Data początkowa</h3>
-                <input
-                    name="startDate"
-                    className={"form-input"}
-                    type="text"
-                    value={formData.startDate}
-                    onChange={handleInputChange}
-                    onClick={() => setIsStartDatePickerOpen((prev) => !prev)}
-                    readOnly={true}
-                />
-                  <DatePicker
-                      isOpen={isStartDatePickerOpen}
-                      currentDate={formData.startDate}
-                      setIsOpenAction={setIsStartDatePickerOpen}
-                      setDateAction={(newDate) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            startDate: dayjs(newDate).format("YYYY-MM-DD"),
-                          }))
-                      }
-                  />
-              </div>
-              <div className="py-1">
-                <h3 className="text-md my-2 font-medium">Data końcowa</h3>
-                <input
-                    name="endDate"
-                    className={"form-input"}
-                    type="text"
-                    value={formData.endDate}
-                    onChange={handleInputChange}
-                    onClick={() => setIsEndDatePickerOpen((prev) => !prev)}
-                    readOnly={true}
-                />
-                  <DatePicker
-                      isOpen={isEndDatePickerOpen}
-                      currentDate={formData.endDate}
-                      setIsOpenAction={setIsEndDatePickerOpen}
-                      setDateAction={(newDate) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            endDate: dayjs(newDate).format("YYYY-MM-DD"),
-                          }))
-                      }
-                  />
-              </div>
-            </>
-        ) : (
+          <>
             <div className="py-1">
-              <h3 className="text-md my-2 font-medium">Data</h3>
+              <h3 className="text-md my-2 font-medium">Data początkowa</h3>
               <input
-                  name="date"
-                  className={"form-input"}
-                  type="text"
-                  value={formData.date}
-                  onChange={handleInputChange}
-                  onClick={() => setIsStartDatePickerOpen((prev) => !prev)}
-                  readOnly={true}
+                name="startDate"
+                className={"form-input"}
+                type="text"
+                value={formData.startDate}
+                onChange={handleInputChange}
+                onClick={() => setIsStartDatePickerOpen((prev) => !prev)}
+                readOnly={true}
               />
               <DatePicker
-                  isOpen={isStartDatePickerOpen}
-                  currentDate={formData.date}
-                  setIsOpenAction={setIsStartDatePickerOpen}
-                  setDateAction={(newDate) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        date: dayjs(newDate).format("YYYY-MM-DD"),
-                      }))
-                  }
+                isOpen={isStartDatePickerOpen}
+                currentDate={formData.startDate}
+                setIsOpenAction={setIsStartDatePickerOpen}
+                setDateAction={(newDate) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    startDate: dayjs(newDate).format("YYYY-MM-DD"),
+                  }))
+                }
               />
             </div>
+            <div className="py-1">
+              <h3 className="text-md my-2 font-medium">Data końcowa</h3>
+              <input
+                name="endDate"
+                className={"form-input"}
+                type="text"
+                value={formData.endDate}
+                onChange={handleInputChange}
+                onClick={() => setIsEndDatePickerOpen((prev) => !prev)}
+                readOnly={true}
+              />
+              <DatePicker
+                isOpen={isEndDatePickerOpen}
+                currentDate={formData.endDate}
+                setIsOpenAction={setIsEndDatePickerOpen}
+                setDateAction={(newDate) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    endDate: dayjs(newDate).format("YYYY-MM-DD"),
+                  }))
+                }
+              />
+            </div>
+          </>
+        ) : (
+          <div className="py-1">
+            <h3 className="text-md my-2 font-medium">Data</h3>
+            <input
+              name="date"
+              className={"form-input"}
+              type="text"
+              value={formData.date}
+              onChange={handleInputChange}
+              onClick={() => setIsStartDatePickerOpen((prev) => !prev)}
+              readOnly={true}
+            />
+            <DatePicker
+              isOpen={isStartDatePickerOpen}
+              currentDate={formData.date}
+              setIsOpenAction={setIsStartDatePickerOpen}
+              setDateAction={(newDate) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  date: dayjs(newDate).format("YYYY-MM-DD"),
+                }))
+              }
+            />
+          </div>
         )}
 
         {/* Income and expense radio's */}

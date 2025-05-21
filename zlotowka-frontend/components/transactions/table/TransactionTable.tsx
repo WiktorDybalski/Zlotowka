@@ -1,16 +1,15 @@
 "use client";
 
 import LoadingSpinner from "@/components/general/LoadingSpinner";
-import {
-  useTransactionService,
-} from "@/services/TransactionService";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTransactionService } from "@/services/TransactionService";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import EditTransactionButton from "./EditTransactionButton";
 import DeleteTransactionButton from "./DeleteTransactionButton";
 import EditTransaction from "../EditTransaction";
-import {OneTimeTransaction} from "@/interfaces/transactions/TransactionsData";
+import { OneTimeTransaction } from "@/interfaces/transactions/TransactionsData";
+import { useQueryWithToast } from "@/lib/data-grabbers";
 
 // Nowy grid: 4 kolumny: Data, Nazwa, Kwota, Opis
 const grid = "grid grid-cols-[10%_10%_30%_1fr] gap-4";
@@ -24,20 +23,10 @@ export function TransactionTable() {
   const TransactionService = useTransactionService();
   const queryClient = useQueryClient();
 
-  const {
-    data: transactionList,
-    // isError: isTransactionListError,
-    // error: transactionListError,
-  } = useQuery<OneTimeTransaction[]>({
+  const { data: transactionList } = useQueryWithToast<OneTimeTransaction[]>({
     queryKey: ["transaction", "getTransactions"],
     queryFn: TransactionService.getTransactions,
   });
-
-  // if (isTransactionListError) {
-  //   toast.error(
-  //     `Nie udało się pobrać transakcji: ${transactionListError.message}`
-  //   );
-  // }
 
   const magicTransactionDelete = useMutation({
     mutationFn: async (transactionId: number) => {
