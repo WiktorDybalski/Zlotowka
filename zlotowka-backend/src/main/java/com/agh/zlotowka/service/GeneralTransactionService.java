@@ -21,7 +21,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -34,6 +33,7 @@ public class GeneralTransactionService {
     private final ScheduledTransactionService scheduledTransactionService;
     private final UserRepository userRepository;
     private final CurrencyService currencyService;
+    private final PeriodService periodService;
 
     @Scheduled(cron = "00 01 00 * * ?")
     public void addRecurringTransactions() {
@@ -238,13 +238,13 @@ public class GeneralTransactionService {
         return new RevenuesAndExpensesResponse(revenue, expenses, userCurrency);
     }
 
-    public MonthlySummaryDto getMonthlySummary(Integer userId) {
+    public MonthlySummaryDTO getMonthlySummary(Integer userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
         LocalDate startDate = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth());
 
         BigDecimal monthlyIncome = oneTimeTransactionRepository.getMonthlyIncomeByUser(userId, startDate);
         BigDecimal monthlyExpenses = oneTimeTransactionRepository.getMonthlyExpensesByUser(userId, startDate);
-        return new MonthlySummaryDto(monthlyIncome, monthlyExpenses, monthlyIncome.subtract(monthlyExpenses), user.getCurrency().getIsoCode());
+        return new MonthlySummaryDTO(monthlyIncome, monthlyExpenses, monthlyIncome.subtract(monthlyExpenses), user.getCurrency().getIsoCode());
     }
 
     public BigDecimal getCurrentBalance(Integer userId) {
@@ -281,8 +281,8 @@ public class GeneralTransactionService {
 
         return Stream.concat(
                         oneTimeTransactions.stream().map(this::mapOneTimeTransaction),
-                        recurringTransactions.stream().flatMap(r -> generateRecurringTransactionInstances(r, endDate).stream())
-                ).sorted(Comparator.comparing(TransactionDTO::date))
+                        recurringTransactions.stream().flatMap(r -> generateRecurringTransactionInstances(r, startDate, endDate).stream())
+                ).sorted(Comparator.comparing(TransactionDTO::getDate))
                 .toList();
     }
 
@@ -296,28 +296,32 @@ public class GeneralTransactionService {
                 t.getIsIncome(),
                 t.getDate(),
                 t.getDescription(),
-                PeriodEnum.ONCE
+                periodService.getPeriod(PeriodEnum.ONCE)
         );
     }
 
-    private List<TransactionDTO> generateRecurringTransactionInstances(RecurringTransaction recurringTransaction, LocalDate endDate) {
+    private List<TransactionDTO> generateRecurringTransactionInstances(RecurringTransaction recurringTransaction, LocalDate startDate, LocalDate endDate) {
         List<TransactionDTO> list = new ArrayList<>();
         PeriodEnum period = recurringTransaction.getInterval();
         LocalDate nextDate = recurringTransaction.getNextPaymentDate();
 
-        while (!nextDate.isAfter(endDate) && !nextDate.isAfter(recurringTransaction.getFinalPaymentDate())) {
-            list.add(new TransactionDTO(
-                    recurringTransaction.getTransactionId(),
-                    recurringTransaction.getUser().getUserId(),
-                    recurringTransaction.getName(),
-                    recurringTransaction.getAmount(),
-                    recurringTransaction.getCurrency(),
-                    recurringTransaction.getIsIncome(),
-                    nextDate,
-                    recurringTransaction.getDescription(),
-                    period
-            ));
-            nextDate = period.addToDate(nextDate, recurringTransaction.getFirstPaymentDate());
+        if (!nextDate.isBefore(startDate) && !nextDate.isAfter(endDate) && !nextDate.isAfter(recurringTransaction.getFinalPaymentDate())) {
+            list.add(
+                    PeriodTransactionDTO.builder()
+                            .transactionId(recurringTransaction.getTransactionId())
+                            .userId(recurringTransaction.getUser().getUserId())
+                            .name(recurringTransaction.getName())
+                            .amount(recurringTransaction.getAmount())
+                            .currency(recurringTransaction.getCurrency())
+                            .isIncome(recurringTransaction.getIsIncome())
+                            .date(nextDate)
+                            .description(recurringTransaction.getDescription())
+                            .period(periodService.getPeriod(period))
+                            .firstPaymentDate(recurringTransaction.getFirstPaymentDate())
+                            .nextPaymentDate(nextDate)
+                            .finalPaymentDate(recurringTransaction.getFinalPaymentDate())
+                            .build()
+            );
         }
         return list;
     }
