@@ -7,6 +7,7 @@ import sendToBackend, {
 } from "@/lib/sendToBackend";
 import {
   EdittedOneTimeTransactionReq,
+  EdittedRecurringTransactionReq,
   NewRecurringTransactionReq,
   OneTimeTransaction,
   PaginatedTransactionsResponse,
@@ -29,7 +30,7 @@ export function useTransactionService() {
     );
   }
 
-  async function getTransactions(): Promise<Array<OneTimeTransaction>> {
+  async function getTransactions(): Promise<PaginatedTransactionsResponse> {
     return await sendToBackend(
       `general-transactions/all/${userId}`,
       withAuthHeader,
@@ -48,7 +49,7 @@ export function useTransactionService() {
     );
   }
 
-  async function createNewTransaction(
+  async function createNewOneTimeTransaction(
     transaction: TransactionData
   ): Promise<OneTimeTransaction> {
     const req = {
@@ -85,7 +86,6 @@ export function useTransactionService() {
       interval: transaction.frequency.code,
       description: transaction.description,
     };
-    console.log(recurringReq);
 
     return await sendToBackend(
       `recurring-transaction`,
@@ -98,7 +98,7 @@ export function useTransactionService() {
     );
   }
 
-  async function deleteTransaction(id: number): Promise<void> {
+  async function deleteOneTimeTransaction(id: number): Promise<void> {
     await sendToBackendWithoutReturningJson(
       `onetime-transaction/${id}`,
       {
@@ -109,7 +109,18 @@ export function useTransactionService() {
     );
   }
 
-  async function editTransaction(
+  async function deleteRecurringTransaction(id: number): Promise<void> {
+    await sendToBackendWithoutReturningJson(
+      `recurring-transaction/${id}`,
+      {
+        ...withAuthHeader,
+        method: "DELETE",
+      },
+      "Nie udało się usunąć transakcji cyklicznej"
+    );
+  }
+
+  async function editOneTimeTransaction(
     transaction: EdittedOneTimeTransactionReq
   ): Promise<OneTimeTransaction> {
     const req = {
@@ -132,13 +143,40 @@ export function useTransactionService() {
     );
   }
 
+  async function editRecurringTransaction(
+    transaction: TransactionData
+  ): Promise<EdittedRecurringTransactionReq> {
+    const req: NewRecurringTransactionReq = {
+      userId: userId,
+      name: transaction.name,
+      amount: transaction.amount,
+      currencyId: transaction.currency.currencyId,
+      isIncome: transaction.isIncome,
+      firstPaymentDate: transaction.startDate,
+      lastPaymentDate: transaction.endDate,
+      interval: transaction.frequency.code,
+      description: transaction.description,
+    };
+    return await sendToBackend(
+      `recurring-transaction/${transaction.transactionId}`,
+      {
+        ...withAuthHeader,
+        method: "PUT",
+        body: JSON.stringify(req),
+      },
+      "Nie udało się edytować transakcji cyklicznej"
+    );
+  }
+
   return {
     getTransactions,
     getTransactionsFromRange,
-    createNewTransaction,
+    createNewOneTimeTransaction,
     createNewRecurringTransaction,
-    deleteTransaction,
-    editTransaction,
+    deleteOneTimeTransaction,
+    deleteRecurringTransaction,
+    editOneTimeTransaction,
+    editRecurringTransaction,
     getPeriods,
   };
 }

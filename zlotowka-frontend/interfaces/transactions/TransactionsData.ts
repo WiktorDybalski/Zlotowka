@@ -1,7 +1,7 @@
-import {Currency} from "@/services/CurrencyController";
+import { Currency } from "@/services/CurrencyController";
 
 export interface TransactionData {
-  transactionId?: number,
+  transactionId?: number;
   name: string;
   amount: number;
   currency: {
@@ -43,7 +43,7 @@ export interface OneTimeTransaction extends NewOneTimeTransactionReq {
 }
 
 export interface PaginatedTransactionsResponse {
-  transactions: OneTimeTransaction[];
+  transactions: DisplayedGeneralTransaction[];
   total: number;
   page: number;
   totalPages: number;
@@ -57,3 +57,17 @@ export interface Period {
   code: string;
   name: string;
 }
+
+export interface DisplayedGeneralTransaction {
+  transactionId: number;
+  userId: number;
+  name: string;
+  amount: number;
+  currency: Currency;
+  isIncome: boolean;
+  date: string; // ISO date string
+  description: string;
+  period: "ONCE" | "RECURRING";
+}
+
+export type EdittedRecurringTransactionReq = NewRecurringTransactionReq;

@@ -14,7 +14,14 @@ import { useQueryWithToast } from "@/lib/data-grabbers";
 // Nowy grid: 4 kolumny: Data, Nazwa, Kwota, Opis
 const grid = "grid grid-cols-[10%_10%_30%_1fr] gap-4";
 
-export function TransactionTable() {
+interface TransactionTableProps {
+  dateRange?: {
+    startDate: string;
+    endDate: string;
+  };
+}
+
+export function TransactionTable({ dateRange }: TransactionTableProps) {
   const [showEditTransaction, setShowEditTransaction] =
     useState<boolean>(false);
   const [transactionForEdit, setTransactionForEdit] =
@@ -23,14 +30,31 @@ export function TransactionTable() {
   const TransactionService = useTransactionService();
   const queryClient = useQueryClient();
 
-  const { data: transactionList } = useQueryWithToast<OneTimeTransaction[]>({
-    queryKey: ["transaction", "getTransactions"],
-    queryFn: TransactionService.getTransactions,
+  const { data } = useQueryWithToast({
+    queryKey: ["transaction", "getTransactions", JSON.stringify(dateRange)],
+    queryFn: () => {
+      return dateRange
+        ? TransactionService.getTransactionsFromRange(
+            dateRange.startDate,
+            dateRange.endDate
+          )
+        : TransactionService.getTransactions();
+    },
   });
 
+  const transactionList = data?.transactions;
+
   const magicTransactionDelete = useMutation({
-    mutationFn: async (transactionId: number) => {
-      const res = TransactionService.deleteTransaction(transactionId);
+    mutationFn: async ({
+      transactionId,
+      isRecursive,
+    }: {
+      transactionId: number;
+      isRecursive: boolean;
+    }) => {
+      const res = isRecursive
+        ? TransactionService.deleteRecurringTransaction(transactionId)
+        : TransactionService.deleteOneTimeTransaction(transactionId);
       toast.promise(res, {
         loading: "Usuwanie transakcji...",
         success: "Transakcja usunięta pomyślnie!",
@@ -96,9 +120,11 @@ export function TransactionTable() {
                       />
                       <DeleteTransactionButton
                         onClick={() =>
-                          magicTransactionDelete.mutate(
-                            transaction.transactionId
-                          )
+                          magicTransactionDelete.mutate({
+                            transactionId: transaction.transactionId,
+                            isRecursive:
+                              transaction.period === "ONCE" ? false : true,
+                          })
                         }
                       />
                     </div>

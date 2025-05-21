@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import * as React from "react";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useDashboardService } from "@/services/DashboardService";
 import DarkButton from "@/components/DarkButton";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
@@ -18,7 +18,7 @@ import { MainChartConfig } from "@/components/dashboard/charts/chartsConfig";
 import { useDreamsService } from "@/services/DreamsService";
 import { ReferenceLine } from "recharts";
 import { getRoundedDomain } from "@/lib/utils";
-import { MainChartContext } from "@/components/dashboard/components/MainChartContext";
+import { useMainChartContext } from "@/components/providers/MainChartContext";
 import MainChartPopup from "@/components/dashboard/components/MainChartPopup";
 import { useQueryWithToast } from "@/lib/data-grabbers";
 
@@ -29,7 +29,7 @@ export function MainChart() {
     right: 0,
   });
   const { startDate, endDate, showDreams, showSubDreams } =
-    useContext(MainChartContext);
+    useMainChartContext();
   const DashboardService = useDashboardService();
   const TransactionService = useTransactionService();
   const DreamsService = useDreamsService();

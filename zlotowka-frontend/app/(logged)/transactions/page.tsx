@@ -1,7 +1,9 @@
 "use client";
 
 import DarkButton from "@/components/DarkButton";
+import GenericCard from "@/components/dashboard/cards/generic/GenericCard";
 import AddTransaction from "@/components/transactions/AddTransaction";
+import { TransactionTable } from "@/components/transactions/table/TransactionTable";
 import { useState } from "react";
 
 export default function TransactionsPage() {
@@ -17,9 +19,9 @@ export default function TransactionsPage() {
           Twoje transakcje
         </h2>
         <div className="w-full h-[70vh] mt-10 overflow-hidden">
-          {/*<GenericCard>*/}
-          {/*  <TransactionTable />*/}
-          {/*</GenericCard>*/}
+          <GenericCard>
+            <TransactionTable />
+          </GenericCard>
         </div>
 
         <div className="w-full sm:w-52 h-10 mt-10">
