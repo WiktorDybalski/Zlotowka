@@ -71,3 +71,17 @@ export interface DisplayedGeneralTransaction {
 }
 
 export type EdittedRecurringTransactionReq = NewRecurringTransactionReq;
+
+export interface RecurringTransaction extends NewRecurringTransactionReq {
+  transactionId: number;
+  userId: number;
+  name: string;
+  amount: number;
+  currency: Currency;
+  isIncome: boolean;
+  firstPaymentDate: string; // ISO date string
+  nextPaymentDate: string; // ISO date string
+  finalPaymentDate: string; // ISO date string
+  interval: string;
+  description: string;
+}

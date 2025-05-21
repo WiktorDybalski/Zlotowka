@@ -36,12 +36,13 @@ const defaultTransactionData: TransactionData = {
 };
 
 export default function TransactionForm({
-  transaction,
+  transaction = undefined,
   onCloseAction,
   header,
   submitButtonText,
   submitButtonIcon,
   onSubmitAction,
+  onDeleteAction = undefined,
 }: TransactionFormProps) {
   const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
@@ -154,6 +155,11 @@ export default function TransactionForm({
     }
     onCloseAction();
     onSubmitAction(formData);
+  };
+
+  const handleDelete = () => {
+    onCloseAction();
+    onDeleteAction?.();
   };
 
   return (
@@ -341,6 +347,16 @@ export default function TransactionForm({
         >
           {submitButtonText}
         </ConfirmButton>
+        {onDeleteAction && (
+          <ConfirmButton
+            icon="delete"
+            variant="dark"
+            className="mt-2 bg-red-500 hover:bg-red-600"
+            onClick={handleDelete}
+          >
+            Usuń
+          </ConfirmButton>
+        )}
       </div>
     </GenericPopup>
   );

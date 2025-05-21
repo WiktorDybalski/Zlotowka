@@ -12,6 +12,7 @@ import {
   OneTimeTransaction,
   PaginatedTransactionsResponse,
   Period,
+  RecurringTransaction,
   TransactionData,
 } from "@/interfaces/transactions/TransactionsData";
 
@@ -46,6 +47,16 @@ export function useTransactionService() {
       `general-transactions/all/${userId}?startDate=${startDate}&endDate=${endDate}&page=1&limit=1000`,
       withAuthHeader,
       "Nie udało się pobrać transakcji z podanego zakresu"
+    );
+  }
+
+  async function getRecurringTransaction(
+    transactionId: number
+  ): Promise<RecurringTransaction> {
+    return await sendToBackend(
+      `recurring-transaction/${transactionId}`,
+      withAuthHeader,
+      "Nie udało się pobrać informacji o transakcji rekurencyjnej"
     );
   }
 
@@ -178,5 +189,6 @@ export function useTransactionService() {
     editOneTimeTransaction,
     editRecurringTransaction,
     getPeriods,
+    getRecurringTransaction,
   };
 }

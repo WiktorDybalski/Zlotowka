@@ -1,11 +1,14 @@
-import {OneTimeTransaction, TransactionData} from "@/interfaces/transactions/TransactionsData";
+import {
+  DisplayedGeneralTransaction,
+  TransactionData,
+} from "@/interfaces/transactions/TransactionsData";
 
 export interface AddTransactionProps {
   setShowAddTransaction: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export interface EditTransactionProps {
-  transaction: OneTimeTransaction;
+  transaction: DisplayedGeneralTransaction;
   setShowEditTransaction: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -16,4 +19,5 @@ export interface TransactionFormProps {
   header: string;
   submitButtonText: string;
   submitButtonIcon: string;
+  onDeleteAction?: () => void | undefined;
 }

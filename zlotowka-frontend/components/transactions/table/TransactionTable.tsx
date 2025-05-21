@@ -2,17 +2,15 @@
 
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import { useTransactionService } from "@/services/TransactionService";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import toast from "react-hot-toast";
 import EditTransactionButton from "./EditTransactionButton";
-import DeleteTransactionButton from "./DeleteTransactionButton";
 import EditTransaction from "../EditTransaction";
-import { OneTimeTransaction } from "@/interfaces/transactions/TransactionsData";
+import { DisplayedGeneralTransaction } from "@/interfaces/transactions/TransactionsData";
 import { useQueryWithToast } from "@/lib/data-grabbers";
+import dayjs from "dayjs";
 
 // Nowy grid: 4 kolumny: Data, Nazwa, Kwota, Opis
-const grid = "grid grid-cols-[10%_10%_30%_1fr] gap-4";
+const grid = "grid grid-cols-[12%_12%_30%_1fr] gap-4";
 
 interface TransactionTableProps {
   dateRange?: {
@@ -25,10 +23,9 @@ export function TransactionTable({ dateRange }: TransactionTableProps) {
   const [showEditTransaction, setShowEditTransaction] =
     useState<boolean>(false);
   const [transactionForEdit, setTransactionForEdit] =
-    useState<OneTimeTransaction | null>(null);
+    useState<DisplayedGeneralTransaction | null>(null);
 
   const TransactionService = useTransactionService();
-  const queryClient = useQueryClient();
 
   const { data } = useQueryWithToast({
     queryKey: ["transaction", "getTransactions", JSON.stringify(dateRange)],
@@ -43,32 +40,7 @@ export function TransactionTable({ dateRange }: TransactionTableProps) {
   });
 
   const transactionList = data?.transactions;
-
-  const magicTransactionDelete = useMutation({
-    mutationFn: async ({
-      transactionId,
-      isRecursive,
-    }: {
-      transactionId: number;
-      isRecursive: boolean;
-    }) => {
-      const res = isRecursive
-        ? TransactionService.deleteRecurringTransaction(transactionId)
-        : TransactionService.deleteOneTimeTransaction(transactionId);
-      toast.promise(res, {
-        loading: "Usuwanie transakcji...",
-        success: "Transakcja usunięta pomyślnie!",
-        error: (error) =>
-          `Wystąpił błąd podczas usuwania transakcji: ${error.message}`,
-      });
-      return await res;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transaction"] });
-      queryClient.invalidateQueries({ queryKey: ["cardService"] }); //on dashboard
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] }); //on dashboard
-    },
-  });
+  const today = dayjs();
 
   return (
     <>
@@ -95,12 +67,18 @@ export function TransactionTable({ dateRange }: TransactionTableProps) {
                   key={idx}
                   className={`${grid} py-2 border-b last:border-0`}
                 >
-                  <div>{transaction.date}</div>
+                  <div>
+                    {dayjs(transaction.date).isBefore(today, "day") ? (
+                      <del>{transaction.date}</del>
+                    ) : (
+                      transaction.date
+                    )}
+                  </div>
                   <div>
                     <span
                       className={
                         transaction.isIncome
-                          ? "bg-green-200 px-2 pb-1 rounded"
+                          ? "bg-green-200 px-3 py-1 rounded"
                           : "bg-red-200 px-2 pb-1 rounded"
                       }
                     >
@@ -108,24 +86,23 @@ export function TransactionTable({ dateRange }: TransactionTableProps) {
                       {transaction.amount} {transaction.currency.isoCode}
                     </span>
                   </div>
-                  <div>{transaction.name}</div>
+                  <div>
+                    {transaction.period != "ONCE" ? (
+                      <span className="bg-blue-200 px-3 py-1 rounded">
+                        {`↻ ${transaction.name}`}
+                      </span>
+                    ) : (
+                      transaction.name
+                    )}
+                  </div>
                   <div className=" w-full flex items-center justify-between ">
                     <span>{transaction.description}</span>
-                    <div className="flex items-center gap-2 md:pr-5">
+                    <div className="md:pr-2">
                       <EditTransactionButton
                         onClick={() => {
                           setTransactionForEdit(transaction);
                           setShowEditTransaction(true);
                         }}
-                      />
-                      <DeleteTransactionButton
-                        onClick={() =>
-                          magicTransactionDelete.mutate({
-                            transactionId: transaction.transactionId,
-                            isRecursive:
-                              transaction.period === "ONCE" ? false : true,
-                          })
-                        }
                       />
                     </div>
                   </div>
