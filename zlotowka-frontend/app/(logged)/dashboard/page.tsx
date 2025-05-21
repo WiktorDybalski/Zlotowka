@@ -16,8 +16,8 @@ import {
 } from "@/interfaces/dashboard/cards/CardComponents";
 import NextExpenseCard from "@/components/dashboard/cards/NextExpenseCard";
 import NextIncomeCard from "@/components/dashboard/cards/NextIncomeCard";
-import MainChartProvider from "@/components/dashboard/charts/MainChartContext";
 import {DreamProvider} from "@/components/dreams/DreamsContext";
+import MainChartProvider from "@/components/dashboard/components/MainChartContext";
 
 export default function Dashboard() {
   const [showAddTransaction, setShowAddTransaction] = useState(false);

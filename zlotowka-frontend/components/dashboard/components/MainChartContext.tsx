@@ -10,14 +10,22 @@ export const MainChartContext = createContext<MainChartContextType>({
   showDreams: false,
   setShowDreams: () => {},
   showSubDreams: false,
-  setShowSubDreams: () => {}
+  setShowSubDreams: () => {},
+  equalDates: false,
+  setEqualDates: () => {}
 });
 
 export default function MainChartProvider({ children }: { children: ReactNode }) {
   const [startDate, setStartDate] = useState<Dayjs>(dayjs().subtract(30, "day"));
   const [endDate, setEndDate] = useState<Dayjs>(dayjs());
+
   const [showDreams, setShowDreams] = useState<boolean>(() => {
     const storedValue = localStorage.getItem('showDreams');
+    return storedValue ? JSON.parse(storedValue) : false;
+  });
+
+  const [equalDates, setEqualDates] = useState<boolean>(() => {
+    const storedValue = localStorage.getItem('equalDates');
     return storedValue ? JSON.parse(storedValue) : false;
   });
 
@@ -29,7 +37,8 @@ export default function MainChartProvider({ children }: { children: ReactNode })
   useEffect(() => {
     localStorage.setItem('showDreams', JSON.stringify(showDreams));
     localStorage.setItem('showSubDreams', JSON.stringify(showSubDreams));
-  }, [showDreams, showSubDreams]);
+    localStorage.setItem('equalDates', JSON.stringify(equalDates));
+  }, [showDreams, showSubDreams, equalDates]);
 
   return (
       <MainChartContext.Provider
@@ -42,6 +51,8 @@ export default function MainChartProvider({ children }: { children: ReactNode })
             setShowDreams,
             showSubDreams,
             setShowSubDreams,
+            equalDates,
+            setEqualDates
           }}
       >
         {children}

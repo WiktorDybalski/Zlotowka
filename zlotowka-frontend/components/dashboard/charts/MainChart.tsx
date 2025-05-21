@@ -14,17 +14,17 @@ import * as React from "react";
 import {useContext, useEffect, useState} from "react";
 import { useDashboardService } from "@/services/DashboardService";
 import DarkButton from "@/components/DarkButton";
-import MainChartPopup from "@/components/dashboard/charts/MainChartPopup";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import toast from "react-hot-toast";
 import { useQuery } from "@tanstack/react-query";
 import {useTransactionService} from "@/services/TransactionService";
 import CustomChartTooltip from "@/components/dashboard/charts/CustomTooltip";
-import {MainChartContext} from "@/components/dashboard/charts/MainChartContext";
 import {MainChartConfig} from "@/components/dashboard/charts/chartsConfig";
 import {useDreamsService} from "@/services/DreamsService";
 import { ReferenceLine } from "recharts";
 import {getRoundedDomain} from "@/lib/utils";
+import {MainChartContext} from "@/components/dashboard/components/MainChartContext";
+import MainChartPopup from "@/components/dashboard/components/MainChartPopup";
 
 export function MainChart() {
   const [showMainChartPopup, setShowMainChartPopup] = useState<boolean>(false);

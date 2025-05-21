@@ -16,9 +16,6 @@ import { useCurrencyService } from "@/services/CurrencyController";
 import toast from "react-hot-toast";
 import {useTransactionService} from "@/services/TransactionService";
 
-const inputClass =
-  "border-[1px] border-neutral-300 rounded-[5px] px-4 py-2 text-md w-full lg:min-w-76 ";
-
 const defaultTransactionData: TransactionData = {
   name: "",
   amount: 0,
@@ -166,7 +163,7 @@ export default function TransactionForm({
           <h3 className="text-md my-2 font-medium">Nazwa</h3>
           <input
             name="name"
-            className={inputClass}
+            className={"form-input"}
             type="text"
             placeholder="Zakupy spożywcze"
             value={formData.name}
@@ -178,7 +175,7 @@ export default function TransactionForm({
           <h3 className="text-md my-2 font-medium">Opis</h3>
           <input
             name="description"
-            className={inputClass}
+            className={"form-input"}
             type="text"
             placeholder="Kilogram ziemniaków"
             value={formData.description}
@@ -193,7 +190,7 @@ export default function TransactionForm({
               name="frequency"
               value={formData.frequency.name}
               onChange={handleInputChange}
-              className={inputClass + " bg-background"}
+              className={"form-input" + " bg-background"}
           >
             {isPeriodListReady && periodList.length > 0 ? (
                 periodList.map((period: Period) => (
@@ -212,7 +209,7 @@ export default function TransactionForm({
                 <h3 className="text-md my-2 font-medium">Data początkowa</h3>
                 <input
                     name="startDate"
-                    className={inputClass}
+                    className={"form-input"}
                     type="text"
                     value={formData.startDate}
                     onChange={handleInputChange}
@@ -235,7 +232,7 @@ export default function TransactionForm({
                 <h3 className="text-md my-2 font-medium">Data końcowa</h3>
                 <input
                     name="endDate"
-                    className={inputClass}
+                    className={"form-input"}
                     type="text"
                     value={formData.endDate}
                     onChange={handleInputChange}
@@ -260,7 +257,7 @@ export default function TransactionForm({
               <h3 className="text-md my-2 font-medium">Data</h3>
               <input
                   name="date"
-                  className={inputClass}
+                  className={"form-input"}
                   type="text"
                   value={formData.date}
                   onChange={handleInputChange}
