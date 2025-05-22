@@ -34,7 +34,7 @@ export function MainChart() {
   const TransactionService = useTransactionService();
   const DreamsService = useDreamsService();
 
-  const { data: chartData, isLoading } = useQueryWithToast({
+  const { data: rawChartData, isLoading } = useQueryWithToast({
     queryKey: [
       "dashboard",
       "mainChartData",
@@ -47,6 +47,11 @@ export function MainChart() {
         endDate.format("YYYY-MM-DD")
       ),
   });
+
+  const chartData = rawChartData?.map((item) => ({
+    ...item,
+    date: new Date(item.date).getTime(),
+  })) || [];
 
   useEffect(() => {
     const updatePadding = () => {
@@ -129,19 +134,21 @@ export function MainChart() {
             >
               <CartesianGrid vertical={false} />
               <XAxis
-                dataKey="date"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                tickFormatter={(value) =>
-                  new Date(value).toLocaleDateString("pl-PL", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "2-digit",
-                  })
-                }
-                className="font-lato"
-                padding={padding}
+                  dataKey="date"
+                  type="number"
+                  domain={['dataMin', 'dataMax']}
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tickFormatter={(value) =>
+                      new Date(value).toLocaleDateString("pl-PL", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "2-digit",
+                      })
+                  }
+                  className="font-lato"
+                  padding={padding}
               />
               <YAxis
                 axisLine={false}
