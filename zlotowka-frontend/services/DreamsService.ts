@@ -112,6 +112,18 @@ export function useDreamsService() {
     );
   }
 
+  async function modifyDream(dream: NewDreamReq, dreamId: number) {
+    return await sendToBackend(
+      `plan/${dreamId}`,
+      {
+        ...withAuthHeader,
+        method: "PUT",
+        body: JSON.stringify({ ...dream, userId: userId }),
+      },
+      "Nie udało się zmodyfikować marzenia"
+    );
+  }
+
   async function completeDream(dreamId: number) {
     return await sendToBackend(
       `plan/complete/${dreamId}`,
@@ -168,6 +180,21 @@ export function useDreamsService() {
     );
   }
 
+  async function modifySubDream(
+    subDream: NewSubDreamReq,
+    subDreamId: number
+  ): Promise<SubDream> {
+    return await sendToBackend(
+      `subplan/${subDreamId}`,
+      {
+        ...withAuthHeader,
+        method: "PUT",
+        body: JSON.stringify({ ...subDream, userId: userId }),
+      },
+      "Nie udało się zmodyfikować subplanu"
+    );
+  }
+
   return {
     getAllDreams,
     getChartDreamsData,
@@ -178,5 +205,7 @@ export function useDreamsService() {
     completeSubDream,
     deleteSubDream,
     addDream,
+    modifyDream,
+    modifySubDream,
   };
 }

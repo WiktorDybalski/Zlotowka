@@ -1,14 +1,16 @@
 "use client";
 
 import DarkButton from "@/components/DarkButton";
-import AddSubDreamComponentPopup, {
-  DreamComponentData,
-} from "@/components/dreams/AddSubDreamPopUp";
+import AddSubDreamComponentPopup from "@/components/dreams/AddSubDreamPopUp";
 import SubDreamCard from "@/components/dreams/SubDreamCard";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import { ProgressBar } from "@/components/general/ProgressBar";
 import routes from "@/routes";
-import { NewSubDreamReq, useDreamsService } from "@/services/DreamsService";
+import {
+  NewSubDreamReq,
+  SubDream,
+  useDreamsService,
+} from "@/services/DreamsService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -26,8 +28,7 @@ export default function DreamDetailsPage() {
   const [showAddSubDreamPopup, setShowAddSubDreamPopup] = useState(false);
 
   const [showEditSubDreamPopup, setShowEditSubDreamPopup] = useState(false);
-  const [subDreamForEdit, setSubDreamForEdit] =
-    useState<DreamComponentData | null>(null);
+  const [subDreamForEdit, setSubDreamForEdit] = useState<SubDream | null>(null);
 
   const [showEditDreamPopup, setShowEditDreamPopup] = useState(false);
 
@@ -141,6 +142,51 @@ export default function DreamDetailsPage() {
     },
   });
 
+  const modifyDreamMutation = useMutation({
+    mutationFn: async (dream: NewSubDreamReq) => {
+      const res = DreamService.modifyDream(dream, numericPlanId);
+      toast.promise(res, {
+        loading: "Modyfikowanie marzenia...",
+        success: "Marzenie zmodyfikowane!",
+        error: (error) =>
+          `Wystąpił błąd podczas modyfikowania marzenia: ${error.message}`,
+      });
+      return await res;
+    },
+    onSuccess: () => {
+      // Invalidate queries to refetch data after mutation
+      queryClient.invalidateQueries({ queryKey: ["dreams"] });
+      queryClient.invalidateQueries({
+        queryKey: ["dreams", "getDreamById", planId],
+      });
+    },
+  });
+
+  const modifySubDreamMutation = useMutation({
+    mutationFn: async ({
+      subDream,
+      subDreamId,
+    }: {
+      subDream: NewSubDreamReq;
+      subDreamId: number;
+    }) => {
+      const res = DreamService.modifySubDream(subDream, subDreamId);
+      toast.promise(res, {
+        loading: "Modyfikowanie składowej marzenia...",
+        success: "Składowa marzenia zmodyfikowana!",
+        error: (error) =>
+          `Wystąpił błąd podczas modyfikowania składowej marzenia: ${error.message}`,
+      });
+      return await res;
+    },
+    onSuccess: () => {
+      // Invalidate queries to refetch data after mutation
+      queryClient.invalidateQueries({
+        queryKey: ["dreams", "getDreamById", planId],
+      });
+    },
+  });
+
   if (isLoading || !dream) {
     return (
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
@@ -173,7 +219,14 @@ export default function DreamDetailsPage() {
         <AddDreamComponentPopup //edit main dream
           onClose={() => setShowEditDreamPopup(false)}
           onSubmit={(data) => {
-            alert(JSON.stringify(data)); // TODO
+            modifyDreamMutation.mutate({
+              name: data.componentName,
+              description: data.description,
+              amount: data.amount,
+              currencyId: data.currency.currencyId,
+              planId: dream.planId,
+            });
+            setShowEditDreamPopup(false);
           }}
           providedDream={{
             componentName: dream.name,
@@ -189,12 +242,26 @@ export default function DreamDetailsPage() {
         <AddSubDreamComponentPopup //edit subdream
           onClose={() => setShowEditSubDreamPopup(false)}
           onSubmit={(data) => {
-            alert(JSON.stringify(data)); // TODO
+            modifySubDreamMutation.mutate({
+              subDream: {
+                name: data.componentName,
+                description: data.description,
+                amount: data.amount,
+                currencyId: data.currency.currencyId,
+                planId: dream.planId,
+              },
+              subDreamId: subDreamForEdit.subplanId,
+            });
           }}
           currency={dream.currency}
           windowTitle="Edytuj składową marzenia"
           submitButtonText="Zapisz"
-          providedSubDream={subDreamForEdit}
+          providedSubDream={{
+            componentName: subDreamForEdit.name,
+            description: subDreamForEdit.description,
+            amount: subDreamForEdit.amount,
+            currency: subDreamForEdit.currency,
+          }}
         />
       )}
       <div className="flex flex-col h-full overflow-x-hidden">
@@ -312,12 +379,7 @@ export default function DreamDetailsPage() {
                   deleteSubDreamMutation.mutate(subDream.subplanId);
                 }}
                 onEditClicked={() => {
-                  setSubDreamForEdit({
-                    componentName: subDream.name,
-                    description: subDream.description,
-                    amount: subDream.amount,
-                    currency: subDream.currency,
-                  });
+                  setSubDreamForEdit(subDream);
                   setShowEditSubDreamPopup(true);
                 }}
               />
