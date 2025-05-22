@@ -4,23 +4,20 @@ import DarkButton from "@/components/DarkButton";
 import AddDreamComponentPopup from "@/components/dreams/AddDreamPopUp";
 import DreamCard from "@/components/dreams/DreamCard";
 import { NewDreamReq, useDreamsService } from "@/services/DreamsService";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { useQueryWithToast } from "@/lib/data-grabbers";
 
 export default function Dreams() {
   const DreamService = useDreamsService();
   const queryClient = useQueryClient();
   const [showPopup, setShowPopup] = useState(false);
 
-  const { data, error } = useQuery({
+  const { data, error } = useQueryWithToast({
     queryKey: ["dreams", "getAllDreams"],
     queryFn: DreamService.getAllDreams,
   });
-
-  if (error) {
-    toast.error(`Nie udało się pobrać marzeń: ${error.message}`);
-  }
 
   const newDreamMutation = useMutation({
     mutationFn: async (dream: NewDreamReq) => {

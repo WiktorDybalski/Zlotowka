@@ -9,29 +9,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  ChartContainer,
-  ChartTooltip,
-} from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import { useDashboardService } from "@/services/DashboardService";
 import formatMoney from "@/utils/formatMoney";
-import toast from "react-hot-toast";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
-import { useQuery } from "@tanstack/react-query";
-import {PieChartConfig} from "@/components/dashboard/charts/chartsConfig";
+import { PieChartConfig } from "@/components/dashboard/charts/chartsConfig";
 import CustomLabel from "@/components/dashboard/charts/CustomLabel";
+import { useQueryWithToast } from "@/lib/data-grabbers";
 
 export function PieSideChart() {
   const DashboardService = useDashboardService();
 
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading } = useQueryWithToast({
     queryKey: ["dashboard", "getPieSideChartData"],
     queryFn: DashboardService.getPieSideChartData,
   });
-
-  if (isError) {
-    toast.error("Failed to fetch pie chart data: " + error.message);
-  }
 
   if (isLoading || !data) {
     return <LoadingSpinner />;
@@ -87,7 +79,9 @@ export function PieSideChart() {
                 stroke="#fa"
                 paddingAngle={4}
               >
-                <Label content={(props) => <CustomLabel {...props} total={total} />} />
+                <Label
+                  content={(props) => <CustomLabel {...props} total={total} />}
+                />
               </Pie>
             ) : (
               <text

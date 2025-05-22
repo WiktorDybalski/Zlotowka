@@ -38,7 +38,7 @@ export function useDashboardService() {
           endDate,
         }),
       },
-      "Failed to fetch main chart data"
+      "Nie udało się pobrać danych do wykresu"
     );
   }
 
@@ -46,7 +46,7 @@ export function useDashboardService() {
     return await sendToBackend(
       `general-transactions/monthly-summary/${userId}`,
       withAuthHeader,
-      "Failed to fetch pie side chart data"
+      "Nie udało się pobrać danych do wykresu kołowego"
     );
   }
 
