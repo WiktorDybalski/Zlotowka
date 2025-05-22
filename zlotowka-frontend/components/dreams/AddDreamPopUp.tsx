@@ -52,6 +52,13 @@ export default function AddDreamComponentPopup({
   ) => {
     const { name, value } = e.target;
     if (name === "amount") {
+      if (value === "") {
+        setFormData((prevState) => ({
+          ...prevState,
+          amount: 0,
+        }));
+        return;
+      }
       const valueWithDot = value.replace(",", ".");
       const parsedValue = parseFloat(valueWithDot);
       if (!Number.isNaN(parsedValue)) {
@@ -104,7 +111,7 @@ export default function AddDreamComponentPopup({
       onCloseAction={onClose}
       showConfirm={false}
     >
-      <>
+      <section className="min-w-[360px]">
         <div className="py-1">
           <h3 className="text-md my-2 font-medium">Nazwa marzenia</h3>
           <input
@@ -132,7 +139,7 @@ export default function AddDreamComponentPopup({
             name="amount"
             type="text"
             placeholder="Kwota"
-            value={formData.amount || ""}
+            value={formData.amount}
             onChange={handleInputChange}
             className="border border-neutral-300 rounded px-4 py-2 w-full font-lato"
           />
@@ -150,7 +157,7 @@ export default function AddDreamComponentPopup({
               ))}
             </select>
           ) : (
-            <LoadingSpinner />
+            <LoadingSpinner minH={10} size={5} />
           )}
         </div>
         <div className="mt-7">
@@ -158,9 +165,10 @@ export default function AddDreamComponentPopup({
             icon="add"
             text="Dodaj składową marzenia"
             onClick={handleSubmit}
+            disabled={!isCurrencyListReady}
           />
         </div>
-      </>
+      </section>
     </GenericPopup>
   );
 }

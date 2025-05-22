@@ -132,7 +132,11 @@ export default function DreamDetailsPage() {
   });
 
   if (isLoading || !dream) {
-    return <LoadingSpinner />; // Show a loading spinner while fetching data
+    return (
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   return (
@@ -155,12 +159,12 @@ export default function DreamDetailsPage() {
           currency={dream.currency}
         />
       )}
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full overflow-x-hidden">
         <header>
           <div className="flex flex-row items-center justify-between mb-5">
             <div className="flex items-center gap-x-2">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold">
-                {dream.name}
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold">
+                {`# ${dream.name}`}
               </h2>
               <span
                 className={`${
@@ -169,9 +173,18 @@ export default function DreamDetailsPage() {
                     : "material-symbols"
                 }`}
                 onClick={() => handlePickDream(dream.planId)}
+                style={{ fontSize: "2.5rem" }}
               >
                 keep
               </span>
+              {dream.completed && (
+                <span
+                  className="material-symbols "
+                  style={{ fontSize: "4rem" }}
+                >
+                  done
+                </span>
+              )}
             </div>
             <p className="font-lato text-xl mt-3 mb-2">
               <span>
@@ -191,64 +204,79 @@ export default function DreamDetailsPage() {
             </p>
           </div>
           <ProgressBar progress={dream.actualAmount / dream.amount} />
-          {dream.canBeCompleted && (
-            <p className="text-sm mt-6">Można wykonać!</p>
-          )}
-          {dream.completed && <p className="text-sm mt-1">Zrealizowano!</p>}
-          <p className="mt-5">Opis: {dream.description}</p>
-        </header>
-        <article className="flex-grow mt-5 w-full h-[70vh]  overflow-hidden">
-          <div className="overflow-y-auto h-full">
-            <h3 className="text-2xl font-bold mb-5">Składowe marzenia:</h3>
-            {dream.subplans.length === 0 && (
-              <p className="text-sm text-gray-500">
-                Marzenie nie ma składowych
-              </p>
+          <div className="flex flex-col gap-2 mt-3">
+            {dream.canBeCompleted && !dream.completed && (
+              <p className="text-sm">Można zrealizować!</p>
             )}
-            <div className="flex flex-col gap-5 ">
-              {dream.subplans.map((subDream) => (
-                <SubDreamCard
-                  key={subDream.subplanId}
-                  subdream={subDream}
-                  onCompleteClicked={() => {
-                    completeSubDreamMutation.mutate(subDream.subplanId);
-                  }}
-                  onDeleteClicked={() => {
-                    deleteSubDreamMutation.mutate(subDream.subplanId);
-                  }}
-                />
-              ))}
-            </div>
+            {dream.completed && (
+              <p className="text-sm">Marzenie zrealizowane!</p>
+            )}
+            <p>
+              <span className="font-extrabold">Opis:</span>{" "}
+              {dream.description ? dream.description : "Nie podano opisu"}
+            </p>
           </div>
-        </article>
-        <footer className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-5 mt-10">
-          <DarkButton
-            icon={"add"}
-            text={"Dodaj składową marzenia"}
-            onClick={() => {
-              setShowPopup(true);
-            }}
-            className="bg-green-500 hover:bg-green-600 text-white"
-          />
+        </header>
+
+        <footer className="grid grid-cols-1 md:grid-cols-4 sm:grid-cols-2 gap-x-10 gap-y-5 mt-10">
           <DarkButton
             icon={"check_circle_outline"}
-            text={"Zrealizuj marzenie"}
+            text={"Zrealizuj"}
             onClick={() => {
               completeDreamMutation.mutate({
                 dreamId: numericPlanId,
               });
             }}
-            className="bg-blue-500 hover:bg-blue-600 text-white"
+            className="bg-green-600 hover:bg-green-700 text-white"
+            disabled={!(dream.canBeCompleted && !dream.completed)}
+          />
+          <DarkButton
+            icon={"add"}
+            text={"Dodaj składową"}
+            onClick={() => {
+              setShowPopup(true);
+            }}
+            className="bg-lightAccentDark hover:bg-backgroundLightDark text-white"
+          />
+          <DarkButton
+            icon={"edit"}
+            text={"Edytuj"}
+            onClick={() => {
+              // setShowPopup(true);
+            }}
+            className="bg-lightAccentDark hover:bg-backgroundLightDark text-white"
           />
           <DarkButton
             icon={"delete_outline"}
-            text={"Usuń marzenie"}
+            text={"Usuń"}
             onClick={() => {
               deleteDreamMutation.mutate();
             }}
             className="bg-red-500 hover:bg-red-600 text-white"
           />
         </footer>
+
+        <article className="flex-grow mt-12 w-full">
+          <h3 className="text-3xl md:text-4xl font-bold">Składowe marzenia:</h3>
+          <hr className="mb-5 mt-2 border-gray-300" />
+          {dream.subplans.length === 0 && (
+            <p className="text-sm text-gray-500">Marzenie nie ma składowych</p>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2  gap-5">
+            {dream.subplans.map((subDream) => (
+              <SubDreamCard
+                key={subDream.subplanId}
+                subdream={subDream}
+                onCompleteClicked={() => {
+                  completeSubDreamMutation.mutate(subDream.subplanId);
+                }}
+                onDeleteClicked={() => {
+                  deleteSubDreamMutation.mutate(subDream.subplanId);
+                }}
+              />
+            ))}
+          </div>
+        </article>
       </div>
     </>
   );
