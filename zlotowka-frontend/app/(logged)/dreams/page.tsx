@@ -58,24 +58,24 @@ export default function Dreams() {
           <h1 className="text-2xl font-bold text-red-500">{error.message}</h1>
         </div>
       )}
-      <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold">
-        Twoje Marzenia
-      </h2>
-      <div className="w-full h-[70vh] mt-10 overflow-hidden">
-        <div className="flex flex-wrap lg:gap-10 gap-5 overflow-y-auto">
-          {data &&
-            data.map((dream, idx) => <DreamCard key={idx} dream={dream} />)}
+      <div className="flex items-center justify-between flew-wrap gap-x-10">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold">
+          Twoje Marzenia
+        </h2>
+        <div className="w-full sm:w-52 h-10 ml-5">
+          <DarkButton
+            icon={"add"}
+            text={"Dodaj marzenie"}
+            onClick={() => {
+              setShowPopup(true);
+            }}
+          />
         </div>
       </div>
 
-      <div className="w-full sm:w-52 h-10 mt-10">
-        <DarkButton
-          icon={"add"}
-          text={"Dodaj marzenie"}
-          onClick={() => {
-            setShowPopup(true);
-          }}
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 3xl:grid-cols-3 gap-5 mt-10">
+        {data &&
+          data.map((dream, idx) => <DreamCard key={idx} dream={dream} />)}
       </div>
     </>
   );

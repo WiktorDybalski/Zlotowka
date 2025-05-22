@@ -31,15 +31,19 @@ const defaultDreamComponentData: DreamComponentData = {
 interface AddDreamComponentPopupProps {
   onSubmit: (data: DreamComponentData) => void;
   onClose: () => void;
+  providedDream?: DreamComponentData;
+  windowTitle?: string;
+  submitButtonText?: string;
 }
 
 export default function AddDreamComponentPopup({
   onSubmit,
   onClose,
+  providedDream = defaultDreamComponentData,
+  windowTitle = "Dodaj nowe marzenie",
+  submitButtonText = "Dodaj marzenie",
 }: AddDreamComponentPopupProps) {
-  const [formData, setFormData] = useState<DreamComponentData>(
-    defaultDreamComponentData
-  );
+  const [formData, setFormData] = useState<DreamComponentData>(providedDream);
   const CurrencyService = useCurrencyService();
   const { data: currencyList, isSuccess: isCurrencyListReady } =
     useQueryWithToast({
@@ -52,6 +56,13 @@ export default function AddDreamComponentPopup({
   ) => {
     const { name, value } = e.target;
     if (name === "amount") {
+      if (value === "") {
+        setFormData((prevState) => ({
+          ...prevState,
+          amount: 0,
+        }));
+        return;
+      }
       const valueWithDot = value.replace(",", ".");
       const parsedValue = parseFloat(valueWithDot);
       if (!Number.isNaN(parsedValue)) {
@@ -100,11 +111,11 @@ export default function AddDreamComponentPopup({
 
   return (
     <GenericPopup
-      title="Dodaj nowe marzenie"
+      title={windowTitle}
       onCloseAction={onClose}
       showConfirm={false}
     >
-      <>
+      <section className="min-w-[360px]">
         <div className="py-1">
           <h3 className="text-md my-2 font-medium">Nazwa marzenia</h3>
           <input
@@ -132,7 +143,7 @@ export default function AddDreamComponentPopup({
             name="amount"
             type="text"
             placeholder="Kwota"
-            value={formData.amount || ""}
+            value={formData.amount}
             onChange={handleInputChange}
             className="border border-neutral-300 rounded px-4 py-2 w-full font-lato"
           />
@@ -150,17 +161,18 @@ export default function AddDreamComponentPopup({
               ))}
             </select>
           ) : (
-            <LoadingSpinner />
+            <LoadingSpinner minH={10} size={5} />
           )}
         </div>
         <div className="mt-7">
           <DarkButton
             icon="add"
-            text="Dodaj składową marzenia"
+            text={submitButtonText}
             onClick={handleSubmit}
+            disabled={!isCurrencyListReady}
           />
         </div>
-      </>
+      </section>
     </GenericPopup>
   );
 }

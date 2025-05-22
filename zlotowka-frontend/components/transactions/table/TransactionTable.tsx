@@ -10,7 +10,7 @@ import { useQueryWithToast } from "@/lib/data-grabbers";
 import dayjs from "dayjs";
 
 // Nowy grid: 4 kolumny: Data, Nazwa, Kwota, Opis
-const grid = "grid grid-cols-[12%_12%_30%_1fr] gap-4";
+const grid = "grid grid-cols-[15%_15%_30%_1fr] gap-4";
 
 interface TransactionTableProps {
   dateRange?: {
@@ -50,7 +50,7 @@ export function TransactionTable({ dateRange }: TransactionTableProps) {
           transaction={transactionForEdit}
         />
       )}
-      <section className="h-full text-xs xl:text-sm 2xl:text-base">
+      <section className="h-full text-xs xl:text-sm">
         <div className="h-full overflow-hidden p-6">
           {/* Nagłówki gridu */}
           <div className={`${grid} font-bold border-b pb-2`}>
