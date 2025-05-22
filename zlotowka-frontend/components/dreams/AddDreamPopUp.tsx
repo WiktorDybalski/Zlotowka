@@ -31,15 +31,19 @@ const defaultDreamComponentData: DreamComponentData = {
 interface AddDreamComponentPopupProps {
   onSubmit: (data: DreamComponentData) => void;
   onClose: () => void;
+  providedDream?: DreamComponentData;
+  windowTitle?: string;
+  submitButtonText?: string;
 }
 
 export default function AddDreamComponentPopup({
   onSubmit,
   onClose,
+  providedDream = defaultDreamComponentData,
+  windowTitle = "Dodaj nowe marzenie",
+  submitButtonText = "Dodaj marzenie",
 }: AddDreamComponentPopupProps) {
-  const [formData, setFormData] = useState<DreamComponentData>(
-    defaultDreamComponentData
-  );
+  const [formData, setFormData] = useState<DreamComponentData>(providedDream);
   const CurrencyService = useCurrencyService();
   const { data: currencyList, isSuccess: isCurrencyListReady } =
     useQueryWithToast({
@@ -107,7 +111,7 @@ export default function AddDreamComponentPopup({
 
   return (
     <GenericPopup
-      title="Dodaj nowe marzenie"
+      title={windowTitle}
       onCloseAction={onClose}
       showConfirm={false}
     >
@@ -163,7 +167,7 @@ export default function AddDreamComponentPopup({
         <div className="mt-7">
           <DarkButton
             icon="add"
-            text="Dodaj składową marzenia"
+            text={submitButtonText}
             onClick={handleSubmit}
             disabled={!isCurrencyListReady}
           />

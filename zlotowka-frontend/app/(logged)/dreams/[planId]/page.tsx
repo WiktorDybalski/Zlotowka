@@ -1,7 +1,9 @@
 "use client";
 
 import DarkButton from "@/components/DarkButton";
-import AddSubDreamComponentPopup from "@/components/dreams/AddSubDreamPopUp";
+import AddSubDreamComponentPopup, {
+  DreamComponentData,
+} from "@/components/dreams/AddSubDreamPopUp";
 import SubDreamCard from "@/components/dreams/SubDreamCard";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import { ProgressBar } from "@/components/general/ProgressBar";
@@ -13,6 +15,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useDreamContext } from "@/components/dreams/DreamsContext";
 import { useQueryWithToast } from "@/lib/data-grabbers";
+import AddDreamComponentPopup from "@/components/dreams/AddDreamPopUp";
 
 export default function DreamDetailsPage() {
   const { planId } = useParams();
@@ -20,7 +23,14 @@ export default function DreamDetailsPage() {
   const DreamService = useDreamsService();
   const numericPlanId = Number(planId);
 
-  const [showPopup, setShowPopup] = useState(false);
+  const [showAddSubDreamPopup, setShowAddSubDreamPopup] = useState(false);
+
+  const [showEditSubDreamPopup, setShowEditSubDreamPopup] = useState(false);
+  const [subDreamForEdit, setSubDreamForEdit] =
+    useState<DreamComponentData | null>(null);
+
+  const [showEditDreamPopup, setShowEditDreamPopup] = useState(false);
+
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -141,8 +151,8 @@ export default function DreamDetailsPage() {
 
   return (
     <>
-      {showPopup && (
-        <AddSubDreamComponentPopup
+      {showAddSubDreamPopup && (
+        <AddSubDreamComponentPopup //add subream
           onSubmit={(data) => {
             addSubDreamMutation.mutate({
               planId: dream.planId,
@@ -151,12 +161,40 @@ export default function DreamDetailsPage() {
               amount: data.amount,
               currencyId: data.currency.currencyId,
             });
-            setShowPopup(false);
+            setShowAddSubDreamPopup(false);
           }}
           onClose={() => {
-            setShowPopup(false);
+            setShowAddSubDreamPopup(false);
           }}
           currency={dream.currency}
+        />
+      )}
+      {dream && showEditDreamPopup && (
+        <AddDreamComponentPopup //edit main dream
+          onClose={() => setShowEditDreamPopup(false)}
+          onSubmit={(data) => {
+            alert(JSON.stringify(data)); // TODO
+          }}
+          providedDream={{
+            componentName: dream.name,
+            description: dream.description,
+            amount: dream.amount,
+            currency: dream.currency,
+          }}
+          windowTitle={"Edytuj marzenie"}
+          submitButtonText={"Zapisz"}
+        />
+      )}
+      {dream && showEditSubDreamPopup && subDreamForEdit && (
+        <AddSubDreamComponentPopup //edit subdream
+          onClose={() => setShowEditSubDreamPopup(false)}
+          onSubmit={(data) => {
+            alert(JSON.stringify(data)); // TODO
+          }}
+          currency={dream.currency}
+          windowTitle="Edytuj składową marzenia"
+          submitButtonText="Zapisz"
+          providedSubDream={subDreamForEdit}
         />
       )}
       <div className="flex flex-col h-full overflow-x-hidden">
@@ -234,7 +272,7 @@ export default function DreamDetailsPage() {
             icon={"add"}
             text={"Dodaj składową"}
             onClick={() => {
-              setShowPopup(true);
+              setShowAddSubDreamPopup(true);
             }}
             className="bg-lightAccentDark hover:bg-backgroundLightDark text-white"
           />
@@ -242,7 +280,7 @@ export default function DreamDetailsPage() {
             icon={"edit"}
             text={"Edytuj"}
             onClick={() => {
-              // setShowPopup(true);
+              setShowEditDreamPopup(true);
             }}
             className="bg-lightAccentDark hover:bg-backgroundLightDark text-white"
           />
@@ -272,6 +310,15 @@ export default function DreamDetailsPage() {
                 }}
                 onDeleteClicked={() => {
                   deleteSubDreamMutation.mutate(subDream.subplanId);
+                }}
+                onEditClicked={() => {
+                  setSubDreamForEdit({
+                    componentName: subDream.name,
+                    description: subDream.description,
+                    amount: subDream.amount,
+                    currency: subDream.currency,
+                  });
+                  setShowEditSubDreamPopup(true);
                 }}
               />
             ))}
