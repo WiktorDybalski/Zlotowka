@@ -6,23 +6,23 @@ import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
 public record PlanRequest (
-    @NotNull(message = "User Id cannot be null")
-    @Positive(message = "User Id must be positive")
-    Integer userId,
+        @NotNull(message = "ID użytkownika nie może być puste")
+        @Positive(message = "ID użytkownika musi być liczbą dodatnią")
+        Integer userId,
 
-    @NotBlank(message = "Name cannot be blank")
-    @Size(max = 512, message = "Name cannot exceed 512 characters")
-    String name,
+        @NotBlank(message = "Nazwa nie może być pusta")
+        @Size(max = 512, message = "Nazwa nie może przekraczać 512 znaków")
+        String name,
 
-    @NotNull(message = "Amount cannot be null")
-    @Positive(message = "Amount must be positive")
-    @MaxDecimalPlaces(2)
-    BigDecimal amount,
+        @NotNull(message = "Kwota nie może być pusta")
+        @Positive(message = "Kwota musi być liczbą dodatnią")
+        @MaxDecimalPlaces(2)
+        BigDecimal amount,
 
-    @NotNull(message = "Currency Id cannot be null")
-    Integer currencyId,
+        @NotNull(message = "ID waluty nie może być puste")
+        Integer currencyId,
 
-    @Size(max = 512, message = "Description cannot exceed 512 characters")
-    String description
+        @Size(max = 512, message = "Opis nie może przekraczać 512 znaków")
+        String description
 ) {
 }
