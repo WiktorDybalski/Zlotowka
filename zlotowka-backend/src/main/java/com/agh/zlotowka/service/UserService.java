@@ -141,36 +141,43 @@ public class UserService {
         User user = userRepository.findByEmail(userDetails.getUsername())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        if (request.email() != null && !request.email().equals(user.getEmail()) &&
-                userRepository.findByEmail(request.email()).isPresent()) {
-            throw new IllegalArgumentException("Email is already in use");
+        if (request.email() != null) {
+            validateAndUpdateEmail(request, user);
         }
 
         if (request.firstName() != null) {
-            user.setFirstName(request.firstName());
+            validateAndUpdateName("First", request.firstName(), user);
         }
 
         if (request.lastName() != null) {
-            user.setLastName(request.lastName());
-        }
-
-        if (request.email() != null) {
-            user.setEmail(request.email());
+            validateAndUpdateName("Last", request.lastName(), user);
         }
 
         if (request.phoneNumber() != null) {
+            if (!request.phoneNumber().matches("^\\d{9}$")) {
+                throw new IllegalArgumentException("Phone number must be exactly 9 digits");
+            }
             user.setPhoneNumber(request.phoneNumber());
         }
 
         if (request.darkMode() != null) {
+            if (!request.darkMode().matches("^(true|false)$")) {
+                throw new IllegalArgumentException("Dark mode value must be 'true' or 'false'");
+            }
             user.setDarkMode(Boolean.parseBoolean(request.darkMode()));
         }
 
         if (request.notificationsByEmail() != null) {
+            if (!request.notificationsByEmail().matches("^(true|false)$")) {
+                throw new IllegalArgumentException("Notifications by email value must be 'true' or 'false'");
+            }
             user.setNotificationsByEmail(Boolean.parseBoolean(request.notificationsByEmail()));
         }
 
         if (request.notificationsByPhone() != null) {
+            if (!request.notificationsByPhone().matches("^(true|false)$")) {
+                throw new IllegalArgumentException("Notifications by phone value must be 'true' or 'false'");
+            }
             user.setNotificationsByPhone(Boolean.parseBoolean(request.notificationsByPhone()));
         }
 
@@ -190,6 +197,34 @@ public class UserService {
         );
     }
 
+    private void validateAndUpdateName(String flag, String name, User user) {
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException(flag + " name cannot be empty");
+        }
+        if (name.length() < 2 || name.length() > 50) {
+            throw new IllegalArgumentException(flag + " name must be between 2 and 50 characters");
+        }
+        if (!name.matches("^[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\\s-]+$")) {
+            throw new IllegalArgumentException(flag + " name can only contain letters, spaces and hyphens");
+        }
+        if ("First".equals(flag)) {
+            user.setFirstName(name);
+        } else {
+            user.setLastName(name);
+        }
+    }
+
+    private void validateAndUpdateEmail(UserDetailsRequest request, User user) {
+        if (!request.email().matches("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$")) {
+            throw new IllegalArgumentException("Invalid email format");
+        }
+        if (!request.email().equals(user.getEmail()) &&
+                userRepository.findByEmail(request.email()).isPresent()) {
+            throw new IllegalArgumentException("Email is already in use");
+        }
+        user.setEmail(request.email());
+    }
+
     @Transactional
     public void updateUserPassword(UserDetails userDetails, UpdatePasswordRequest request) {
         if (request == null) {
@@ -198,6 +233,10 @@ public class UserService {
 
         if (request.newPassword() == null || request.oldPassword() == null || request.confirmNewPassword() == null) {
             throw new IllegalArgumentException("Passwords cannot be null");
+        }
+
+        if (request.newPassword().length() < 6) {
+            throw new IllegalArgumentException("New password must be at least 6 characters long");
         }
 
         User user = userRepository.findByEmail(userDetails.getUsername())
@@ -209,6 +248,10 @@ public class UserService {
 
         if (!request.newPassword().equals(request.confirmNewPassword())) {
             throw new IllegalArgumentException("New password and confirmation do not match");
+        }
+
+        if (passwordEncoder.matches(request.newPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("New password must be different from the current password");
         }
 
         user.setPassword(passwordEncoder.encode(request.newPassword()));
