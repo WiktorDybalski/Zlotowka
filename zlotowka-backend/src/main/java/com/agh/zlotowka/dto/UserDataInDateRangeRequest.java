@@ -7,15 +7,15 @@ import jakarta.validation.constraints.Positive;
 import java.time.LocalDate;
 
 public record UserDataInDateRangeRequest(
-        @NotNull(message = "User Id cannot be null")
-        @Positive(message = "User Id must be positive")
+        @NotNull(message = "ID użytkownika nie może być puste")
+        @Positive(message = "ID użytkownika musi być liczbą dodatnią")
         Integer userId,
 
-        @NotNull(message = "Payment date cannot be null")
+        @NotNull(message = "Data początkowa nie może być pusta")
         @DateAfter2000
         LocalDate startDate,
 
-        @NotNull(message = "Payment date cannot be null")
+        @NotNull(message = "Data końcowa nie może być pusta")
         @DateAfter2000
         LocalDate endDate
 ) {

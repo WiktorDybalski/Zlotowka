@@ -12,38 +12,38 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record RecurringTransactionRequest(
-        @NotNull(message = "User ID cannot be null")
-        @Positive(message = "User ID must be positive")
+        @NotNull(message = "ID użytkownika nie może być puste")
+        @Positive(message = "ID użytkownika musi być liczbą dodatnią")
         Integer userId,
 
-        @NotBlank(message = "Name cannot be blank")
-        @Size(max = 512, message = "Name cannot exceed 512 characters")
+        @NotBlank(message = "Nazwa nie może być pusta")
+        @Size(max = 512, message = "Nazwa nie może przekraczać 512 znaków")
         String name,
 
-        @NotNull(message = "Amount cannot be null")
-        @Positive(message = "Amount must be positive")
+        @NotNull(message = "Kwota nie może być pusta")
+        @Positive(message = "Kwota musi być liczbą dodatnią")
         @MaxDecimalPlaces(2)
         BigDecimal amount,
 
-        @NotNull(message = "Currency ID cannot be null")
+        @NotNull(message = "ID waluty nie może być puste")
         Integer currencyId,
 
-        @NotNull(message = "Income flag cannot be null")
+        @NotNull(message = "Informacja o typie transakcji nie może być pusta")
         Boolean isIncome,
 
-        @NotBlank(message = "Interval cannot be blank")
+        @NotBlank(message = "Okres powtarzania nie może być pusty")
         @ValidPeriodFormat
         String interval,
 
-        @NotNull(message = "First payment date cannot be null")
-        @DateAfter2000(message = "First payment date must be after 2000-01-01")
+        @NotNull(message = "Data pierwszej płatności nie może być pusta")
+        @DateAfter2000(message = "Data pierwszej płatności musi być po 2000-01-01")
         LocalDate firstPaymentDate,
 
-        @NotNull(message = "Last payment date cannot be null")
-        @DateAfter2000(message = "Last payment date must be after 2000-01-01")
+        @NotNull(message = "Data ostatniej płatności nie może być pusta")
+        @DateAfter2000(message = "Data ostatniej płatności musi być po 2000-01-01")
         LocalDate lastPaymentDate,
 
-        @Size(max = 512, message = "Description cannot exceed 512 characters")
+        @Size(max = 512, message = "Opis nie może przekraczać 512 znaków")
         String description
 ) {
 }
