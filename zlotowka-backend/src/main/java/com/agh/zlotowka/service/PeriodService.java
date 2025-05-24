@@ -1,22 +1,28 @@
 package com.agh.zlotowka.service;
 
+import com.agh.zlotowka.dto.PeriodDTO;
 import com.agh.zlotowka.model.PeriodEnum;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 public class PeriodService {
-    public List<Map<String, String>> getPeriods() {
+    public List<PeriodDTO> getPeriods() {
         return Arrays.stream(PeriodEnum.values())
-                .map(period -> Map.of(
-                        "name", getPolishName(period),
-                        "code", period.getPeriod() != null ? period.getPeriod().toString() : "No period"
+                .map(period -> new PeriodDTO(
+                        getPolishName(period),
+                        period.getPeriod() != null ? period.getPeriod().toString() : "No period"
                 ))
                 .collect(Collectors.toList());
+    }
+
+    public PeriodDTO getPeriod(PeriodEnum periodEnum) {
+        return new PeriodDTO(
+            getPolishName(periodEnum),
+            periodEnum.getPeriod() != null ? periodEnum.getPeriod().toString() : "No period");
     }
 
     private String getPolishName(PeriodEnum period) {
