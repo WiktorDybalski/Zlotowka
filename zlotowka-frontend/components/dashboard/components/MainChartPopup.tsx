@@ -34,8 +34,6 @@ export default function MainChartPopup({ onCloseAction }: MainChartPopupProps) {
     endDate || dayjs().add(30, "day")
   );
 
-  console.log("MainChartPopup startDate", startDate, "endDate", endDate);
-
   const [tempShowDreams, setTempShowDreams] = useState(showDreams);
   const [tempShowSubDreams, setTempShowSubDreams] = useState(showSubDreams);
 

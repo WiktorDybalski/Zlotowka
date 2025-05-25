@@ -15,7 +15,7 @@ export default function EditFieldPopup({
   const [value, setValue] = useState(initialValue);
 
   const handleSave = () => {
-    onSave(value);
+    onSave(value, fieldName);
     onCloseAction();
   };
 

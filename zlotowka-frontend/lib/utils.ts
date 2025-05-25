@@ -29,6 +29,36 @@ export function getRoundedDomain(
   return [roundedMin, roundedMax];
 }
 
+export function validateSettings(value: string, fieldName?: string): string | null {
+  if (!fieldName) return null;
+
+  if (fieldName === "phoneNumber") {
+    if (!/^\d+$/.test(value)) {
+      return "Numer telefonu może zawierać tylko cyfry!";
+    }
+
+    if (value.length !== 9) {
+      return "Numer telefonu musi mieć dokładnie dziewięć cyfr!";
+    }
+  }
+
+  if (fieldName === "name") {
+    const parts = value.trim().split(" ");
+    if (parts.length < 2 || parts.some((part) => part.length < 3)) {
+      return "Imię i nazwisko powinno zawierać spację i mieć co najmniej po trzy litery!";
+    }
+  }
+
+  if (fieldName === "email") {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+      return "Nieprawidłowy adres e-mail!";
+    }
+  }
+
+  return null;
+}
+
 export function createPayload(
     fieldName: string | undefined,
     value: string,
