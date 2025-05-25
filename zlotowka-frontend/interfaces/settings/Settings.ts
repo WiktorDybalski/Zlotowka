@@ -49,7 +49,7 @@ export interface EditFieldPopupProps {
   title: string;
   fieldName: string;
   initialValue?: string;
-  onSave: (value: string) => void;
+  onSave: (value: string, fieldName: string) => void;
 }
 
 export interface UserDetailsRequest {

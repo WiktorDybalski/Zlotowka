@@ -19,7 +19,6 @@ export function useSettingsService() {
         method: "PUT",
         body: JSON.stringify(details),
       },
-      "Nie udało się zaktualizować danych użytkownika"
     );
   }
   return {

@@ -14,7 +14,7 @@ import {
 } from "@/interfaces/settings/Settings";
 import EditFieldPopup from "@/components/settings/EditFieldPopup";
 import { useSettingsService } from "@/services/SettingsService";
-import { createPayload } from "@/lib/utils";
+import {createPayload, validateSettings} from "@/lib/utils";
 import toast from "react-hot-toast";
 import { useQueryWithToast } from "@/lib/data-grabbers";
 
@@ -47,17 +47,7 @@ export default function Settings(): JSX.Element {
     staleTime: 0,
   });
 
-  const mutation = useMutation({
-    mutationFn: (details: UserDetailsRequest) =>
-      settingsService.updateUserDetails(details),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["user"] });
-    },
-    onError: () => {
-      toast.error("Nie udało się zmienić danych!");
-    },
-  });
-
+  // synchronizes user data with those from backend
   useEffect(() => {
     if (data) {
       setDarkMode(data.darkMode);
@@ -65,6 +55,37 @@ export default function Settings(): JSX.Element {
       setNotificationsByPhone(data.notificationsByPhone);
     }
   }, [data]);
+
+  const mutation = useMutation({
+    mutationFn: (details: UserDetailsRequest) =>
+        settingsService.updateUserDetails(details),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+    },
+    onError: (error: unknown) => {
+      const message: string =
+          error instanceof Error
+              ? error.message
+              : "Nie udało się zmienić danych!";
+      toast.error(message);
+    },
+  });
+
+  const toggleDarkMode = (value: boolean) => {
+    setDarkMode(value);
+    handleSaveField(String(value), "darkMode");
+  };
+
+  const toggleNotificationsByEmail = (value: boolean) => {
+    setNotificationsByEmail(value);
+    handleSaveField(String(value), "notificationsByEmail");
+  };
+
+  const toggleNotificationsByPhone = (value: boolean) => {
+    setNotificationsByPhone(value);
+    handleSaveField(String(value), "notificationsByPhone");
+  };
+
 
   const openEditPopup = (
     fieldName: string,
@@ -88,40 +109,31 @@ export default function Settings(): JSX.Element {
 
   const handleSaveField = (value: string, fieldName?: string) => {
     if (!data) return;
-    const payload = createPayload(
-      fieldName || editingField.fieldName,
-      value,
-      data,
-      darkMode,
-      notificationsByEmail,
-      notificationsByPhone
-    );
-    mutation.mutate(payload, {
-      onSuccess: () => {
-        toast.success("Udało się zmienić dane!");
-      },
-    });
-  };
+    const parsedValue = value === "true";
 
-  useEffect(() => {
-    if (
-      !data ||
-      darkMode === null ||
-      notificationsByEmail === null ||
-      notificationsByPhone === null
-    )
+    const error = validateSettings(value, fieldName);
+    if (error) {
+      toast.error(error);
       return;
-    const payload = createPayload(
-      undefined,
-      "",
-      data,
-      darkMode,
-      notificationsByEmail,
-      notificationsByPhone
-    );
-    mutation.mutate(payload);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [notificationsByEmail, notificationsByPhone, darkMode]);
+    }
+
+    setTimeout(() => {
+      const payload = createPayload(
+          fieldName,
+          value,
+          data,
+          fieldName === "darkMode" ? parsedValue : darkMode!,
+          fieldName === "notificationsByEmail" ? parsedValue : notificationsByEmail!,
+          fieldName === "notificationsByPhone" ? parsedValue : notificationsByPhone!
+      );
+
+      mutation.mutate(payload, {
+        onSuccess: () => {
+          toast.success("Udało się zmienić dane!");
+        },
+      });
+    }, 50);
+  };
 
   const accountOptions: AccountOption[] = [
     {
@@ -136,7 +148,7 @@ export default function Settings(): JSX.Element {
         />
       ),
       onClick: () => {
-        toast.error("Not implemented");
+        toast.error("Funkcjonalność w przyszłości");
       },
       fieldName: "avatar",
     },
@@ -192,12 +204,12 @@ export default function Settings(): JSX.Element {
       </div>
 
       <AccountSection accountOptions={accountOptions} />
-      <PreferencesSection darkMode={darkMode} setDarkMode={setDarkMode} />
+      <PreferencesSection darkMode={darkMode} setDarkMode={toggleDarkMode} />
       <NotificationsSection
         notificationsByEmail={notificationsByEmail}
-        setNotificationsByEmail={setNotificationsByEmail}
+        setNotificationsByEmail={toggleNotificationsByEmail}
         notificationsByPhone={notificationsByPhone}
-        setNotificationsByPhone={setNotificationsByPhone}
+        setNotificationsByPhone={toggleNotificationsByPhone}
       />
 
       {editingField.isOpen && (
