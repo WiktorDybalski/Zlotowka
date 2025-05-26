@@ -26,6 +26,7 @@ public class PlanService {
     private final SubPlanRepository subPlanRepository;
     private final CurrencyService currencyService;
     private final OneTimeTransactionRepository oneTimeTransactionRepository;
+    private final GeneralPlansService generalPlansService;
 
     @Transactional
     public PlanDTO createPlan(PlanRequest request){
@@ -82,6 +83,10 @@ public class PlanService {
 
     private PlanDTO getPlanDTO(Plan plan) {
         BigDecimal currentAmount = calculateCurrentBudget(plan);
+        LocalDate estimatedCompletionDate = generalPlansService.estimateCompletionDate(
+                plan,
+                plan.getRequiredAmount().subtract(subPlanRepository.getTotalSubPlanAmountCompleted(plan.getPlanId()))
+        );
 
         return new PlanDTO(
                 plan.getPlanId(),
@@ -94,7 +99,8 @@ public class PlanService {
                 plan.getCompleted(),
                 currentAmount,
                 currentAmount.compareTo(plan.getRequiredAmount()) >= 0,
-                plan.getSubplansCompleted()
+                plan.getSubplansCompleted(),
+                estimatedCompletionDate
         );
     }
 

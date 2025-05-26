@@ -4,9 +4,7 @@ package com.agh.zlotowka.service;
 import com.agh.zlotowka.dto.SubplanDTO;
 import com.agh.zlotowka.dto.SubplanRequest;
 import com.agh.zlotowka.exception.*;
-import com.agh.zlotowka.model.OneTimeTransaction;
-import com.agh.zlotowka.model.Plan;
-import com.agh.zlotowka.model.Subplan;
+import com.agh.zlotowka.model.*;
 import com.agh.zlotowka.repository.OneTimeTransactionRepository;
 import com.agh.zlotowka.repository.PlanRepository;
 import com.agh.zlotowka.repository.SubPlanRepository;
@@ -31,6 +29,7 @@ public class SubplanService {
     private final UserRepository userRepository;
     private final CurrencyService currencyService;
     private final OneTimeTransactionRepository oneTimeTransactionRepository;
+    private final GeneralPlansService generalPlansService;
 
     @Transactional
     public SubplanDTO createSubplan(SubplanRequest request) {
@@ -62,6 +61,7 @@ public class SubplanService {
     private SubplanDTO getSubplanDTO(Subplan subplan) {
         BigDecimal actualAmount = calculateCurrentBudget(subplan);
         boolean canBeCompleted = actualAmount.compareTo(subplan.getRequiredAmount()) >= 0;
+        LocalDate estimatedCompletionDate = generalPlansService.estimateCompletionDate(subplan.getPlan(), subplan.getRequiredAmount());
 
         return new SubplanDTO(
                 subplan.getPlan().getPlanId(),
@@ -73,7 +73,8 @@ public class SubplanService {
                 subplan.getCompleted(),
                 actualAmount,
                 canBeCompleted,
-                subplan.getDate()
+                subplan.getDate(),
+                estimatedCompletionDate
         );
     }
 
