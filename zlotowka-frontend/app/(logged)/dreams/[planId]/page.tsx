@@ -323,7 +323,7 @@ export default function DreamDetailsPage() {
           </div>
         </header>
 
-        <footer className="grid grid-cols-1 md:grid-cols-4 sm:grid-cols-2 gap-x-10 gap-y-5 mt-10">
+        <footer className="grid grid-cols-1 md:grid-cols-4 sm:grid-cols-2 gap-x-10 gap-y-5 mt-3">
           <DarkButton
             icon={"check_circle_outline"}
             text={"Zrealizuj"}
@@ -332,7 +332,7 @@ export default function DreamDetailsPage() {
                 dreamId: numericPlanId,
               });
             }}
-            className="bg-green-600 hover:bg-green-700 text-white"
+            className="bg-green-600 hover:bg-green-700 "
             disabled={!(dream.canBeCompleted && !dream.completed)}
           />
           <DarkButton
@@ -341,7 +341,6 @@ export default function DreamDetailsPage() {
             onClick={() => {
               setShowAddSubDreamPopup(true);
             }}
-            className="bg-lightAccentDark hover:bg-backgroundLightDark text-white"
           />
           <DarkButton
             icon={"edit"}
@@ -349,7 +348,6 @@ export default function DreamDetailsPage() {
             onClick={() => {
               setShowEditDreamPopup(true);
             }}
-            className="bg-lightAccentDark hover:bg-backgroundLightDark text-white"
           />
           <DarkButton
             icon={"delete_outline"}
@@ -357,12 +355,12 @@ export default function DreamDetailsPage() {
             onClick={() => {
               deleteDreamMutation.mutate();
             }}
-            className="bg-red-500 hover:bg-red-600 text-white"
+            className="bg-red-500 hover:bg-red-600 "
           />
         </footer>
 
         <article className="flex-grow mt-12 w-full">
-          <h3 className="text-3xl md:text-4xl font-bold">Składowe marzenia:</h3>
+          <h3 className="text-3xl md:text-4xl font-bold">Składowe marzenia</h3>
           <hr className="mb-5 mt-2 border-gray-300" />
           {dream.subplans.length === 0 && (
             <p className="text-sm text-gray-500">Marzenie nie ma składowych</p>
