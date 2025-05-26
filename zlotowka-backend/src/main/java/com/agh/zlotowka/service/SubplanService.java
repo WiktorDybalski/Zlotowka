@@ -141,6 +141,44 @@ public class SubplanService {
     }
 
     @Transactional
+    public SubplanDTO undoCompleteSubplan(Integer id) {
+        Subplan subplan = subPlanRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Subplan with Id %d not found", id)));
+
+        validatePlanCompletion(subplan.getPlan());
+        validateIncompleteSubPlan(subplan);
+        subplan.setCompleted(false);
+        subplan.setDate(null);
+        try {
+            BigDecimal correctAmount = currencyService.convertCurrency(
+                    subplan.getRequiredAmount(),
+                    subplan.getPlan().getCurrency().getIsoCode(),
+                    subplan.getPlan().getUser().getCurrency().getIsoCode()
+            );
+
+            subplan.getPlan().getUser().setCurrentBudget(
+                    subplan.getPlan().getUser().getCurrentBudget().add(correctAmount)
+            );
+        } catch (CurrencyConversionException e) {
+            log.error("Unexpected error from CurrencyService", e);
+        }
+        OneTimeTransaction transaction = subplan.getTransaction();
+        if (transaction != null) {
+            oneTimeTransactionRepository.delete(transaction);
+            subplan.setTransaction(null);
+        }
+        subPlanRepository.save(subplan);
+        calculatePlanSubplanCompletion(subplan.getPlan());
+        return getSubplanDTO(subplan);
+    }
+
+    private void validateIncompleteSubPlan(Subplan subplan) {
+        if (!subplan.getCompleted()) {
+            throw new PlanCompletionException("Subplan is not completed, cannot undo completion");
+        }
+    }
+
+    @Transactional
     public SubplanDTO completeSubplan(Integer id, LocalDate completionDate) {
         Subplan subplan = subPlanRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono podplanu o ID %d", id)));
