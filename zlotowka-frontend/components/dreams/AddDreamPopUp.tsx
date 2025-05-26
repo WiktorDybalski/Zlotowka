@@ -115,7 +115,7 @@ export default function AddDreamComponentPopup({
       onCloseAction={onClose}
       showConfirm={false}
     >
-      <section className="min-w-[360px]">
+      <>
         <div className="py-1">
           <h3 className="text-md my-2 font-medium">Nazwa marzenia</h3>
           <input
@@ -172,7 +172,7 @@ export default function AddDreamComponentPopup({
             disabled={!isCurrencyListReady}
           />
         </div>
-      </section>
+      </>
     </GenericPopup>
   );
 }

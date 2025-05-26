@@ -4,6 +4,7 @@ import ReactQuerryProvider from "@/components/providers/react-querry";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { Toaster } from "react-hot-toast";
+import { Metadata } from "next";
 
 const raleway = Raleway({
   weight: ["400", "500", "600", "700"],
@@ -34,6 +35,11 @@ const materialSymbolsOutlined = localFont({
   display: "block",
   weight: "100 700",
 });
+
+export const metadata: Metadata = {
+  title: "Złotówka",
+  description: "Zlotowka",
+};
 
 export default function RootLayout({
   children,
