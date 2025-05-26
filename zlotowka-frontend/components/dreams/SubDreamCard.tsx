@@ -86,6 +86,7 @@ export default function SubDreamCard({
                   icon={"edit"}
                   onClick={onEditClicked}
                   className="bg-lightAccentDark hover:bg-backgroundLightDark text-white max-w-14"
+                  disabled={subdream.completed}
                 />
                 <DarkButton
                   icon={"delete_outline"}

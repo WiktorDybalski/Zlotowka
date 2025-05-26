@@ -21,11 +21,19 @@ interface TransactionTableProps {
 }
 
 function UppArrowIcon() {
-  return <span className="material-symbols text-sm">arrow_upward</span>;
+  return (
+    <span className="material-symbols text-sm" style={{ fontSize: "20px" }}>
+      arrow_upward
+    </span>
+  );
 }
 
 function DownArrowIcon() {
-  return <span className="material-symbols text-sm">arrow_downward</span>;
+  return (
+    <span className="material-symbols text-sm" style={{ fontSize: "20px" }}>
+      arrow_downward
+    </span>
+  );
 }
 
 export function TransactionTable({ dateRange }: TransactionTableProps) {
@@ -112,7 +120,7 @@ export function TransactionTable({ dateRange }: TransactionTableProps) {
               className="cursor-pointer flex items-center"
               onClick={() => onSort("date")}
             >
-              Data{" "}
+              <span className="mr-2">Data</span>
               {sortField === "date" &&
                 (sortDirection === "asc" ? (
                   <UppArrowIcon />
@@ -124,7 +132,7 @@ export function TransactionTable({ dateRange }: TransactionTableProps) {
               className="cursor-pointer flex items-center"
               onClick={() => onSort("amount")}
             >
-              Kwota{" "}
+              <span className="mr-2">Kwota</span>
               {sortField === "amount" &&
                 (sortDirection === "asc" ? (
                   <UppArrowIcon />
@@ -136,7 +144,7 @@ export function TransactionTable({ dateRange }: TransactionTableProps) {
               className="cursor-pointer flex items-center"
               onClick={() => onSort("name")}
             >
-              Nazwa Transakcji{" "}
+              <span className="mr-2">Nazwa Transakcji</span>
               {sortField === "name" &&
                 (sortDirection === "asc" ? (
                   <UppArrowIcon />
@@ -148,7 +156,7 @@ export function TransactionTable({ dateRange }: TransactionTableProps) {
               className="cursor-pointer items-center hidden md:flex"
               onClick={() => onSort("description")}
             >
-              Opis{" "}
+              <span className="mr-2">Opis</span>
               {sortField === "description" &&
                 (sortDirection === "asc" ? (
                   <UppArrowIcon />
@@ -158,7 +166,13 @@ export function TransactionTable({ dateRange }: TransactionTableProps) {
             </div>
           </div>
           {/* Wiersze danych – kolumna "Opis" ukryta na mniejszych ekranach */}
-          <div className="h-full overflow-y-auto overflow-x-hidden">
+          <div
+            className="h-full overflow-y-auto overflow-x-hidden"
+            style={{
+              scrollbarColor: "#3c3c3c transparent",
+              scrollbarWidth: "thin",
+            }}
+          >
             {sortedTransactionList ? (
               sortedTransactionList.map((transaction, idx) => (
                 <div

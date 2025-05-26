@@ -341,6 +341,7 @@ export default function DreamDetailsPage() {
             onClick={() => {
               setShowAddSubDreamPopup(true);
             }}
+            disabled={dream.completed}
           />
           <DarkButton
             icon={"edit"}
@@ -348,6 +349,7 @@ export default function DreamDetailsPage() {
             onClick={() => {
               setShowEditDreamPopup(true);
             }}
+            disabled={dream.completed}
           />
           <DarkButton
             icon={"delete_outline"}
