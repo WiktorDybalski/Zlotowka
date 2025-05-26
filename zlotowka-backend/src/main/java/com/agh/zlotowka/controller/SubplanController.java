@@ -53,8 +53,11 @@ public class SubplanController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSubplan(@PathVariable Integer id) {
-        subplanService.deleteSubplan(id);
+    public ResponseEntity<Void> deleteSubplan(
+            @PathVariable Integer id,
+            @RequestParam(required = false) boolean deleteTransaction
+        ) {
+        subplanService.deleteSubplan(id, deleteTransaction);
         return ResponseEntity.noContent().build();
     }
 }

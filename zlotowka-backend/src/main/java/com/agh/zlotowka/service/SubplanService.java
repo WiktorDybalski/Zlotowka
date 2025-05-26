@@ -172,9 +172,6 @@ public class SubplanService {
 
         calculatePlanSubplanCompletion(plan);
 
-        userRepository.save(plan.getUser());
-        subPlanRepository.save(subplan);
-
         OneTimeTransaction transaction = OneTimeTransaction.builder()
                 .user(plan.getUser())
                 .name("Część marzenia: " + subplan.getName())
@@ -184,6 +181,11 @@ public class SubplanService {
                 .date(subplan.getDate())
                 .description(subplan.getDescription())
                 .build();
+
+        subplan.setTransaction(transaction);
+        userRepository.save(plan.getUser());
+        subPlanRepository.save(subplan);
+
 
         oneTimeTransactionRepository.save(transaction);
         return getSubplanDTO(subplan);
@@ -232,12 +234,31 @@ public class SubplanService {
     }
 
     @Transactional
-    public void deleteSubplan(Integer id) {
+    public void deleteSubplan(Integer id, boolean deleteTransaction) {
         Subplan subplan = subPlanRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono podplanu o ID %d", id)));
 
         subPlanRepository.delete(subplan);
         calculatePlanSubplanCompletion(subplan.getPlan());
+
+        if (deleteTransaction){
+            OneTimeTransaction transaction = subplan.getTransaction();
+            if (transaction == null) {
+                throw new EntityNotFoundException("Transaction for the subplan not found");
+            }
+            oneTimeTransactionRepository.delete(transaction);
+            try {
+                BigDecimal correctAmount = currencyService.convertCurrency(
+                        subplan.getRequiredAmount(),
+                        subplan.getPlan().getCurrency().getIsoCode(),
+                        subplan.getPlan().getUser().getCurrency().getIsoCode()
+                );
+                transaction.getUser().setCurrentBudget(transaction.getUser().getCurrentBudget().add(correctAmount));
+            }
+            catch (CurrencyConversionException e) {
+                log.error("Unexpected error from CurrencyService", e);
+            }
+        }
     }
 
     void calculatePlanSubplanCompletion(Plan plan) {
