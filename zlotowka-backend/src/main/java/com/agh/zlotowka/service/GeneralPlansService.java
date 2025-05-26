@@ -42,7 +42,7 @@ public class GeneralPlansService {
 
             result.add(createPlanDTO(
                     plan.getPlanId(),
-                    plan.getRequiredAmount(),
+                    plan.getRequiredAmount().subtract(subPlanRepository.getTotalSubPlanAmountCompleted(plan.getPlanId())),
                     plan.getName(),
                     planCurrencyCode,
                     userCurrencyCode,

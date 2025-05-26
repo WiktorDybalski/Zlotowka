@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -46,4 +47,8 @@ public class Subplan {
 
     @Column(name = "completed")
     private Boolean completed;
+
+    @OneToOne
+    @JoinColumn(name = "transaction_id", referencedColumnName = "transaction_id")
+    private OneTimeTransaction transaction;
 }
