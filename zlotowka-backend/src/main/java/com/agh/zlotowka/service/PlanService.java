@@ -30,10 +30,10 @@ public class PlanService {
     @Transactional
     public PlanDTO createPlan(PlanRequest request){
         User user = userRepository.findById(request.userId())
-                .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", request.userId())));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono użytkownika o ID %d", request.userId())));
         
         Currency currency = currencyRepository.findById(request.currencyId())
-                .orElseThrow( () -> new EntityNotFoundException(String.format("Currency with Id %d not found", request.currencyId())));
+                .orElseThrow( () -> new EntityNotFoundException(String.format("Nie znaleziono waluty o ID %d", request.currencyId())));
         
         Plan plan = Plan.builder()
                 .user(user)
@@ -52,13 +52,13 @@ public class PlanService {
 
     public PlanDTO getPlan(Integer Id) {
         return getPlanDTO(planRepository.findById(Id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Plan with Id %d not found", Id))));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono planu o ID %d", Id))));
     }
 
     @Transactional
     public PlanDTO updatePlan(PlanRequest request, Integer planId){
         Plan plan = planRepository.findById(planId)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Plan with Id %d not found", planId)));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono planu o ID %d", planId)));
 
         validatePlanOwnership(request.userId(), plan.getUser().getUserId());
         validateCompletedPlanModification(request, plan);
@@ -72,7 +72,7 @@ public class PlanService {
 
         if (plans.isEmpty())
             userRepository.findById(userId)
-                    .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
+                    .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono użytkownika o ID %d", userId)));
 
         return plans.stream()
                 .map(this::getPlanDTO)
@@ -102,7 +102,7 @@ public class PlanService {
     @Transactional
     public void deletePlan(Integer id) {
         Plan plan = planRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Plan with Id %d not found", id)));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono planu o ID %d", id)));
 
         List<Subplan> subPlans = subPlanRepository.findAllSubPlansByPlanId(id);
         subPlanRepository.deleteAll(subPlans);
@@ -114,7 +114,7 @@ public class PlanService {
     @Transactional
     public PlanDTO completePlan(Integer id, LocalDate completionDate) {
         Plan plan = planRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Plan with Id %d not found", id)));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono planu o ID %d", id)));
 
         validatePlanCompletion(plan);
         validateBudgetSufficiency(plan);
@@ -159,19 +159,19 @@ public class PlanService {
 
     private void validateCompletionDate(LocalDate completionDate) {
         if (completionDate != null && completionDate.isAfter(LocalDate.now())) {
-            throw new PlanCompletionException("Completion date cannot be in the future");
+            throw new PlanCompletionException("Data ukończenia nie może być w przyszłości");
         }
     }
 
     private void validatePlanCompletion(Plan plan) {
         if (plan.getCompleted())
-            throw new PlanCompletionException("Plan is already completed");
+            throw new PlanCompletionException("Plan jest już ukończony");
     }
 
     private void validateBudgetSufficiency(Plan plan) {
         BigDecimal currentAmount = calculateCurrentBudget(plan);
         if (currentAmount.compareTo(plan.getRequiredAmount()) < 0)
-            throw new BudgetInsufficientException("Plan cannot be completed, required amount not reached");
+            throw new BudgetInsufficientException("Plan nie może zostać ukończony, nie osiągnięto wymaganej kwoty");
     }
 
     private void completeSubPlans(Plan plan) {
@@ -188,14 +188,14 @@ public class PlanService {
 
     private void validatePlanOwnership(Integer requestSenderId, Integer planOwner) {
         if (!requestSenderId.equals(planOwner)) {
-            throw new PlanOwnershipException(String.format("User Id %d does not match the plan onwer", requestSenderId));
+            throw new PlanOwnershipException(String.format("ID użytkownika %d nie odpowiada właścicielowi planu", requestSenderId));
         }
     }
 
     private PlanDTO updatePlanLogic(PlanRequest request, Plan plan) {
         if(!request.currencyId().equals(plan.getCurrency().getCurrencyId())) {
             Currency currency = currencyRepository.findById(request.currencyId())
-                    .orElseThrow(() -> new EntityNotFoundException(String.format("Currency with Id %d not found", request.currencyId())));
+                    .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono waluty o ID %d", request.currencyId())));
             plan.setCurrency(currency);
         }
 
@@ -213,7 +213,7 @@ public class PlanService {
             boolean isCurrencyChanged = !request.currencyId().equals(plan.getCurrency().getCurrencyId());
 
             if (isAmountChanged || isCurrencyChanged) {
-                throw new PlanCompletionException("Cannot change amount or currency of completed plan");
+                throw new PlanCompletionException("Nie można zmienić kwoty lub waluty ukończonego planu");
             }
         }
     }
@@ -221,7 +221,7 @@ public class PlanService {
     private void validateSubPlanAmounts(PlanRequest request, Plan plan) {
         BigDecimal allSubPlansAmount = subPlanRepository.getTotalSubPlanAmount(plan.getPlanId());
         if (allSubPlansAmount.compareTo(request.amount()) > 0) {
-            throw new PlanAmountExceededException("Total subplan amount exceeds the plan's required amount");
+            throw new PlanAmountExceededException("Łączna kwota podplanów przekracza wymaganą kwotę planu");
         }
     }
 

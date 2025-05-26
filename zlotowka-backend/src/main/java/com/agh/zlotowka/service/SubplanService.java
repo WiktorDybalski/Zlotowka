@@ -35,10 +35,10 @@ public class SubplanService {
     @Transactional
     public SubplanDTO createSubplan(SubplanRequest request) {
         userRepository.findById(request.userId())
-                .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", request.userId())));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono użytkownika o ID %d", request.userId())));
 
         Plan plan = planRepository.findById(request.planId())
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Plan with Id %d not found", request.planId())));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono planu o ID %d", request.planId())));
 
         validateSubplanOwnership(request.userId(), plan.getUser().getUserId());
         validateSubplanAmount(plan, request.amount());
@@ -79,17 +79,17 @@ public class SubplanService {
 
     public SubplanDTO getSubplan(Integer id) {
         return getSubplanDTO(subPlanRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Subplan with Id %d not found", id))));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono podplanu o ID %d", id))));
     }
 
     @Transactional
     public SubplanDTO updateSubplan(SubplanRequest request, Integer subplanId) {
 
         userRepository.findById(request.userId())
-                .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", request.userId())));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono użytkownika o ID %d", request.userId())));
 
         Subplan subplan = subPlanRepository.findById(subplanId)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Subplan with Id %d not found", subplanId)));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono podplanu o ID %d", subplanId)));
 
         validateCompletedSubPlanModification(request, subplan);
         validateSubplanOwnership(request.userId(), subplan.getPlan().getUser().getUserId());
@@ -109,26 +109,26 @@ public class SubplanService {
 
     private void validateCompletedSubPlanModification(SubplanRequest request, Subplan subplan) {
         if (subplan.getCompleted() && !request.amount().equals(subplan.getRequiredAmount())) {
-            throw new PlanCompletionException("Subplan is already completed, cannot change amount");
+            throw new PlanCompletionException("Podplan jest już ukończony, nie można zmienić kwoty");
         }
     }
 
     private void validatePlanCompletion(Plan plan) {
         if (plan.getCompleted()) {
-            throw new PlanCompletionException("Plan is already completed, cannot add subplan");
+            throw new PlanCompletionException("Plan jest już ukończony, nie można dodać podplanu");
         }
     }
 
     private void validateSubplanOwnership(Integer userId, Integer subplanUserId) {
         if (!userId.equals(subplanUserId)) {
-            throw new PlanOwnershipException(String.format("User Id %d does not match the subplan owner", userId));
+            throw new PlanOwnershipException(String.format("ID użytkownika %d nie odpowiada właścicielowi podplanu", userId));
         }
     }
 
     private void validateSubplanAmount(Plan plan, BigDecimal newAmount) {
         BigDecimal allSubplansAmount = subPlanRepository.getTotalSubPlanAmount(plan.getPlanId());
         if (allSubplansAmount.add(newAmount).compareTo(plan.getRequiredAmount()) > 0) {
-            throw new PlanAmountExceededException("Total subplan amount exceeds the plan's required amount");
+            throw new PlanAmountExceededException("Łączna kwota podplanów przekracza wymaganą kwotę planu");
         }
     }
 
@@ -136,14 +136,14 @@ public class SubplanService {
         BigDecimal allSubplansAmountMinusOld =
                 subPlanRepository.getTotalSubPlanAmount(plan.getPlanId()).subtract(subplan.getRequiredAmount());
         if (allSubplansAmountMinusOld.add(newAmount).compareTo(plan.getRequiredAmount()) > 0) {
-            throw new PlanAmountExceededException("Total subplan amount exceeds the plan's required amount");
+            throw new PlanAmountExceededException("Łączna kwota podplanów przekracza wymaganą kwotę planu");
         }
     }
 
     @Transactional
     public SubplanDTO completeSubplan(Integer id, LocalDate completionDate) {
         Subplan subplan = subPlanRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Subplan with Id %d not found", id)));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono podplanu o ID %d", id)));
 
         validateSubPlanCompletion(subplan);
         validateSubPlanBudgetSufficiency(subplan);
@@ -161,7 +161,7 @@ public class SubplanService {
             plan.getUser().setCurrentBudget(plan.getUser().getCurrentBudget().subtract(correctAmount));
         }
         catch (CurrencyConversionException e) {
-            log.error("Unexpected error from CurrencyService", e);
+            log.error("Nieoczekiwany błąd z CurrencyService", e);
         }
 
         if (completionDate == null)
@@ -191,7 +191,7 @@ public class SubplanService {
 
     private void validateCompletionDate(LocalDate completionDate) {
         if (completionDate != null && completionDate.isAfter(LocalDate.now())) {
-            throw new PlanCompletionException("Completion date cannot be in the future");
+            throw new PlanCompletionException("Data ukończenia nie może być w przyszłości");
         }
     }
 
@@ -208,13 +208,13 @@ public class SubplanService {
             log.error("Unexpected error from CurrencyService", e);
         }
         if (currentAmount.compareTo(subplan.getRequiredAmount()) < 0) {
-            throw new InsufficientBudgetException("Subplan cannot be completed, required amount not reached");
+            throw new InsufficientBudgetException("Podplan nie może zostać ukończony, nie osiągnięto wymaganej kwoty");
         }
     }
 
     private void validateSubPlanCompletion(Subplan subplan) {
         if (subplan.getCompleted()) {
-            throw new PlanCompletionException("Subplan is already completed");
+            throw new PlanCompletionException("Podplan jest już ukończony");
         }
     }
 
@@ -223,7 +223,7 @@ public class SubplanService {
 
         if (subplans.isEmpty()) {
             planRepository.findById(planId)
-                    .orElseThrow(() -> new EntityNotFoundException(String.format("Plan with Id %d not found", planId)));
+                    .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono planu o ID %d", planId)));
         }
 
         return subplans.stream()
@@ -234,7 +234,7 @@ public class SubplanService {
     @Transactional
     public void deleteSubplan(Integer id) {
         Subplan subplan = subPlanRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Subplan with Id %d not found", id)));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono podplanu o ID %d", id)));
 
         subPlanRepository.delete(subplan);
         calculatePlanSubplanCompletion(subplan.getPlan());
