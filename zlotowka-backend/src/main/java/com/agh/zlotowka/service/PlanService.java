@@ -110,6 +110,23 @@ public class PlanService {
         planRepository.delete(plan);
     }
 
+    @Transactional
+    public PlanDTO undoCompletePlan(Integer id) {
+        Plan plan = planRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Plan with Id %d not found", id)));
+
+        validateIncompletePlan(plan);
+
+        plan.setCompleted(false);
+        plan.setDate(null);
+        planRepository.save(plan);
+        return getPlanDTO(plan);
+    }
+
+    private void validateIncompletePlan(Plan plan) {
+        if (!plan.getCompleted())
+            throw new PlanCompletionException("Plan is not completed, cannot undo completion");
+    }
 
     @Transactional
     public PlanDTO completePlan(Integer id, LocalDate completionDate) {
