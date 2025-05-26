@@ -51,7 +51,7 @@ public class CurrencyService {
             return converted.setScale(2, RoundingMode.HALF_UP);
         } catch (IOException | CurrencyConversionException e) {
             log.error("CurrencyService: Currency conversion failed: ", e);
-            throw new CurrencyConversionException("CurrencyService: Currency conversion failed");
+            throw new CurrencyConversionException("Konwersja waluty nie powiodła się");
         }
     }
 
@@ -66,7 +66,7 @@ public class CurrencyService {
             return BigDecimal.valueOf(((Number) exchangeRateObj).doubleValue());
         } else {
             log.error("CurrencyService: No currencies available");
-            throw new CurrencyConversionException("CurrencyService: No such currency available");
+            throw new CurrencyConversionException("Taka waluta nie jest dostępna");
         }
     }
 
@@ -92,7 +92,7 @@ public class CurrencyService {
 
         int responseCode = connection.getResponseCode();
         if (responseCode != 200) {
-            throw new IOException("Failed to fetch exchange rate. HTTP response code: " + responseCode);
+            throw new IOException("Nie udało się pobrać kursu wymiany. Kod odpowiedzi HTTP: " + responseCode);
         }
         return connection;
     }

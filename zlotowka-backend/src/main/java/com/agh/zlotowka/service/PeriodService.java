@@ -14,7 +14,7 @@ public class PeriodService {
         return Arrays.stream(PeriodEnum.values())
                 .map(period -> Map.of(
                         "name", getPolishName(period),
-                        "code", period.getPeriod() != null ? period.getPeriod().toString() : "No period"
+                        "code", period.getPeriod() != null ? period.getPeriod().toString() : "Brak okresu"
                 ))
                 .collect(Collectors.toList());
     }

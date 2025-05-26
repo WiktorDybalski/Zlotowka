@@ -31,10 +31,10 @@ public class OneTimeTransactionService {
     @Transactional
     public OneTimeTransactionDTO createTransaction(OneTimeTransactionRequest request) {
         User user = userRepository.findById(request.userId())
-                .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", request.userId())));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono użytkownika o ID %d", request.userId())));
 
         Currency currency = currencyRepository.findById(request.currencyId())
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Currency with Id %d not found", request.currencyId())));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono waluty o ID %d", request.currencyId())));
 
         if (!request.date().isAfter(LocalDate.now())) {
             userService.addTransactionAmountToBudget(request.currencyId(), request.amount(), request.isIncome(), user);
@@ -50,21 +50,18 @@ public class OneTimeTransactionService {
                 .build();
 
         oneTimeTransactionRepository.save((transaction));
-        log.info("Created new transaction successfully");
-
         return getOneTimeTransactionDTO(transaction);
     }
 
     public OneTimeTransactionDTO getTransaction(Integer id) {
         return getOneTimeTransactionDTO(oneTimeTransactionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Transaction with Id %d not found", id))));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono transakcji o ID %d", id))));
     }
 
     @Transactional
     public OneTimeTransactionDTO updateOneTimeTransaction(OneTimeTransactionRequest request, int transactionId) {
-        log.info("Updating transaction with request: {}", request);
         OneTimeTransaction transaction = oneTimeTransactionRepository.findById(transactionId)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Transaction with Id %d not found", transactionId)));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono transakcji o ID %d", transactionId)));
 
         validateTransactionOwnership(request.userId(), transaction.getUser().getUserId());
 
@@ -78,9 +75,8 @@ public class OneTimeTransactionService {
 
     @Transactional
     public void deleteTransaction(Integer id) {
-        log.info("Deleting transaction with Id {}", id);
         OneTimeTransaction transaction = oneTimeTransactionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Transaction with Id %d not found", id)));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono transakcji o ID %d", id)));
 
         if (!transaction.getDate().isAfter(LocalDate.now())) {
             userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
@@ -93,14 +89,14 @@ public class OneTimeTransactionService {
 
         if (allTransactions.isEmpty())
             userRepository.findById(userId)
-                    .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
+                    .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono transakcji o ID %d", userId)));
 
         return allTransactions;
     }
 
     public void validateUserId(Integer userId, CustomUserDetails userDetails) {
         if (!userId.equals(userDetails.getUser().getUserId())) {
-            throw new IllegalArgumentException("Access denied");
+            throw new IllegalArgumentException("Dostęp zabroniony");
         }
     }
 
@@ -119,7 +115,7 @@ public class OneTimeTransactionService {
 
     private void validateTransactionOwnership(Integer requestSenderId, Integer transactionOwner) {
         if (!requestSenderId.equals(transactionOwner))
-            throw new IllegalArgumentException(String.format("User Id %d does not match the transaction owner", requestSenderId));
+            throw new IllegalArgumentException(String.format("ID użytkownika %d nie odpowiada właścicielowi transakcji", requestSenderId));
     }
 
     private void updateTransactionBeforeCurrentTime(OneTimeTransactionRequest request, OneTimeTransaction transaction) {
@@ -141,10 +137,10 @@ public class OneTimeTransactionService {
 
     public OneTimeTransactionDTO getTransactionWithUserCheck(Integer transactionId, CustomUserDetails userDetails) {
         OneTimeTransaction transaction = oneTimeTransactionRepository.findById(transactionId)
-                .orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Nie znaleziono transakcji"));
 
         if (!transaction.getUser().getUserId().equals(userDetails.getUser().getUserId())) {
-            throw new IllegalArgumentException("Access denied to this transaction");
+            throw new IllegalArgumentException("Brak dostępu do tej transakcji");
         }
 
         return getOneTimeTransactionDTO(transaction);
@@ -153,10 +149,10 @@ public class OneTimeTransactionService {
     @Transactional
     public void deleteTransactionWithUserCheck(Integer transactionId, CustomUserDetails userDetails) {
         OneTimeTransaction transaction = oneTimeTransactionRepository.findById(transactionId)
-                .orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Nie znaleziono transakcji"));
 
         if (!transaction.getUser().getUserId().equals(userDetails.getUser().getUserId())) {
-            throw new IllegalArgumentException("Access denied to this transaction");
+            throw new IllegalArgumentException("Brak dostępu do tej transakcji");
         }
 
         if (transaction.getDate().isBefore(LocalDate.now())) {
@@ -170,7 +166,7 @@ public class OneTimeTransactionService {
     private OneTimeTransactionDTO updateTransaction(OneTimeTransactionRequest request, OneTimeTransaction transaction) {
         if (!Objects.equals(request.currencyId(), transaction.getCurrency().getCurrencyId())) {
             Currency currency = currencyRepository.findById(request.currencyId())
-                    .orElseThrow(() -> new EntityNotFoundException(String.format("Currency with Id %d not found", request.currencyId())));
+                    .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono waluty o ID %d", request.currencyId())));
 
             transaction.setCurrency(currency);
         }

@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = DateAfter2000Validator.class)
 public @interface DateAfter2000 {
-    String message() default "Date must be after 2000-01-01";
+    String message() default "Data musi być po 2000-01-01";
 
     Class<?>[] groups() default {};
 

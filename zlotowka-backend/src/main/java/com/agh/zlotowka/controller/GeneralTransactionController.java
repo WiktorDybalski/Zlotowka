@@ -91,6 +91,4 @@ public class GeneralTransactionController {
         PaginatedTransactionsDTO transactions = generalTransactionService.getPageTransactionsByUserId(userId, page, limit, startDate, endDate);
         return ResponseEntity.ok(transactions);
     }
-
 }
-

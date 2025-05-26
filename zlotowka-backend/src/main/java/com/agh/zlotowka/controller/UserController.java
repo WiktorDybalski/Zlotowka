@@ -34,7 +34,7 @@ public class UserController {
             @Valid @RequestBody UpdatePasswordRequest request
     ) {
         userService.updateUserPassword(userDetails, request);
-        return ResponseEntity.ok(Map.of("message", "Password updated successfully"));
+        return ResponseEntity.ok(Map.of("message", "Hasło zostało pomyślnie zaktualizowane\n"));
     }
 
     @PutMapping("/user-details")
@@ -44,9 +44,8 @@ public class UserController {
     ) {
         UserResponse userResponse = userService.updateUserDetails(userDetails, request);
         return ResponseEntity.ok(Map.of(
-                "message", "User details updated successfully",
+                "message", "Dane użytkownika zostały pomyślnie zaktualizowane",
                 "user", userResponse
         ));
     }
-
 }
