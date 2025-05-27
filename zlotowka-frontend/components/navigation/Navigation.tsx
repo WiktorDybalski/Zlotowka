@@ -17,7 +17,7 @@ const navLinks = [
     href: routes.transactions.pathname,
   },
   {
-    displayName: "Cele",
+    displayName: "Marzenia",
     href: routes.dreams.pathname,
   },
 ];

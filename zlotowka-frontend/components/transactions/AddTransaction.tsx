@@ -2,11 +2,9 @@
 
 import TransactionForm from "@/components/transactions/TransactionForm";
 import { AddTransactionProps } from "@/interfaces/transactions/PopupTransactionsProps";
-import {
-  NewOneTimeTransactionReq,
-  useTransactionService,
-} from "@/services/TransactionService";
+import { useTransactionService } from "@/services/TransactionService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { TransactionData } from "@/interfaces/transactions/TransactionsData";
 import toast from "react-hot-toast";
 
 export default function AddTransaction({
@@ -15,34 +13,41 @@ export default function AddTransaction({
   const TransactionService = useTransactionService();
   const queryClient = useQueryClient();
 
-  const magic = useMutation({
-    mutationFn: async (data: NewOneTimeTransactionReq) => {
-      const newTransactionPromise =
-        TransactionService.createNewTransaction(data);
-      toast.promise(newTransactionPromise, {
-        loading: "Dodawanie transakcji...",
-        success: "Transakcja dodana pomyślnie!",
-        error: (error) =>
-          `Wystąpił błąd podczas dodawania transakcji: ${error.message}`,
+  const mutation = useMutation({
+    mutationFn: async (data: TransactionData) => {
+      const res =
+        data.frequency.code === "No period"
+          ? TransactionService.createNewOneTimeTransaction(data)
+          : TransactionService.createNewRecurringTransaction(data);
+      const isRecurring = data.frequency.code !== "No period";
+      toast.promise(res as Promise<unknown>, {
+        loading: `Dodawanie transakcji ${
+          isRecurring ? "rekurencyjnej" : "jednorazowej"
+        }...`,
+        success: `Transakcja ${
+          isRecurring ? "rekurencyjnej" : "jednorazowej"
+        } dodana pomyślnie!`,
+        error: (error: Error) =>
+          `Błąd przy dodawaniu transakcji ${
+            isRecurring ? "rekurencyjnej" : "jednorazowej"
+          }: ${error.message}`,
       });
-      return await newTransactionPromise;
+      return await res;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["transaction"] });
-      queryClient.invalidateQueries({ queryKey: ["cardService"] }); //on dashboard
+      queryClient.invalidateQueries({ queryKey: ["cardService"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      queryClient.invalidateQueries({ queryKey: ["allTransactionsFromRange"] });
     },
   });
+
   return (
     <TransactionForm
-      onClose={() => {
-        setShowAddTransaction(false);
-      }}
-      onSubmit={(data) => {
-        magic.mutate(data);
-      }}
-      header="Dodaj nową transakcje"
-      submitButtonText="Dodaj transakcje"
+      onCloseAction={() => setShowAddTransaction(false)}
+      onSubmitAction={(data) => mutation.mutate(data)}
+      header="Dodaj nową transakcję"
+      submitButtonText="Dodaj transakcję"
       submitButtonIcon="add"
     />
   );

@@ -32,11 +32,10 @@ export function useUserService() {
   }
 
   async function fetchUserData(): Promise<UserData> {
-    //TODO
     return await sendToBackend(
       `user/account`,
       withAuthHeader,
-      "Failed to fetch user data"
+      "Nie udało się pobrać danych użytkownika"
     );
   }
 

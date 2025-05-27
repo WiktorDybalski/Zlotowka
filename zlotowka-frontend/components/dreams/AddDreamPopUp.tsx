@@ -4,9 +4,9 @@ import { useState } from "react";
 import GenericPopup from "@/components/general/GenericPopup";
 import DarkButton from "@/components/DarkButton";
 import { useCurrencyService } from "@/services/CurrencyController";
-import { useQuery } from "@tanstack/react-query";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import toast from "react-hot-toast";
+import { useQueryWithToast } from "@/lib/data-grabbers";
 
 export interface DreamComponentData {
   componentName: string;
@@ -31,26 +31,38 @@ const defaultDreamComponentData: DreamComponentData = {
 interface AddDreamComponentPopupProps {
   onSubmit: (data: DreamComponentData) => void;
   onClose: () => void;
+  providedDream?: DreamComponentData;
+  windowTitle?: string;
+  submitButtonText?: string;
 }
 
 export default function AddDreamComponentPopup({
   onSubmit,
   onClose,
+  providedDream = defaultDreamComponentData,
+  windowTitle = "Dodaj nowe marzenie",
+  submitButtonText = "Dodaj marzenie",
 }: AddDreamComponentPopupProps) {
-  const [formData, setFormData] = useState<DreamComponentData>(
-    defaultDreamComponentData
-  );
+  const [formData, setFormData] = useState<DreamComponentData>(providedDream);
   const CurrencyService = useCurrencyService();
-  const { data: currencyList, isSuccess: isCurrencyListReady } = useQuery({
-    queryKey: ["currencyData"],
-    queryFn: CurrencyService.getCurrencyList,
-  });
+  const { data: currencyList, isSuccess: isCurrencyListReady } =
+    useQueryWithToast({
+      queryKey: ["currencyData"],
+      queryFn: CurrencyService.getCurrencyList,
+    });
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     if (name === "amount") {
+      if (value === "") {
+        setFormData((prevState) => ({
+          ...prevState,
+          amount: 0,
+        }));
+        return;
+      }
       const valueWithDot = value.replace(",", ".");
       const parsedValue = parseFloat(valueWithDot);
       if (!Number.isNaN(parsedValue)) {
@@ -99,8 +111,8 @@ export default function AddDreamComponentPopup({
 
   return (
     <GenericPopup
-      title="Dodaj nowe marzenie"
-      onClose={onClose}
+      title={windowTitle}
+      onCloseAction={onClose}
       showConfirm={false}
     >
       <>
@@ -120,7 +132,7 @@ export default function AddDreamComponentPopup({
           <input
             name="description"
             type="text"
-            placeholder="Opisz składową"
+            placeholder="Opisz marzenie"
             value={formData.description}
             onChange={handleInputChange}
             className="border border-neutral-300 rounded px-4 py-2 w-full"
@@ -131,9 +143,9 @@ export default function AddDreamComponentPopup({
             name="amount"
             type="text"
             placeholder="Kwota"
-            value={formData.amount || ""}
+            value={formData.amount}
             onChange={handleInputChange}
-            className="border border-neutral-300 rounded px-4 py-2 w-full"
+            className="border border-neutral-300 rounded px-4 py-2 w-full font-lato"
           />
           {isCurrencyListReady ? (
             <select
@@ -149,14 +161,15 @@ export default function AddDreamComponentPopup({
               ))}
             </select>
           ) : (
-            <LoadingSpinner />
+            <LoadingSpinner minH={10} size={5} />
           )}
         </div>
         <div className="mt-7">
           <DarkButton
             icon="add"
-            text="Dodaj składową marzenia"
+            text={submitButtonText}
             onClick={handleSubmit}
+            disabled={!isCurrencyListReady}
           />
         </div>
       </>

@@ -33,9 +33,9 @@ public class RecurringTransactionService {
     @Transactional
     public RecurringTransactionDTO createTransaction(RecurringTransactionRequest request) {
         User user = userRepository.findById(request.userId())
-                .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", request.userId())));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono użytkownika o ID %d", request.userId())));
         Currency currency = currencyRepository.findById(request.currencyId())
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Currency with Id %d not found", request.currencyId())));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono waluty o ID %d", request.currencyId())));
 
         validateFirstAndFinalDates(request.firstPaymentDate(), request.lastPaymentDate());
         PeriodEnum interval = PeriodEnum.fromPeriod(Period.parse(request.interval()));
@@ -64,8 +64,6 @@ public class RecurringTransactionService {
 
     @Transactional
     public RecurringTransactionDTO updateTransaction(RecurringTransactionRequest request, int transactionId) {
-        log.info("Updating recurring transaction with transactionId {}", transactionId);
-
         RecurringTransaction transaction = findTransactionById(transactionId);
         validateTransactionOwnership(request.userId(), transaction.getUser().getUserId());
         validateTransactionType(request, transaction);
@@ -89,9 +87,8 @@ public class RecurringTransactionService {
 
     @Transactional
     public void deleteTransaction(Integer id) {
-        log.info("Deleting transaction with transactionId {}", id);
         RecurringTransaction transaction = recurringTransactionRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Transaction with Id %d not found", id)));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono transakcji o ID %d", id)));
 
         recurringTransactionRepository.delete(transaction);
     }
@@ -99,20 +96,20 @@ public class RecurringTransactionService {
     private RecurringTransaction findTransactionById(int transactionId) {
         return recurringTransactionRepository.findById(transactionId)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        String.format("Transaction with Id %d not found", transactionId)));
+                        String.format("Nie znaleziono transakcji o ID %d", transactionId)));
     }
     public void validateUserId(Integer userId, CustomUserDetails userDetails) {
         if (!userId.equals(userDetails.getUser().getUserId())) {
-            throw new IllegalArgumentException("Access denied");
+            throw new IllegalArgumentException("Dostęp zabroniony");
         }
     }
 
     public void validateOwnershipById(int transactionId, CustomUserDetails userDetails) {
         RecurringTransaction tx = recurringTransactionRepository.findById(transactionId)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        String.format("Transaction with Id %d not found", transactionId)));
+                        String.format("Nie znaleziono transakcji o ID %d", transactionId)));
         if (!tx.getUser().getUserId().equals(userDetails.getUser().getUserId())) {
-            throw new IllegalArgumentException("Access denied");
+            throw new IllegalArgumentException("Dostęp zabroniony");
         }
     }
 
@@ -155,29 +152,29 @@ public class RecurringTransactionService {
 
     private void validateFirstAndFinalDates(LocalDate firstPaymentDate, LocalDate lastPaymentDate) {
         if (firstPaymentDate.isAfter(lastPaymentDate)) {
-            throw new IllegalArgumentException("First payment date must be before the last payment date");
+            throw new IllegalArgumentException("Data pierwszej płatności musi być przed datą ostatniej płatności");
         }
     }
 
     private void validateTransactionType(RecurringTransactionRequest request, RecurringTransaction transaction) {
         if (request.isIncome() != transaction.getIsIncome()) {
-            throw new IllegalArgumentException("Cannot change transaction type");
+            throw new IllegalArgumentException("Nie można zmienić typu transakcji");
         }
     }
 
     private void validateTransactionState(RecurringTransactionRequest request, RecurringTransaction transaction, PeriodEnum newInterval) {
         if (!transaction.getFirstPaymentDate().isAfter(LocalDate.now())) {
             if (!request.firstPaymentDate().equals(transaction.getFirstPaymentDate())) {
-                throw new IllegalArgumentException("Cannot change first payment date of transaction that has already started");
+                throw new IllegalArgumentException("Nie można zmienić daty pierwszej płatności transakcji, która już się rozpoczęła");
             }
 
             if (!newInterval.equals(transaction.getInterval())) {
-                throw new IllegalArgumentException("Cannot change interval of transaction that has already started");
+                throw new IllegalArgumentException("Nie można zmienić interwału transakcji, która już się rozpoczęła");
             }
 
             if (!transaction.getFinalPaymentDate().isAfter(LocalDate.now())
                     && !transaction.getFinalPaymentDate().equals(request.firstPaymentDate())) {
-                throw new IllegalArgumentException("Cannot change final payment date of transaction that has already finished");
+                throw new IllegalArgumentException("Nie można zmienić daty końcowej płatności transakcji, która już się zakończyła");
             }
         }
     }
@@ -185,7 +182,7 @@ public class RecurringTransactionService {
     private void updateCurrencyIfNeeded(RecurringTransactionRequest request, RecurringTransaction transaction) {
         if (!request.currencyId().equals(transaction.getCurrency().getCurrencyId())) {
             Currency currency = currencyRepository.findById(request.currencyId())
-                    .orElseThrow(() -> new EntityNotFoundException("Currency not found with ID: " + request.currencyId()));
+                    .orElseThrow(() -> new EntityNotFoundException("Nie znaleziono waluty o ID: " + request.currencyId()));
             transaction.setCurrency(currency);
         }
     }
@@ -201,7 +198,7 @@ public class RecurringTransactionService {
 
     private void validateTransactionOwnership(Integer requestSenderId, Integer transactionOwner) {
         if (!requestSenderId.equals(transactionOwner))
-            throw new IllegalArgumentException(String.format("User Id %d does not match the transaction owner", requestSenderId));
+            throw new IllegalArgumentException(String.format("ID użytkownika %d nie odpowiada właścicielowi transakcji", requestSenderId));
     }
 
     private RecurringTransactionDTO getRecurringTransactionDTO(RecurringTransaction transaction) {

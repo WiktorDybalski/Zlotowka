@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,6 +28,17 @@ public class CurrencyService {
     private String apiUrl;
     private final CurrencyRepository currencyRepository;
 
+    @Transactional
+    public void addCurrencies() {
+        Currency currencyPLN = Currency.builder().isoCode("PLN").build();
+        Currency currencyUSD = Currency.builder().isoCode("USD").build();
+        Currency currencyEUR = Currency.builder().isoCode("EUR").build();
+
+        currencyRepository.save(currencyPLN);
+        currencyRepository.save(currencyUSD);
+        currencyRepository.save(currencyEUR);
+    }
+
     public List<Currency> getAllCurrencies() {
         return currencyRepository.findAll();
     }
@@ -39,7 +51,7 @@ public class CurrencyService {
             return converted.setScale(2, RoundingMode.HALF_UP);
         } catch (IOException | CurrencyConversionException e) {
             log.error("CurrencyService: Currency conversion failed: ", e);
-            throw new CurrencyConversionException("CurrencyService: Currency conversion failed");
+            throw new CurrencyConversionException("Konwersja waluty nie powiodła się");
         }
     }
 
@@ -54,7 +66,7 @@ public class CurrencyService {
             return BigDecimal.valueOf(((Number) exchangeRateObj).doubleValue());
         } else {
             log.error("CurrencyService: No currencies available");
-            throw new CurrencyConversionException("CurrencyService: No such currency available");
+            throw new CurrencyConversionException("Taka waluta nie jest dostępna");
         }
     }
 
@@ -80,7 +92,7 @@ public class CurrencyService {
 
         int responseCode = connection.getResponseCode();
         if (responseCode != 200) {
-            throw new IOException("Failed to fetch exchange rate. HTTP response code: " + responseCode);
+            throw new IOException("Nie udało się pobrać kursu wymiany. Kod odpowiedzi HTTP: " + responseCode);
         }
         return connection;
     }

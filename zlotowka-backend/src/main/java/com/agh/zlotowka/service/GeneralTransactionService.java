@@ -37,7 +37,6 @@ public class GeneralTransactionService {
 
     @Scheduled(cron = "00 01 00 * * ?")
     public void addRecurringTransactions() {
-        log.info("Adding transactions using scheduled task...");
         List<RecurringTransaction> recurringTransactions = recurringTransactionRepository.findDueRecurringTransactions();
         List<OneTimeTransaction> oneTimeTransactionsToAdd = oneTimeTransactionRepository.findTransactionsToday();
         scheduledTransactionService.addOneTimeTransactionToUserBudget(oneTimeTransactionsToAdd);
@@ -50,7 +49,7 @@ public class GeneralTransactionService {
         userRepository.findById(userId).orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
 
         if (isIncome == null) {
-            throw new IllegalArgumentException("isIncome cannot be null");
+            throw new IllegalArgumentException("Parametr isIncome nie może być pusty");
         }
 
         Optional<OneTimeTransaction> nextOneTimeTransaction;
@@ -72,7 +71,7 @@ public class GeneralTransactionService {
         ).orElse(null);
 
         if (transaction1 == null && transaction2 == null) {
-            return new TransactionBudgetInfo("No transaction", LocalDate.now(), BigDecimal.ZERO, false, "PLN");
+            return new TransactionBudgetInfo("Brak transakcji", LocalDate.now(), BigDecimal.ZERO, false, "PLN");
         }
 
         if (transaction1 == null) return transaction2;
@@ -87,7 +86,7 @@ public class GeneralTransactionService {
 
         if (transactions.isEmpty()) {
             return userRepository.getUserBudget(userId)
-                    .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
+                    .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono użytkownika o ID %d", userId)));
 
         } else {
             return transactions.getLast().amount();
@@ -96,9 +95,9 @@ public class GeneralTransactionService {
 
     public List<SinglePlotData> getEstimatedBudgetInDateRange(UserDataInDateRangeRequest request) {
         BigDecimal budget = userRepository.getUserBudget(request.userId())
-                .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", request.userId())));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono użytkownika o ID %d", request.userId())));
         String userCurrency = userRepository.getUserCurrencyName(request.userId())
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Currency for user with ID %d not found", request.userId())));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono waluty dla użytkownika o ID %d", request.userId())));
 
         List<TransactionBudgetInfo> futureTransactions = new ArrayList<>();
         List<TransactionBudgetInfo> pastTransactions = new ArrayList<>();
@@ -142,7 +141,7 @@ public class GeneralTransactionService {
 
     public void validateUserId(Integer userId, CustomUserDetails userDetails) {
         if (!userId.equals(userDetails.getUser().getUserId())) {
-            throw new IllegalArgumentException("Access denied");
+            throw new IllegalArgumentException("Dostęp zabroniony");
         }
     }
 
@@ -210,7 +209,7 @@ public class GeneralTransactionService {
 
     public RevenuesAndExpensesResponse getRevenuesAndExpensesInRange(UserDataInDateRangeRequest request) {
         String userCurrency = userRepository.getUserCurrencyName(request.userId())
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Currency for user with ID %d not found", request.userId())));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono użytkownika o ID %d", request.userId())));
 
         List<TransactionBudgetInfo> futureTransactions = new ArrayList<>();
         List<TransactionBudgetInfo> pastTransactions = new ArrayList<>();
@@ -249,12 +248,12 @@ public class GeneralTransactionService {
 
     public BigDecimal getCurrentBalance(Integer userId) {
         return userRepository.getUserBudget(userId)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("User with Id %d not found", userId)));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono użytkownika o ID %d", userId)));
     }
 
     public PaginatedTransactionsDTO getPageTransactionsByUserId(Integer userId, Integer page, Integer limit, LocalDate startDate, LocalDate endDate) {
         if (page < 1 || limit <= 0) {
-            throw new IllegalArgumentException("Page must be >= 1 and limit must be > 0");
+            throw new IllegalArgumentException("Strona musi być >= 1, a limit musi być > 0");
         }
 
         validateFirstAndFinalDates(startDate, endDate);
@@ -329,7 +328,7 @@ public class GeneralTransactionService {
 
     private void validateFirstAndFinalDates(LocalDate startDate, LocalDate endDate) {
         if (startDate.isAfter(endDate)) {
-            throw new IllegalArgumentException("Start date cannot be after the end date");
+            throw new IllegalArgumentException("Data początkowa nie może być późniejsza niż data końcowa");
         }
     }
 }

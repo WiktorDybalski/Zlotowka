@@ -25,12 +25,33 @@ export default async function sendToBackend(
   init?: RequestInit,
   errorMessage: string = "Error fetching data"
 ) {
-  const responce = await sendToBackendWithoutReturningJson(
-    input,
-    init,
-    errorMessage
-  );
-  return await responce.json();
+  input = API_HOST + "/" + input;
+  try {
+    const response = await fetch(input, init);
+    if (!response.ok) {
+      let errorMessageToThrow = errorMessage + " ";
+      try {
+        const errorResponse = await response.json();
+        if (errorResponse && errorResponse.message) {
+          errorMessageToThrow += errorResponse.message;
+        } else if (errorResponse && errorResponse.error) {
+          errorMessageToThrow += errorResponse.error;
+        } else {
+          errorMessageToThrow += response.statusText;
+        }
+      } catch {
+        errorMessageToThrow += response.statusText;
+      }
+      throw new Error(errorMessageToThrow);
+    }
+    return await response.json();
+  } catch (error) {
+    console.log("Error fetching data:", error);
+    if (error instanceof Error && error.message === "Failed to fetch") {
+      throw new Error(errorMessage + " \n Backend doesn't work :(");
+    }
+    throw error;
+  }
 }
 
 export function getAuthHeader(token: string) {

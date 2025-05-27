@@ -5,17 +5,17 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record RegistrationRequest(
-        @NotBlank(message = "First name cannot be empty")
+        @NotBlank(message = "Imię nie może być puste")
         String firstName,
 
-        @NotBlank(message = "Last name cannot be empty")
+        @NotBlank(message = "Nazwisko nie może być puste")
         String lastName,
 
-        @NotBlank(message = "Email cannot be empty")
-        @Email(message = "Incorrect email format")
+        @NotBlank(message = "Email nie może być pusty")
+        @Email(message = "Nieprawidłowy format adresu email")
         String email,
 
-        @NotBlank(message = "Password cannot be empty")
-        @Size(min = 6, message = "Password must be at least 6 characters long")
+        @NotBlank(message = "Hasło nie może być puste")
+        @Size(min = 6, message = "Hasło musi mieć co najmniej 6 znaków")
         String password
 ) {}

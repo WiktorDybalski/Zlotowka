@@ -10,39 +10,39 @@ dayjs.locale("pl");
 
 interface DatePickerProps {
   isOpen: boolean;
-  currentDate: Dayjs;
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  setDate: (newDate: Dayjs) => void;
+  currentDate: string;
+  setIsOpenAction: React.Dispatch<React.SetStateAction<boolean>>;
+  setDateAction: (newDate: Dayjs) => void;
 }
 
 export default function DatePicker({
   isOpen,
   currentDate,
-  setIsOpen,
-  setDate,
+  setIsOpenAction,
+  setDateAction,
 }: DatePickerProps) {
   return (
-    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pl">
-      {isOpen && (
-        <DateCalendar
-          className="border-border-color border-[1px] rounded-[5px] min-w-76 absolute z-[9999] bg-background overflow-y-auto"
-          value={currentDate}
-          onChange={(newValue) => {
-            setDate(newValue);
-            setIsOpen(false);
-          }}
-          sx={{
-            width: 300,
-            overflow: "auto",
-            ".Mui-selected": {
-              backgroundColor: "#262626 !important",
-              "&:focus": {
-                backgroundColor: "#262626 !important",
-              },
-            },
-          }}
-        />
-      )}
-    </LocalizationProvider>
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pl">
+          {isOpen && (
+            <DateCalendar
+              className="border-border-color border-[1px] rounded-[5px] max-w-67 lg:max-w-76 absolute z-[9999] bg-background"
+              value={dayjs(currentDate)}
+              onChange={(newValue) => {
+                setDateAction(newValue);
+                setIsOpenAction(false);
+              }}
+              sx={{
+                width: "300",
+                overflow: "hidden",
+                ".Mui-selected": {
+                  backgroundColor: "#262626 !important",
+                  "&:focus": {
+                    backgroundColor: "#262626 !important",
+                  },
+                },
+              }}
+            />
+          )}
+        </LocalizationProvider>
   );
 }

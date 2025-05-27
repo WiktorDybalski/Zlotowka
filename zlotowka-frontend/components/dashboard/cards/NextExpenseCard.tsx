@@ -6,22 +6,17 @@ import CardNumber from "@/components/dashboard/cards/generic/CardNumber";
 import { useCardService } from "@/services/CardService";
 import formatMoney from "@/utils/formatMoney";
 import TextNumberField from "@/components/dashboard/cards/generic/TextNumberField";
-import toast from "react-hot-toast";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import dayjs from "dayjs";
-import { useQuery } from "@tanstack/react-query";
+import { useQueryWithToast } from "@/lib/data-grabbers";
 
 export default function NextExpenseCard() {
   const CardService = useCardService();
 
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading } = useQueryWithToast({
     queryKey: ["cardService", "getNextExpense"],
     queryFn: () => CardService.getNextTransaction(false),
   });
-
-  if (isError) {
-    toast.error(error?.message || "Błąd podczas pobierania następnego wydatku");
-  }
 
   if (isLoading || !data) {
     return <LoadingSpinner />;

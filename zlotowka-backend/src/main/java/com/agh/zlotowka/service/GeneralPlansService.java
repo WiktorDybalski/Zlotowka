@@ -29,7 +29,7 @@ public class GeneralPlansService {
 
     public List<GeneralPlanDTO> getAllUncompletedPlans(Integer userId) {
         String userCurrencyCode = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("User with ID %d not found", userId)))
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono użytkownika o ID %d", userId)))
                 .getCurrency()
                 .getIsoCode();
 
@@ -41,6 +41,7 @@ public class GeneralPlansService {
             String planCurrencyCode = plan.getCurrency().getIsoCode();
 
             result.add(createPlanDTO(
+                    plan.getPlanId(),
                     plan.getRequiredAmount(),
                     plan.getName(),
                     planCurrencyCode,
@@ -52,6 +53,7 @@ public class GeneralPlansService {
 
             for (Subplan subplan : subplans)
                 result.add(createPlanDTO(
+                        subplan.getSubplanId(),
                         subplan.getRequiredAmount(),
                         subplan.getName(),
                         planCurrencyCode,
@@ -66,6 +68,7 @@ public class GeneralPlansService {
     }
 
     private GeneralPlanDTO createPlanDTO(
+            Integer id,
             BigDecimal amount,
             String name,
             String planCurrencyCode,
@@ -75,6 +78,7 @@ public class GeneralPlansService {
         BigDecimal convertedAmount = convertAmount(amount, planCurrencyCode, userCurrencyCode);
 
         return new GeneralPlanDTO(
+                id,
                 convertedAmount,
                 name,
                 planType

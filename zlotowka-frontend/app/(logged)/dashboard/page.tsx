@@ -16,14 +16,16 @@ import {
 } from "@/interfaces/dashboard/cards/CardComponents";
 import NextExpenseCard from "@/components/dashboard/cards/NextExpenseCard";
 import NextIncomeCard from "@/components/dashboard/cards/NextIncomeCard";
-import { TransactionTable } from "@/components/transactions/table/TransactionTable";
+import { DreamProvider } from "@/components/dreams/DreamsContext";
+import { MainChartProvider } from "@/components/providers/MainChartContext";
+import DashboardTransactionTable from "@/components/dashboard/DashboardTransactionTable";
 
 export default function Dashboard() {
   const [showAddTransaction, setShowAddTransaction] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [selectedCards, setSelectedCards] = useState<CardId[]>([
     "nextExpense",
-    "pinnedDream",
+    "currentBalance",
     "monthForecast",
   ]);
 
@@ -37,55 +39,60 @@ export default function Dashboard() {
 
   return (
     <>
-      {showAddTransaction && (
-        <AddTransaction setShowAddTransaction={setShowAddTransaction} />
-      )}
-      {showPopup && (
-        <CardsPopup
-          onClose={() => setShowPopup(false)}
-          selectedCards={selectedCards}
-          setSelectedCards={setSelectedCards}
-        />
-      )}
-
-      <div className="relative w-full min-h-screen grid px-6 py-12 grid-cols-1 lg:px-16 lg:py-8 lg:grid-rows-[200px_600px_450px_auto] lg:grid-cols-3 gap-6 2xl:px-20">
-        <div className="absolute top-3 right-5 lg:top-8 2xl:right-5 hover:cursor-pointer">
-          <span
-            className="material-symbols"
-            onClick={() => setShowPopup(!showPopup)}
-          >
-            dashboard_customize
-          </span>
-        </div>
-
-        {selectedCards.map((cardId) => {
-          return (
-            <GenericCard key={cardId}>{cardComponents[cardId]}</GenericCard>
-          );
-        })}
-
-        <GenericCard className="lg:col-span-3">
-          <MainChart />
-        </GenericCard>
-
-        <GenericCard className="lg:col-span-2">
-          <TransactionTable />
-        </GenericCard>
-
-        <GenericCard>
-          <PieSideChart />
-        </GenericCard>
-
-        <div className="w-full sm:w-52 h-10">
-          <DarkButton
-            icon={"add"}
-            text={"Dodaj transakcje"}
-            onClick={() => {
-              setShowAddTransaction(!showAddTransaction);
-            }}
+      <DreamProvider>
+        {showAddTransaction && (
+          <AddTransaction setShowAddTransaction={setShowAddTransaction} />
+        )}
+        {showPopup && (
+          <CardsPopup
+            onClose={() => setShowPopup(false)}
+            selectedCards={selectedCards}
+            setSelectedCards={setSelectedCards}
           />
+        )}
+
+        <div className="relative w-full min-h-screen grid px-6 py-12 grid-cols-1 lg:px-16 lg:py-8 lg:grid-rows-[200px_600px_450px_auto] lg:grid-cols-3 gap-6 2xl:px-20">
+          <div className="absolute top-3 right-5 lg:top-8 2xl:right-5 hover:cursor-pointer">
+            <span
+              className="material-symbols"
+              onClick={() => setShowPopup(!showPopup)}
+            >
+              dashboard_customize
+            </span>
+          </div>
+
+          {selectedCards.map((cardId) => {
+            return (
+              <GenericCard key={cardId}>{cardComponents[cardId]}</GenericCard>
+            );
+          })}
+
+          <MainChartProvider>
+            <GenericCard className="lg:col-span-3">
+              <MainChart />
+            </GenericCard>
+
+            <GenericCard className="lg:col-span-2">
+              <DashboardTransactionTable />
+              <div></div>
+            </GenericCard>
+          </MainChartProvider>
+
+          <GenericCard>
+            <PieSideChart />
+          </GenericCard>
+
+          <div className="w-full sm:w-52 h-10">
+            <DarkButton
+              icon={"add"}
+              text={"Dodaj transakcje"}
+              onClick={() => {
+                setShowAddTransaction(!showAddTransaction);
+              }}
+            />
+          </div>
         </div>
-      </div>
+      </DreamProvider>
     </>
   );
 }

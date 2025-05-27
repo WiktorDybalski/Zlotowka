@@ -23,6 +23,6 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
 
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        response.getWriter().write("{\"error\": \"Unauthorized: Invalid or missing token\"}");
+        response.getWriter().write("{\"error\": \"Nieautoryzowany: Nieprawidłowy lub brakujący token\"}");
     }
 }

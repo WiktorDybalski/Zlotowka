@@ -51,28 +51,28 @@ public class GlobalExceptionHandler {
         log.error("Internal server error", e);
         return ResponseEntity
                 .internalServerError()
-                .body(Map.of("error", "Unexpected error occurred. Please try again later."));
+                .body(Map.of("error", "Wystąpił nieoczekiwany błąd. Proszę spróbować ponownie później"));
     }
 
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<Map<String, String>> handleNoResourceFoundException(NoResourceFoundException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Requested URL not found"));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Nie znaleziono żądanego adresu URL\n"));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<Map<String, String>> handleJsonParseException(HttpMessageNotReadableException e) {
         log.error("Received invalid request body: {}", e.getMessage());
-        return ResponseEntity.badRequest().body(Map.of("error", "Invalid request body"));
+        return ResponseEntity.badRequest().body(Map.of("error", "Nieprawidłowa treść żądania\n"));
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<Map<String, String>> handleNoHandlerFoundException(NoHandlerFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "The requested endpoint does not exist"));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Żądany endpoint nie istnieje"));
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<Map<String, String>> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        String errorMessage = String.format("Invalid type for parameter '%s'. Expected %s but got %s",
+        String errorMessage = String.format("Nieprawidłowy typ parametru '%s'. Oczekiwano %s, otrzymano %s",
                 ex.getName(),
                 ex.getRequiredType().getSimpleName(),
                 ex.getValue());
@@ -82,7 +82,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<Map<String, String>> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex) {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
-                .body(Map.of("error", "The method " + ex.getMethod() + " is not supported for this endpoint."));
+                .body(Map.of("error", "Metoda " + ex.getMethod() + " nie jest obsługiwana dla tego endpointu."));
     }
 
 
@@ -90,7 +90,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleBadCredentials(BadCredentialsException e) {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
-                .body(Map.of("error", "Incorrect email or password"));
+                .body(Map.of("error", "Niepoprawny adres e-mail lub hasło"));
     }
 
     @ExceptionHandler(UsernameNotFoundException.class)

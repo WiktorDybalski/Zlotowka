@@ -27,11 +27,11 @@ public class PeriodService {
 
     private String getPolishName(PeriodEnum period) {
         return switch (period) {
-            case DAILY -> "Dzienny";
-            case WEEKLY -> "Tygodniowy";
-            case MONTHLY -> "Miesięczny";
-            case YEARLY -> "Roczny";
-            case ONCE -> "Jednorazowy";
+            case DAILY -> "Codziennie";
+            case WEEKLY -> "Co tydzień";
+            case MONTHLY -> "Co miesiąc";
+            case YEARLY -> "Co rok";
+            case ONCE -> "Raz";
         };
     }
 }
