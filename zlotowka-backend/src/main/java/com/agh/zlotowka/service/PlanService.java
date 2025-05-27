@@ -83,10 +83,12 @@ public class PlanService {
 
     private PlanDTO getPlanDTO(Plan plan) {
         BigDecimal currentAmount = calculateCurrentBudget(plan);
-        LocalDate estimatedCompletionDate = generalPlansService.estimateCompletionDate(
-                plan,
-                plan.getRequiredAmount().subtract(subPlanRepository.getTotalSubPlanAmountCompleted(plan.getPlanId()))
-        );
+        LocalDate estimatedCompletionDate = !plan.getCompleted() ?
+                generalPlansService.estimateCompletionDate(
+                        plan,
+                        plan.getRequiredAmount().subtract(subPlanRepository.getTotalSubPlanAmountCompleted(plan.getPlanId()))
+                ) :
+                plan.getDate();
 
         return new PlanDTO(
                 plan.getPlanId(),
