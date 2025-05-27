@@ -94,7 +94,7 @@ public class GeneralPlansService {
         try {
             convertedAmount = currencyService.convertCurrency(amount, sourceCurrencyCode, targetCurrencyCode);
         } catch (CurrencyConversionException e) {
-            log.error("Unexpected error from CurrencyService", e);
+            log.error("Nieoczekiwany błąd w CurrencyService", e);
         }
         return convertedAmount;
     }
@@ -163,7 +163,7 @@ public class GeneralPlansService {
             }
         }
         catch (CurrencyConversionException e) {
-            log.error("Unexpected error from CurrencyService", e);
+            log.error("Nieoczekiwany błąd w CurrencyService", e);
         }
         return null;
     }

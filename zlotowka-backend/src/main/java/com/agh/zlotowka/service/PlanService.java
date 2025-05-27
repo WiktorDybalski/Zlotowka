@@ -119,7 +119,7 @@ public class PlanService {
     @Transactional
     public PlanDTO undoCompletePlan(Integer id) {
         Plan plan = planRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Plan with Id %d not found", id)));
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Marzenie o Id %d nie zostało znalezione", id)));
 
         validateIncompletePlan(plan);
 
@@ -131,7 +131,7 @@ public class PlanService {
 
     private void validateIncompletePlan(Plan plan) {
         if (!plan.getCompleted())
-            throw new PlanCompletionException("Plan is not completed, cannot undo completion");
+            throw new PlanCompletionException("Marzenie nie jest zrealizowane, nie można cofnąć realizacji");
     }
 
     @Transactional
@@ -152,7 +152,7 @@ public class PlanService {
 
             plan.getUser().setCurrentBudget(plan.getUser().getCurrentBudget().subtract(correctedAmount));
         } catch (CurrencyConversionException e) {
-            log.error("Unexpected error from CurrencyService", e);
+            log.error("Nieoczekiwany błąd w CurrencyService", e);
         }
 
         if (completionDate == null)
@@ -261,7 +261,7 @@ public class PlanService {
             return currentBudget.add(subPlanRepository.getTotalSubPlanAmountCompleted(plan.getPlanId()));
         }
         catch (CurrencyConversionException e) {
-            log.error("Unexpected error from CurrencyService", e);
+            log.error("Nieoczekiwany błąd w CurrencyService", e);
         }
         return BigDecimal.ZERO;
     }
