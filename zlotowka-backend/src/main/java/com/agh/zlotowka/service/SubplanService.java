@@ -61,7 +61,9 @@ public class SubplanService {
     private SubplanDTO getSubplanDTO(Subplan subplan) {
         BigDecimal actualAmount = calculateCurrentBudget(subplan);
         boolean canBeCompleted = actualAmount.compareTo(subplan.getRequiredAmount()) >= 0;
-        LocalDate estimatedCompletionDate = generalPlansService.estimateCompletionDate(subplan.getPlan(), subplan.getRequiredAmount());
+        LocalDate estimatedCompletionDate = !subplan.getCompleted() ?
+                generalPlansService.estimateCompletionDate(subplan.getPlan(), subplan.getRequiredAmount()) :
+                subplan.getDate();
 
         return new SubplanDTO(
                 subplan.getPlan().getPlanId(),
