@@ -62,7 +62,7 @@ public class GeneralTransactionController {
     }
 
     @GetMapping("/monthly-summary/{userId}")
-    public ResponseEntity<MonthlySummaryDto> getMonthlySummary(
+    public ResponseEntity<MonthlySummaryDTO> getMonthlySummary(
             @PathVariable Integer userId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
         generalTransactionService.validateUserId(userId, userDetails);
