@@ -46,7 +46,7 @@ public class SubplanController {
         return ResponseEntity.ok(completedSubplan);
     }
 
-    @PostMapping("uncomplete/{id}")
+    @PostMapping("/uncomplete/{id}")
     public ResponseEntity<SubplanDTO> uncompleteSubplan(@PathVariable Integer id) {
         SubplanDTO uncompletedSubplan = subplanService.undoCompleteSubplan(id);
         return ResponseEntity.ok(uncompletedSubplan);
