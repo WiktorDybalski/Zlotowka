@@ -17,6 +17,7 @@ export interface Dream {
   actualAmount: number;
   canBeCompleted: boolean;
   subplansCompleted: number;
+  estimatedCompletionDate: string | null; // ISO date
 }
 
 export interface SubDream {
@@ -30,6 +31,7 @@ export interface SubDream {
   actualAmount: number;
   canBeCompleted: boolean;
   date: string; // ISO date
+  estimatedCompletionDate: string | null;
 }
 
 export interface NewSubDreamReq {
@@ -135,9 +137,20 @@ export function useDreamsService() {
     );
   }
 
+  async function unCompleteDream(dreamId: number) {
+    return await sendToBackend(
+      `plan/uncomplete/${dreamId}?deleteTransaction=true`,
+      {
+        ...withAuthHeader,
+        method: "POST",
+      },
+      "Nie udało się odznaczyć marzenia jako zrealizowane"
+    );
+  }
+
   async function deleteDream(dreamId: number) {
     return await sendToBackendWithoutReturningJson(
-      `plan/${dreamId}`,
+      `plan/${dreamId}?deleteTransaction=true`,
       {
         ...withAuthHeader,
         method: "DELETE",
@@ -169,9 +182,20 @@ export function useDreamsService() {
     );
   }
 
+  async function unCompleteSubDream(subDreamId: number) {
+    return await sendToBackend(
+      `subplan/uncomplete/${subDreamId}?deleteTransaction=true`,
+      {
+        ...withAuthHeader,
+        method: "POST",
+      },
+      "Nie udało się odznaczyć subplanu jako zrealizowany"
+    );
+  }
+
   async function deleteSubDream(subDreamId: number) {
     return await sendToBackendWithoutReturningJson(
-      `subplan/${subDreamId}`,
+      `subplan/${subDreamId}?deleteTransaction=true`,
       {
         ...withAuthHeader,
         method: "DELETE",
@@ -207,5 +231,7 @@ export function useDreamsService() {
     addDream,
     modifyDream,
     modifySubDream,
+    unCompleteDream,
+    unCompleteSubDream,
   };
 }

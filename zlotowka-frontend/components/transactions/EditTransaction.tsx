@@ -87,7 +87,7 @@ export default function EditTransaction({
     },
   });
 
-  console.log("fetchedTransaction", fetchedTransaction);
+  // console.log("fetchedTransaction", fetchedTransaction);
 
   return (
     <>
