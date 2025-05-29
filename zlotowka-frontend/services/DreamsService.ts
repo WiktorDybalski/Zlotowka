@@ -126,9 +126,9 @@ export function useDreamsService() {
     );
   }
 
-  async function completeDream(dreamId: number) {
+  async function completeDream(dreamId: number, date: string) {
     return await sendToBackend(
-      `plan/complete/${dreamId}`,
+      `plan/complete/${dreamId}?completionDate=${date}`,
       {
         ...withAuthHeader,
         method: "POST",
@@ -171,9 +171,9 @@ export function useDreamsService() {
     );
   }
 
-  async function completeSubDream(subDreamId: number) {
+  async function completeSubDream(subDreamId: number, date: string) {
     return await sendToBackend(
-      `subplan/complete/${subDreamId}`,
+      `subplan/complete/${subDreamId}?completionDate=${date}`,
       {
         ...withAuthHeader,
         method: "POST",
