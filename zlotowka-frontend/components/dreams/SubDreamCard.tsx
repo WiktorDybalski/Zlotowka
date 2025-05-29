@@ -60,19 +60,30 @@ export default function SubDreamCard({
               <ProgressBar progress={subdream.actualAmount / subdream.amount} />
 
               <div className="flex flex-col gap-2 mt-3">
-                {subdream.estimatedCompletionDate && (
+                {subdream.estimatedCompletionDate && !subdream.completed && (
                   <p className="text-base">
-                    <span className="font-semibold">Uda ci się ukończyć:</span>
-                    <span className="ml-2 font-extrabold font-lato">
-                      {subdream.estimatedCompletionDate}
-                    </span>
+                    {subdream.canBeCompleted ? (
+                      <span className="font-bold">Można zrealizować!</span>
+                    ) : (
+                      <>
+                        <span className="font-semibold">
+                          Uda ci się ukończyć:
+                        </span>
+                        <span className="ml-2 font-extrabold font-lato">
+                          {subdream.estimatedCompletionDate}
+                        </span>
+                      </>
+                    )}
                   </p>
                 )}
-                {subdream.canBeCompleted && !subdream.completed && (
-                  <p className="text-sm">Można zrealizować!</p>
-                )}
-                {subdream.completed && (
-                  <p className="text-sm ">Zrealizowano!</p>
+
+                {subdream.date && subdream.completed && (
+                  <p className="text-base">
+                    <span className="font-semibold">Zrealizowano w dniu :</span>
+                    <span className="ml-2 font-extrabold font-lato">
+                      {subdream.date}
+                    </span>
+                  </p>
                 )}
                 <p className="text-base">
                   <span className="font-extrabold">Opis:</span>{" "}
