@@ -17,6 +17,8 @@ import { useSettingsService } from "@/services/SettingsService";
 import {createPayload, validateSettings} from "@/lib/utils";
 import toast from "react-hot-toast";
 import { useQueryWithToast } from "@/lib/data-grabbers";
+import PasswordPopup from "@/components/settings/PasswordPopup";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 const scrollToSection = (id: string) => {
   document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -27,6 +29,7 @@ export default function Settings(): JSX.Element {
   const UserService = useUserService();
   const settingsService = useSettingsService();
   const queryClient = useQueryClient();
+  const { setLogout } = useAuth();
   const [darkMode, setDarkMode] = useState<boolean | null>(null);
   const [notificationsByEmail, setNotificationsByEmail] = useState<
     boolean | null
@@ -117,6 +120,31 @@ export default function Settings(): JSX.Element {
       return;
     }
 
+    if (fieldName === "password") {
+      const [oldPassword, newPassword, confirmNewPassword] = value.split("::");
+      if (!oldPassword || !newPassword || !confirmNewPassword) {
+        toast.error("Uzupełnij wszystkie pola hasła");
+        return;
+      }
+      if (newPassword !== confirmNewPassword) {
+        toast.error("Nowe hasła nie są zgodne");
+        return;
+      }
+
+      settingsService
+          .changePassword(oldPassword, newPassword, confirmNewPassword)
+          .then(() => {
+            toast.success("Hasło zostało zmienione! Zaloguj się ponownie.");
+            setTimeout(() => {
+              setLogout();
+            }, 1000);
+          })
+          .catch(() => {
+            toast.error("Nie udało się zmienić hasła");
+          });
+      return;
+    }
+
     setTimeout(() => {
       const payload = createPayload(
           fieldName,
@@ -173,6 +201,13 @@ export default function Settings(): JSX.Element {
       fieldName: "email",
     },
     {
+      text: "Hasło",
+      value: "********",
+      onClick: () =>
+          openEditPopup("password", "Zmień hasło"),
+      fieldName: "password",
+    },
+    {
       text: "Numer telefonu",
       value: data?.phoneNumber || "Nie podano...",
       onClick: () =>
@@ -212,7 +247,7 @@ export default function Settings(): JSX.Element {
         setNotificationsByPhone={toggleNotificationsByPhone}
       />
 
-      {editingField.isOpen && (
+      {editingField.isOpen && editingField.fieldName !== "password" && (
         <EditFieldPopup
           onCloseAction={closeEditPopup}
           title={editingField.title}
@@ -220,6 +255,12 @@ export default function Settings(): JSX.Element {
           initialValue={editingField.value}
           onSave={handleSaveField}
         />
+      )}
+      {editingField.isOpen && editingField.fieldName === "password" && (
+          <PasswordPopup
+              onCloseAction={closeEditPopup}
+              onSave={handleSaveField}
+          />
       )}
     </div>
   );

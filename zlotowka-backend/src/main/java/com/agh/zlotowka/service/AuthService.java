@@ -21,6 +21,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
     private final UserService userService;
+    private final EmailService emailService;
 
     public Map<String, Object> login(LoginRequest loginRequest) {
         Authentication auth = authenticationManager.authenticate(
@@ -39,6 +40,7 @@ public class AuthService {
 
     public Map<String, Object> register(RegistrationRequest registrationRequest) {
         var newUser = userService.registerUser(registrationRequest);
+        emailService.sendUserWelcomeEmail(newUser.getEmail(), newUser.getFirstName());
 
         Authentication auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(newUser.getEmail(), registrationRequest.password())
@@ -51,6 +53,14 @@ public class AuthService {
                 "token", token,
                 "message", "Rejestracja zakończona pomyślnie!",
                 "user", mapToUserResponse(user)
+        );
+    }
+
+    public Map<String, Object> refreshToken(CustomUserDetails userDetails) {
+        String newToken = jwtUtil.generateToken(userDetails);
+        return Map.of(
+                "token", newToken,
+                "message", "Token odświeżony pomyślnie!"
         );
     }
 

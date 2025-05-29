@@ -29,6 +29,7 @@ export default function EditFieldPopup({
                 id={`edit-${fieldName}`}
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
+                autoComplete="off"
             />
           </div>
         </div>

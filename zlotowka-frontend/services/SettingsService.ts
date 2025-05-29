@@ -21,7 +21,20 @@ export function useSettingsService() {
       },
     );
   }
+
+  async function changePassword(oldPassword: string, newPassword: string, confirmNewPassword: string) {
+      return await sendToBackend(`user/password`, {
+          ...withAuthHeader,
+          method: "PUT",
+          body: JSON.stringify({
+              oldPassword,
+              newPassword,
+              confirmNewPassword,
+          }),
+      });
+  }
+
   return {
-    updateUserDetails,
+    updateUserDetails,changePassword,
   };
 }

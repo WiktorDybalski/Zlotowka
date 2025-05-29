@@ -30,6 +30,7 @@ public class UserService {
     private final CurrencyService currencyService;
     private final CurrencyRepository currencyRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     @PostConstruct
     public void initializeCurrencies() {
@@ -171,7 +172,13 @@ public class UserService {
             if (!request.notificationsByEmail().matches("^(true|false)$")) {
                 throw new IllegalArgumentException("Wartość powiadomień e-mail musi być 'true' lub 'false'");
             }
-            user.setNotificationsByEmail(Boolean.parseBoolean(request.notificationsByEmail()));
+            boolean oldValue = user.getNotificationsByEmail();
+            boolean newValue = Boolean.parseBoolean(request.notificationsByEmail());
+            user.setNotificationsByEmail(newValue);
+
+            if (!oldValue && newValue) {
+                emailService.sendUserOptInWelcomeEmail(user.getEmail(), user.getFirstName());
+            }
         }
 
         if (request.notificationsByPhone() != null) {
@@ -258,5 +265,6 @@ public class UserService {
         userRepository.save(user);
 
         log.info("Hasło zostało pomyślnie zaktualizowane dla użytkownika o ID: {}", user.getUserId());
+        emailService.sendUserPasswordChangedEmail(user.getEmail(), user.getFirstName());
     }
 }
