@@ -46,6 +46,12 @@ public class SubplanController {
         return ResponseEntity.ok(completedSubplan);
     }
 
+    @PostMapping("/uncomplete/{id}")
+    public ResponseEntity<SubplanDTO> uncompleteSubplan(@PathVariable Integer id) {
+        SubplanDTO uncompletedSubplan = subplanService.undoCompleteSubplan(id);
+        return ResponseEntity.ok(uncompletedSubplan);
+    }
+
     @GetMapping("/all/{planId}")
     public ResponseEntity<List<SubplanDTO>> getAllSubplans(@PathVariable Integer planId) {
         List<SubplanDTO> subplans = subplanService.getAllSubplansByPlanId(planId);
@@ -53,8 +59,11 @@ public class SubplanController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSubplan(@PathVariable Integer id) {
-        subplanService.deleteSubplan(id);
+    public ResponseEntity<Void> deleteSubplan(
+            @PathVariable Integer id,
+            @RequestParam(required = false) boolean deleteTransaction
+        ) {
+        subplanService.deleteSubplan(id, deleteTransaction);
         return ResponseEntity.noContent().build();
     }
 }

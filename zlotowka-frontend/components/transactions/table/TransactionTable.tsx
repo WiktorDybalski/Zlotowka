@@ -191,7 +191,7 @@ export function TransactionTable({ dateRange }: TransactionTableProps) {
                       className={
                         transaction.isIncome
                           ? "bg-green-200 px-3 py-1 rounded "
-                          : "bg-red-200 px-2 pb-1 rounded "
+                          : "bg-red-200 px-3 py-1 rounded "
                       }
                     >
                       {transaction.isIncome ? "+" : "-"}
