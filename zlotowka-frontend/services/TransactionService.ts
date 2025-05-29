@@ -33,7 +33,7 @@ export function useTransactionService() {
 
   async function getTransactions(): Promise<PaginatedTransactionsResponse> {
     return await sendToBackend(
-      `general-transactions/all/${userId}`,
+      `general-transactions/all/${userId}?page=1&limit=1000`,
       withAuthHeader,
       "Nie udało się pobrać transakcji"
     );
