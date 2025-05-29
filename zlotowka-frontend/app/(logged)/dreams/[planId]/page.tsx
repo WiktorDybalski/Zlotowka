@@ -6,12 +6,18 @@ import SubDreamCard from "@/components/dreams/SubDreamCard";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import { ProgressBar } from "@/components/general/ProgressBar";
 import routes from "@/routes";
-import { NewSubDreamReq, useDreamsService } from "@/services/DreamsService";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  NewSubDreamReq,
+  SubDream,
+  useDreamsService,
+} from "@/services/DreamsService";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { redirect, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import {useDreamContext} from "@/components/dreams/DreamsContext";
+import { useDreamContext } from "@/components/dreams/DreamsContext";
+import { useQueryWithToast } from "@/lib/data-grabbers";
+import AddDreamComponentPopup from "@/components/dreams/AddDreamPopUp";
 
 export default function DreamDetailsPage() {
   const { planId } = useParams();
@@ -19,7 +25,13 @@ export default function DreamDetailsPage() {
   const DreamService = useDreamsService();
   const numericPlanId = Number(planId);
 
-  const [showPopup, setShowPopup] = useState(false);
+  const [showAddSubDreamPopup, setShowAddSubDreamPopup] = useState(false);
+
+  const [showEditSubDreamPopup, setShowEditSubDreamPopup] = useState(false);
+  const [subDreamForEdit, setSubDreamForEdit] = useState<SubDream | null>(null);
+
+  const [showEditDreamPopup, setShowEditDreamPopup] = useState(false);
+
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -29,21 +41,10 @@ export default function DreamDetailsPage() {
     }
   }, [numericPlanId]);
 
-  const {
-    data: dream,
-    error,
-    isLoading,
-  } = useQuery({
+  const { data: dream, isLoading } = useQueryWithToast({
     queryKey: ["dreams", "getDreamById", planId],
     queryFn: () => DreamService.getDream(numericPlanId),
   });
-
-  useEffect(() => {
-    if (error) {
-      toast.error(`Nie udało się pobrać marzenia: ${error.message}`);
-      redirect(routes.dreams.pathname); // redirect to the dreams page if there is an error
-    }
-  }, [error]);
 
   const completeDreamMutation = useMutation({
     mutationFn: async ({ dreamId }: { dreamId: number }) => {
@@ -72,7 +73,7 @@ export default function DreamDetailsPage() {
         loading: "Dodawanie składowej marzenia...",
         success: "Składowa marzenia dodana!",
         error: (error) =>
-          `Wystąpił błąd podczas dodawania składowej marzenia marzenia: ${error.message}`,
+          `Wystąpił błąd podczas dodawania składowej marzenia: ${error.message}`,
       });
       return await res;
     },
@@ -141,14 +142,63 @@ export default function DreamDetailsPage() {
     },
   });
 
+  const modifyDreamMutation = useMutation({
+    mutationFn: async (dream: NewSubDreamReq) => {
+      const res = DreamService.modifyDream(dream, numericPlanId);
+      toast.promise(res, {
+        loading: "Modyfikowanie marzenia...",
+        success: "Marzenie zmodyfikowane!",
+        error: (error) =>
+          `Wystąpił błąd podczas modyfikowania marzenia: ${error.message}`,
+      });
+      return await res;
+    },
+    onSuccess: () => {
+      // Invalidate queries to refetch data after mutation
+      queryClient.invalidateQueries({ queryKey: ["dreams"] });
+      queryClient.invalidateQueries({
+        queryKey: ["dreams", "getDreamById", planId],
+      });
+    },
+  });
+
+  const modifySubDreamMutation = useMutation({
+    mutationFn: async ({
+      subDream,
+      subDreamId,
+    }: {
+      subDream: NewSubDreamReq;
+      subDreamId: number;
+    }) => {
+      const res = DreamService.modifySubDream(subDream, subDreamId);
+      toast.promise(res, {
+        loading: "Modyfikowanie składowej marzenia...",
+        success: "Składowa marzenia zmodyfikowana!",
+        error: (error) =>
+          `Wystąpił błąd podczas modyfikowania składowej marzenia: ${error.message}`,
+      });
+      return await res;
+    },
+    onSuccess: () => {
+      // Invalidate queries to refetch data after mutation
+      queryClient.invalidateQueries({
+        queryKey: ["dreams", "getDreamById", planId],
+      });
+    },
+  });
+
   if (isLoading || !dream) {
-    return <LoadingSpinner />; // Show a loading spinner while fetching data
+    return (
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+        <LoadingSpinner />
+      </div>
+    );
   }
 
   return (
     <>
-      {showPopup && (
-        <AddSubDreamComponentPopup
+      {showAddSubDreamPopup && (
+        <AddSubDreamComponentPopup //add subream
           onSubmit={(data) => {
             addSubDreamMutation.mutate({
               planId: dream.planId,
@@ -157,26 +207,89 @@ export default function DreamDetailsPage() {
               amount: data.amount,
               currencyId: data.currency.currencyId,
             });
-            setShowPopup(false);
+            setShowAddSubDreamPopup(false);
           }}
           onClose={() => {
-            setShowPopup(false);
+            setShowAddSubDreamPopup(false);
           }}
           currency={dream.currency}
         />
       )}
-      <div className="flex flex-col h-full">
+      {dream && showEditDreamPopup && (
+        <AddDreamComponentPopup //edit main dream
+          onClose={() => setShowEditDreamPopup(false)}
+          onSubmit={(data) => {
+            modifyDreamMutation.mutate({
+              name: data.componentName,
+              description: data.description,
+              amount: data.amount,
+              currencyId: data.currency.currencyId,
+              planId: dream.planId,
+            });
+            setShowEditDreamPopup(false);
+          }}
+          providedDream={{
+            componentName: dream.name,
+            description: dream.description,
+            amount: dream.amount,
+            currency: dream.currency,
+          }}
+          windowTitle={"Edytuj marzenie"}
+          submitButtonText={"Zapisz"}
+        />
+      )}
+      {dream && showEditSubDreamPopup && subDreamForEdit && (
+        <AddSubDreamComponentPopup //edit subdream
+          onClose={() => setShowEditSubDreamPopup(false)}
+          onSubmit={(data) => {
+            modifySubDreamMutation.mutate({
+              subDream: {
+                name: data.componentName,
+                description: data.description,
+                amount: data.amount,
+                currencyId: data.currency.currencyId,
+                planId: dream.planId,
+              },
+              subDreamId: subDreamForEdit.subplanId,
+            });
+          }}
+          currency={dream.currency}
+          windowTitle="Edytuj składową marzenia"
+          submitButtonText="Zapisz"
+          providedSubDream={{
+            componentName: subDreamForEdit.name,
+            description: subDreamForEdit.description,
+            amount: subDreamForEdit.amount,
+            currency: subDreamForEdit.currency,
+          }}
+        />
+      )}
+      <div className="flex flex-col h-full overflow-x-hidden">
         <header>
           <div className="flex flex-row items-center justify-between mb-5">
             <div className="flex items-center gap-x-2">
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold">
-                {dream.name}
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold">
+                {`# ${dream.name}`}
               </h2>
               <span
-                  className={`${dream.planId === pickedDream ? "material-symbol-outlined" : "material-symbols"}`}
-                  onClick={() => handlePickDream(dream.planId)}>
+                className={`${
+                  dream.planId === pickedDream
+                    ? "material-symbol-outlined"
+                    : "material-symbols"
+                }`}
+                onClick={() => handlePickDream(dream.planId)}
+                style={{ fontSize: "2.5rem" }}
+              >
                 keep
               </span>
+              {dream.completed && (
+                <span
+                  className="material-symbols "
+                  style={{ fontSize: "4rem" }}
+                >
+                  done
+                </span>
+              )}
             </div>
             <p className="font-lato text-xl mt-3 mb-2">
               <span>
@@ -196,64 +309,83 @@ export default function DreamDetailsPage() {
             </p>
           </div>
           <ProgressBar progress={dream.actualAmount / dream.amount} />
-          {dream.canBeCompleted && (
-            <p className="text-sm mt-6">Można wykonać!</p>
-          )}
-          {dream.completed && <p className="text-sm mt-1">Zrealizowano!</p>}
-          <p className="mt-5">Opis: {dream.description}</p>
-        </header>
-        <article className="flex-grow mt-5 w-full h-[70vh]  overflow-hidden">
-          <div className="overflow-y-auto h-full">
-            <h3 className="text-2xl font-bold mb-5">Składowe marzenia:</h3>
-            {dream.subplans.length === 0 && (
-              <p className="text-sm text-gray-500">
-                Marzenie nie ma składowych
-              </p>
+          <div className="flex flex-col gap-2 mt-3">
+            {dream.canBeCompleted && !dream.completed && (
+              <p className="text-sm">Można zrealizować!</p>
             )}
-            <div className="flex flex-col gap-5 ">
-              {dream.subplans.map((subDream) => (
-                <SubDreamCard
-                  key={subDream.subplanId}
-                  subdream={subDream}
-                  onCompleteClicked={() => {
-                    completeSubDreamMutation.mutate(subDream.subplanId);
-                  }}
-                  onDeleteClicked={() => {
-                    deleteSubDreamMutation.mutate(subDream.subplanId);
-                  }}
-                />
-              ))}
-            </div>
+            {dream.completed && (
+              <p className="text-sm">Marzenie zrealizowane!</p>
+            )}
+            <p>
+              <span className="font-extrabold">Opis:</span>{" "}
+              {dream.description ? dream.description : "Nie podano opisu"}
+            </p>
           </div>
-        </article>
-        <footer className="grid grid-cols-1 md:grid-cols-3 gap-x-10 gap-y-5 mt-10">
-          <DarkButton
-            icon={"add"}
-            text={"Dodaj składową marzenia"}
-            onClick={() => {
-              setShowPopup(true);
-            }}
-            className="bg-green-500 hover:bg-green-600 text-white"
-          />
+        </header>
+
+        <footer className="grid grid-cols-1 md:grid-cols-4 sm:grid-cols-2 gap-x-10 gap-y-5 mt-3">
           <DarkButton
             icon={"check_circle_outline"}
-            text={"Zrealizuj marzenie"}
+            text={"Zrealizuj"}
             onClick={() => {
               completeDreamMutation.mutate({
                 dreamId: numericPlanId,
               });
             }}
-            className="bg-blue-500 hover:bg-blue-600 text-white"
+            className="bg-green-600 hover:bg-green-700 "
+            disabled={!(dream.canBeCompleted && !dream.completed)}
+          />
+          <DarkButton
+            icon={"add"}
+            text={"Dodaj składową"}
+            onClick={() => {
+              setShowAddSubDreamPopup(true);
+            }}
+            disabled={dream.completed}
+          />
+          <DarkButton
+            icon={"edit"}
+            text={"Edytuj"}
+            onClick={() => {
+              setShowEditDreamPopup(true);
+            }}
+            disabled={dream.completed}
           />
           <DarkButton
             icon={"delete_outline"}
-            text={"Usuń marzenie"}
+            text={"Usuń"}
             onClick={() => {
               deleteDreamMutation.mutate();
             }}
-            className="bg-red-500 hover:bg-red-600 text-white"
+            className="bg-red-500 hover:bg-red-600 "
           />
         </footer>
+
+        <article className="flex-grow mt-12 w-full">
+          <h3 className="text-3xl md:text-4xl font-bold">Składowe marzenia</h3>
+          <hr className="mb-5 mt-2 border-gray-300" />
+          {dream.subplans.length === 0 && (
+            <p className="text-sm text-gray-500">Marzenie nie ma składowych</p>
+          )}
+          <div className="grid grid-cols-1 md:grid-cols-2  gap-5">
+            {dream.subplans.map((subDream) => (
+              <SubDreamCard
+                key={subDream.subplanId}
+                subdream={subDream}
+                onCompleteClicked={() => {
+                  completeSubDreamMutation.mutate(subDream.subplanId);
+                }}
+                onDeleteClicked={() => {
+                  deleteSubDreamMutation.mutate(subDream.subplanId);
+                }}
+                onEditClicked={() => {
+                  setSubDreamForEdit(subDream);
+                  setShowEditSubDreamPopup(true);
+                }}
+              />
+            ))}
+          </div>
+        </article>
       </div>
     </>
   );

@@ -22,14 +22,14 @@ public enum PeriodEnum {
 
     public static PeriodEnum fromPeriod(Period period) {
         if (period == null) {
-            throw new IllegalArgumentException("Period cannot be null");
+            throw new IllegalArgumentException("Okres nie może być pusty");
         }
 
         return Arrays.stream(values())
                 .filter(periodEnum -> periodEnum.getPeriod().equals(period))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "No matching PeriodEnum for: " + period));
+                        "Nie znaleziono pasującego PeriodEnum dla: " + period));
     }
 
 

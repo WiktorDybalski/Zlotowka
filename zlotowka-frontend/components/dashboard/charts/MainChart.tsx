@@ -1,4 +1,4 @@
-import {CartesianGrid, Label, Line, LineChart, XAxis, YAxis} from "recharts";
+import { CartesianGrid, Label, Line, LineChart, XAxis, YAxis } from "recharts";
 import {
   Card,
   CardContent,
@@ -6,35 +6,35 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  ChartContainer,
-  ChartTooltip,
-} from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import * as React from "react";
-import {useContext, useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { useDashboardService } from "@/services/DashboardService";
 import DarkButton from "@/components/DarkButton";
-import MainChartPopup from "@/components/dashboard/charts/MainChartPopup";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
-import toast from "react-hot-toast";
-import { useQuery } from "@tanstack/react-query";
-import {useTransactionService} from "@/services/TransactionService";
+import { useTransactionService } from "@/services/TransactionService";
 import CustomChartTooltip from "@/components/dashboard/charts/CustomTooltip";
-import {MainChartContext} from "@/components/dashboard/charts/MainChartContext";
-import {MainChartConfig} from "@/components/dashboard/charts/chartsConfig";
-import {useDreamsService} from "@/services/DreamsService";
+import { MainChartConfig } from "@/components/dashboard/charts/chartsConfig";
+import { useDreamsService } from "@/services/DreamsService";
 import { ReferenceLine } from "recharts";
-import {getRoundedDomain} from "@/lib/utils";
+import { getRoundedDomain } from "@/lib/utils";
+import { useMainChartContext } from "@/components/providers/MainChartContext";
+import MainChartPopup from "@/components/dashboard/components/MainChartPopup";
+import { useQueryWithToast } from "@/lib/data-grabbers";
 
 export function MainChart() {
   const [showMainChartPopup, setShowMainChartPopup] = useState<boolean>(false);
-  const [padding, setPadding] = useState<{ left: number; right: number }>({left: 0, right: 0});
-  const { startDate, endDate, showDreams, showSubDreams } = useContext(MainChartContext);
+  const [padding, setPadding] = useState<{ left: number; right: number }>({
+    left: 0,
+    right: 0,
+  });
+  const { startDate, endDate, showDreams, showSubDreams } =
+    useMainChartContext();
   const DashboardService = useDashboardService();
   const TransactionService = useTransactionService();
   const DreamsService = useDreamsService();
 
-  const { data: chartData, isLoading, isError, error} = useQuery({
+  const { data: rawChartData, isLoading } = useQueryWithToast({
     queryKey: [
       "dashboard",
       "mainChartData",
@@ -47,6 +47,11 @@ export function MainChart() {
         endDate.format("YYYY-MM-DD")
       ),
   });
+
+  const chartData = rawChartData?.map((item) => ({
+    ...item,
+    date: new Date(item.date).getTime(),
+  })) || [];
 
   useEffect(() => {
     const updatePadding = () => {
@@ -69,42 +74,41 @@ export function MainChart() {
     };
   }, [showDreams, showSubDreams]);
 
-  const { data: allTransactionsFromRange } = useQuery({
-    queryKey: ["allTransactionsFromRange", startDate.format("YYYY-MM-DD"), endDate.format("YYYY-MM-DD")],
+  const { data: allTransactionsFromRange } = useQueryWithToast({
+    queryKey: [
+      "allTransactionsFromRange",
+      startDate.format("YYYY-MM-DD"),
+      endDate.format("YYYY-MM-DD"),
+    ],
     queryFn: () =>
-        TransactionService.getTransactionsFromRange(
-            startDate.format("YYYY-MM-DD"),
-            endDate.format("YYYY-MM-DD")
-        ),
+      TransactionService.getTransactionsFromRange(
+        startDate.format("YYYY-MM-DD"),
+        endDate.format("YYYY-MM-DD")
+      ),
   });
 
-  const { data: dreams } = useQuery({
+  const { data: dreams } = useQueryWithToast({
     queryKey: ["dreamsWithSubplans"],
     queryFn: () => DreamsService.getChartDreamsData(),
   });
-
-  if (isError) {
-    toast.error("Failed to fetch main chart data: " + error.message);
-  }
 
   if (isLoading || !chartData || !allTransactionsFromRange) {
     return <LoadingSpinner />;
   }
 
-  const domain = showDreams && showSubDreams
+  const domain =
+    showDreams && showSubDreams
       ? getRoundedDomain(dreams)
       : showSubDreams
-          ? getRoundedDomain(dreams, 100, 'SUBPLAN')
-          : showDreams
-              ? getRoundedDomain(dreams, 100, 'PLAN')
-              : ['auto', 'auto'];
+      ? getRoundedDomain(dreams, 100, "SUBPLAN")
+      : showDreams
+      ? getRoundedDomain(dreams, 100, "PLAN")
+      : ["auto", "auto"];
 
   return (
     <>
       {showMainChartPopup && (
-        <MainChartPopup
-          onCloseAction={() => setShowMainChartPopup(false)}
-        />
+        <MainChartPopup onCloseAction={() => setShowMainChartPopup(false)} />
       )}
       <Card className="flex flex-col w-full h-full bg-transparent z-10 border-none">
         <CardHeader className="flex justify-between items-center">
@@ -130,35 +134,42 @@ export function MainChart() {
             >
               <CartesianGrid vertical={false} />
               <XAxis
-                dataKey="date"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                tickFormatter={(value) =>
-                  new Date(value).toLocaleDateString("pl-PL", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "2-digit",
-                  })
-                }
-                className="font-lato"
-                padding={padding}
+                  dataKey="date"
+                  type="number"
+                  domain={['dataMin', 'dataMax']}
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={8}
+                  tickFormatter={(value) =>
+                      new Date(value).toLocaleDateString("pl-PL", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "2-digit",
+                      })
+                  }
+                  className="font-lato"
+                  padding={padding}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
                 tickMargin={16}
-                tickFormatter={(value) => (Math.round(value / 50) * 50).toString()}
+                tickFormatter={(value) =>
+                  (Math.round(value / 50) * 50).toString()
+                }
                 className="font-lato"
                 domain={domain}
               />
               <ChartTooltip
-                  cursor={false}
-                  content={(props) =>
-                      props.active ? (
-                          <CustomChartTooltip {...props} transactions={allTransactionsFromRange.transactions} />
-                      ) : null
-                  }
+                cursor={false}
+                content={(props) =>
+                  props.active ? (
+                    <CustomChartTooltip
+                      {...props}
+                      transactions={allTransactionsFromRange.transactions}
+                    />
+                  ) : null
+                }
               />
               <Line
                 dataKey="amount"
@@ -167,40 +178,43 @@ export function MainChart() {
                 strokeWidth={2}
                 dot={true}
               />
-              {showDreams && dreams?.filter(dream => dream.planType === 'PLAN')
+              {showDreams &&
+                dreams
+                  ?.filter((dream) => dream.planType === "PLAN")
                   .map((dream, i) => (
-                  <ReferenceLine
+                    <ReferenceLine
                       key={`dream-line-${i}-${dream.name}`}
                       y={dream.requiredAmount}
                       stroke="#c82026"
                       strokeDasharray="3 3"
-                  >
-                    <Label
+                    >
+                      <Label
                         value={dream.name}
                         position="insideTopLeft"
                         fill="#c82026"
                         fontSize={12}
-                    />
-                  </ReferenceLine>
-              ))}
+                      />
+                    </ReferenceLine>
+                  ))}
 
-              {showSubDreams && dreams?.filter(dream => dream.planType === 'SUBPLAN')
+              {showSubDreams &&
+                dreams
+                  ?.filter((dream) => dream.planType === "SUBPLAN")
                   .map((dream, i) => (
-                      <ReferenceLine
-                          key={`subdream-line-${i}-${dream.name}`}
-                          y={dream.requiredAmount}
-                          stroke="#c82026"
-                          strokeDasharray="2 4"
-                      >
-                        <Label
-                            value={dream.name}
-                            position="insideTopLeft"
-                            fill="#c82026"
-                            fontSize={12}
-                        />
-                      </ReferenceLine>
-                  )
-              )}
+                    <ReferenceLine
+                      key={`subdream-line-${i}-${dream.name}`}
+                      y={dream.requiredAmount}
+                      stroke="#c82026"
+                      strokeDasharray="2 4"
+                    >
+                      <Label
+                        value={dream.name}
+                        position="insideTopLeft"
+                        fill="#c82026"
+                        fontSize={12}
+                      />
+                    </ReferenceLine>
+                  ))}
             </LineChart>
           </ChartContainer>
         </CardContent>

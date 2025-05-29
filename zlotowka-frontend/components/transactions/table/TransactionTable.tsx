@@ -1,61 +1,105 @@
 "use client";
 
 import LoadingSpinner from "@/components/general/LoadingSpinner";
-import {
-  useTransactionService,
-} from "@/services/TransactionService";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import toast from "react-hot-toast";
+import { useTransactionService } from "@/services/TransactionService";
+import { useMemo, useState } from "react";
 import EditTransactionButton from "./EditTransactionButton";
-import DeleteTransactionButton from "./DeleteTransactionButton";
 import EditTransaction from "../EditTransaction";
-import {OneTimeTransaction} from "@/interfaces/transactions/TransactionsData";
+import { DisplayedGeneralTransaction } from "@/interfaces/transactions/TransactionsData";
+import { useQueryWithToast } from "@/lib/data-grabbers";
+import dayjs from "dayjs";
 
-// Nowy grid: 4 kolumny: Data, Nazwa, Kwota, Opis
-const grid = "grid grid-cols-[10%_10%_30%_1fr] gap-4";
+// Dla md+ używamy 4 kolumn, a dla mniejszych tylko 3
+const headerGrid =
+  "grid grid-cols-3 grid-cols-[20%_25%_45%]  md:grid-cols-[15%_15%_30%_1fr] gap-4";
 
-export function TransactionTable() {
+interface TransactionTableProps {
+  dateRange?: {
+    startDate: string;
+    endDate: string;
+  };
+}
+
+function UppArrowIcon() {
+  return (
+    <span className="material-symbols text-sm" style={{ fontSize: "20px" }}>
+      arrow_upward
+    </span>
+  );
+}
+
+function DownArrowIcon() {
+  return (
+    <span className="material-symbols text-sm" style={{ fontSize: "20px" }}>
+      arrow_downward
+    </span>
+  );
+}
+
+export function TransactionTable({ dateRange }: TransactionTableProps) {
   const [showEditTransaction, setShowEditTransaction] =
     useState<boolean>(false);
   const [transactionForEdit, setTransactionForEdit] =
-    useState<OneTimeTransaction | null>(null);
+    useState<DisplayedGeneralTransaction | null>(null);
+
+  // Sortowanie
+  const [sortField, setSortField] = useState<string>("date");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+
+  const onSort = (field: string) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
 
   const TransactionService = useTransactionService();
-  const queryClient = useQueryClient();
 
-  const {
-    data: transactionList,
-    // isError: isTransactionListError,
-    // error: transactionListError,
-  } = useQuery<OneTimeTransaction[]>({
-    queryKey: ["transaction", "getTransactions"],
-    queryFn: TransactionService.getTransactions,
-  });
-
-  // if (isTransactionListError) {
-  //   toast.error(
-  //     `Nie udało się pobrać transakcji: ${transactionListError.message}`
-  //   );
-  // }
-
-  const magicTransactionDelete = useMutation({
-    mutationFn: async (transactionId: number) => {
-      const res = TransactionService.deleteTransaction(transactionId);
-      toast.promise(res, {
-        loading: "Usuwanie transakcji...",
-        success: "Transakcja usunięta pomyślnie!",
-        error: (error) =>
-          `Wystąpił błąd podczas usuwania transakcji: ${error.message}`,
-      });
-      return await res;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transaction"] });
-      queryClient.invalidateQueries({ queryKey: ["cardService"] }); //on dashboard
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] }); //on dashboard
+  const { data } = useQueryWithToast({
+    queryKey: ["transaction", "getTransactions", JSON.stringify(dateRange)],
+    queryFn: () => {
+      return dateRange
+        ? TransactionService.getTransactionsFromRange(
+            dateRange.startDate,
+            dateRange.endDate
+          )
+        : TransactionService.getTransactions();
     },
   });
+
+  const transactionList = data?.transactions;
+  const today = dayjs();
+
+  const sortedTransactionList = useMemo(() => {
+    if (!transactionList || !sortField) return transactionList;
+    return [...transactionList].sort((a, b) => {
+      if (sortField === "date") {
+        return sortDirection === "asc"
+          ? dayjs(a.date).diff(dayjs(b.date))
+          : dayjs(b.date).diff(dayjs(a.date));
+      }
+      if (sortField === "amount") {
+        return sortDirection === "asc"
+          ? a.amount - b.amount
+          : b.amount - a.amount;
+      }
+      let aValue: string, bValue: string;
+      if (sortField === "name") {
+        aValue = a.name.toLowerCase();
+        bValue = b.name.toLowerCase();
+      } else if (sortField === "description") {
+        aValue = a.description.toLowerCase();
+        bValue = b.description.toLowerCase();
+      } else {
+        return 0;
+      }
+      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [transactionList, sortField, sortDirection]);
 
   return (
     <>
@@ -65,52 +109,127 @@ export function TransactionTable() {
           transaction={transactionForEdit}
         />
       )}
-      <section className="h-full text-xs xl:text-sm 2xl:text-base">
+      <section className="h-full text-xs xl:text-sm">
         <div className="h-full overflow-hidden p-6">
-          {/* Nagłówki gridu */}
-          <div className={`${grid} font-bold border-b pb-2`}>
-            <div>Data</div>
-            <div>Kwota</div>
-            <div>Nazwa Transakcji</div>
-            <div>Opis</div>
+          {/* Nagłówki gridu – dla mniejszych niż md kolumna "Opis" jest ukryta */}
+          <div
+            className={`${headerGrid} font-bold border-b pb-2`}
+            style={{ overflowY: "auto", scrollbarGutter: "stable" }}
+          >
+            <div
+              className="cursor-pointer flex items-center"
+              onClick={() => onSort("date")}
+            >
+              <span className="mr-2">Data</span>
+              {sortField === "date" &&
+                (sortDirection === "asc" ? (
+                  <UppArrowIcon />
+                ) : (
+                  <DownArrowIcon />
+                ))}
+            </div>
+            <div
+              className="cursor-pointer flex items-center"
+              onClick={() => onSort("amount")}
+            >
+              <span className="mr-2">Kwota</span>
+              {sortField === "amount" &&
+                (sortDirection === "asc" ? (
+                  <UppArrowIcon />
+                ) : (
+                  <DownArrowIcon />
+                ))}
+            </div>
+            <div
+              className="cursor-pointer flex items-center"
+              onClick={() => onSort("name")}
+            >
+              <span className="mr-2">Nazwa Transakcji</span>
+              {sortField === "name" &&
+                (sortDirection === "asc" ? (
+                  <UppArrowIcon />
+                ) : (
+                  <DownArrowIcon />
+                ))}
+            </div>
+            <div
+              className="cursor-pointer items-center hidden md:flex"
+              onClick={() => onSort("description")}
+            >
+              <span className="mr-2">Opis</span>
+              {sortField === "description" &&
+                (sortDirection === "asc" ? (
+                  <UppArrowIcon />
+                ) : (
+                  <DownArrowIcon />
+                ))}
+            </div>
           </div>
-          {/* Wiersze danych */}
-          <div className="h-full overflow-auto">
-            {transactionList ? (
-              transactionList.map((transaction, idx) => (
+          {/* Wiersze danych – kolumna "Opis" ukryta na mniejszych ekranach */}
+          <div
+            className="h-full overflow-y-auto overflow-x-hidden"
+            style={{
+              scrollbarColor: "#3c3c3c transparent",
+              scrollbarWidth: "thin",
+            }}
+          >
+            {sortedTransactionList ? (
+              sortedTransactionList.map((transaction, idx) => (
                 <div
                   key={idx}
-                  className={`${grid} py-2 border-b last:border-0`}
+                  className={`${headerGrid} py-2 border-b last:border-0`}
                 >
-                  <div>{transaction.date}</div>
-                  <div>
+                  <div className="font-lato items-center flex">
+                    {dayjs(transaction.date).isBefore(today, "day") ? (
+                      <del>{transaction.date}</del>
+                    ) : (
+                      transaction.date
+                    )}
+                  </div>
+                  <div className="font-lato items-center flex">
                     <span
                       className={
                         transaction.isIncome
-                          ? "bg-green-200 px-2 pb-1 rounded"
-                          : "bg-red-200 px-2 pb-1 rounded"
+                          ? "bg-green-200 px-3 py-1 rounded "
+                          : "bg-red-200 px-2 pb-1 rounded "
                       }
                     >
                       {transaction.isIncome ? "+" : "-"}
                       {transaction.amount} {transaction.currency.isoCode}
                     </span>
                   </div>
-                  <div>{transaction.name}</div>
-                  <div className=" w-full flex items-center justify-between ">
+                  <div className="hidden md:flex items-center">
+                    {transaction.period !== "ONCE" ? (
+                      <span className="bg-blue-200 px-3 py-1 rounded">
+                        {`↻ ${transaction.name}`}
+                      </span>
+                    ) : (
+                      transaction.name
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between md:hidden">
+                    {transaction.period !== "ONCE" ? (
+                      <span className="bg-blue-200 px-3 py-1 rounded">
+                        {`↻ ${transaction.name}`}
+                      </span>
+                    ) : (
+                      transaction.name
+                    )}
+                    <EditTransactionButton
+                      onClick={() => {
+                        setTransactionForEdit(transaction);
+                        setShowEditTransaction(true);
+                      }}
+                    />
+                  </div>
+                  <div className="hidden md:flex w-full  items-center justify-between">
                     <span>{transaction.description}</span>
-                    <div className="flex items-center gap-2 md:pr-5">
+                    <div className="md:pr-2">
                       <EditTransactionButton
                         onClick={() => {
                           setTransactionForEdit(transaction);
                           setShowEditTransaction(true);
                         }}
-                      />
-                      <DeleteTransactionButton
-                        onClick={() =>
-                          magicTransactionDelete.mutate(
-                            transaction.transactionId
-                          )
-                        }
                       />
                     </div>
                   </div>

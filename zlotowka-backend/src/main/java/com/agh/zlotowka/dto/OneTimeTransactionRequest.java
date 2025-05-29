@@ -8,30 +8,30 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record OneTimeTransactionRequest(
-        @NotNull(message = "User Id cannot be null")
-        @Positive(message = "User Id must be positive")
+        @NotNull(message = "ID użytkownika nie może być puste")
+        @Positive(message = "ID użytkownika musi być liczbą dodatnią")
         Integer userId,
 
-        @NotBlank(message = "Name cannot be blank")
-        @Size(max = 512, message = "Name cannot exceed 512 characters")
+        @NotBlank(message = "Nazwa nie może być pusta")
+        @Size(max = 512, message = "Nazwa nie może przekraczać 512 znaków")
         String name,
 
-        @NotNull(message = "Amount cannot be null")
-        @Positive(message = "Amount must be positive")
+        @NotNull(message = "Kwota nie może być pusta")
+        @Positive(message = "Kwota musi być liczbą dodatnią")
         @MaxDecimalPlaces(2)
         BigDecimal amount,
 
-        @NotNull(message = "Currency ID cannot be null")
+        @NotNull(message = "ID waluty nie może być puste")
         Integer currencyId,
 
-        @NotNull(message = "Amount cannot be null")
+        @NotNull(message = "Informacja o typie transakcji nie może być pusta")
         Boolean isIncome,
 
-        @NotNull(message = "Payment date cannot be null")
+        @NotNull(message = "Data płatności nie może być pusta")
         @DateAfter2000
         LocalDate date,
 
-        @Size(max = 512, message = "Description cannot exceed 512 characters")
+        @Size(max = 512, message = "Opis nie może przekraczać 512 znaków")
         String description
 ) {
 }

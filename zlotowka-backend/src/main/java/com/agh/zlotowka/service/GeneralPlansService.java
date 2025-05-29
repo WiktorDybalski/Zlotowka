@@ -29,7 +29,7 @@ public class GeneralPlansService {
 
     public List<GeneralPlanDTO> getAllUncompletedPlans(Integer userId) {
         String userCurrencyCode = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("User with ID %d not found", userId)))
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono użytkownika o ID %d", userId)))
                 .getCurrency()
                 .getIsoCode();
 

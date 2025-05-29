@@ -32,7 +32,7 @@ public class AuthService {
 
         return Map.of(
                 "token", token,
-                "message", "Login completed successfully!",
+                "message", "Logowanie zakończone pomyślnie!",
                 "user", mapToUserResponse(user)
         );
     }
@@ -49,7 +49,7 @@ public class AuthService {
 
         return Map.of(
                 "token", token,
-                "message", "Registration completed successfully!",
+                "message", "Rejestracja zakończona pomyślnie!",
                 "user", mapToUserResponse(user)
         );
     }

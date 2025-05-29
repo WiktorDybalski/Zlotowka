@@ -22,7 +22,6 @@ public class ScheduledTransactionService {
     private final UserService userService;
 
     public void addOneTimeTransactionToUserBudget(List<OneTimeTransaction> oneTimeTransactionsToAdd) {
-        log.info("Adding oneTimeTransactions to user budget...");
         for (OneTimeTransaction transaction : oneTimeTransactionsToAdd) {
             userService.addTransactionAmountToBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
         }
@@ -30,14 +29,12 @@ public class ScheduledTransactionService {
 
     @Transactional
     public void updateDataWithNewTransaction(RecurringTransaction recurringTransaction) {
-        log.info("Updating data with new transaction from recurring...");
         updateRecurringTransaction(recurringTransaction);
         addOneTimeTransactionFromRecurring(recurringTransaction);
     }
 
     @Transactional
     public void addOneTimeTransactionFromRecurring(RecurringTransaction recurringTransaction) {
-        log.info("Adding oneTimeTransaction from recurring...");
         OneTimeTransaction oneTimeTransaction = OneTimeTransaction.builder()
                 .user(recurringTransaction.getUser())
                 .name(recurringTransaction.getName())
@@ -58,7 +55,6 @@ public class ScheduledTransactionService {
 
     @Transactional
     public void updateRecurringTransaction(RecurringTransaction recurringTransaction) {
-        log.info("Updating recurring transaction...");
         PeriodEnum interval = recurringTransaction.getInterval();
         LocalDate newPaymentDate = interval.addToDate(recurringTransaction.getNextPaymentDate(), recurringTransaction.getFirstPaymentDate());
 

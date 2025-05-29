@@ -53,14 +53,14 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 } else {
-                    throw new IllegalArgumentException("Invalid JWT token.");
+                    throw new IllegalArgumentException("Nieprawidłowy token JWT.");
                 }
             }
 
         } catch (EntityNotFoundException e) {
-            throw new EntityNotFoundException("User from JWT token not found: " + e.getMessage());
+            throw new EntityNotFoundException("Nie znaleziono użytkownika z tokenu JWT: " + e.getMessage());
         } catch (Exception e) {
-            throw new IllegalArgumentException("JWT authentication failed: " + e.getMessage());
+            throw new IllegalArgumentException("Nieudana autoryzacja JWT: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);

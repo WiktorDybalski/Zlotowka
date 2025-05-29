@@ -41,11 +41,11 @@ public class UserService {
     @Transactional
     public User registerUser(RegistrationRequest request) {
         if (userRepository.findByEmail(request.email()).isPresent()) {
-            throw new IllegalArgumentException("User with the given email address already exists");
+            throw new IllegalArgumentException("Użytkownik z podanym adresem e-mail już istnieje");
         }
 
         Currency defaultCurrency = currencyRepository.findByIsoCode("PLN")
-                .orElseThrow(() -> new EntityNotFoundException("Default currency PLN not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Domyślna waluta PLN nie została znaleziona"));
 
 
         User newUser = User.builder()
@@ -70,7 +70,7 @@ public class UserService {
         BigDecimal amountInUserCurrency;
 
         Currency requestCurrency = currencyRepository.findById(currencyId)
-                .orElseThrow(() -> new EntityNotFoundException("Currency service: Currency not found with ID: " + currencyId));
+                .orElseThrow(() -> new EntityNotFoundException("Usługa walutowa: Waluta o ID: " + currencyId + " nie została znaleziona"));
 
         try {
             if (user.getCurrency().getCurrencyId().equals(currencyId)) {
@@ -80,13 +80,13 @@ public class UserService {
             }
             addTransactionToBudget(user, budget, amountInUserCurrency, !isIncome);
         } catch (CurrencyConversionException e) {
-            log.error("Currency conversion failed", e);
+            log.error("Konwersja waluty nie powiodła się", e);
         }
     }
 
     public UserResponse getCurrentUser(CustomUserDetails userDetails) {
         User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Użytkownik nie został znaleziony"));
 
         return new UserResponse(
                 user.getUserId(),
@@ -109,7 +109,7 @@ public class UserService {
         BigDecimal amountInUserCurrency;
 
         Currency requestCurrency = currencyRepository.findById(currencyId)
-                .orElseThrow(() -> new EntityNotFoundException("Currency service: Currency not found with ID: " + currencyId));
+                .orElseThrow(() -> new EntityNotFoundException("Usługa walutowa: Waluta o ID: " + currencyId + " nie została znaleziona"));
 
         try {
             if (user.getCurrency().equals(requestCurrency)) {
@@ -119,7 +119,7 @@ public class UserService {
             }
             addTransactionToBudget(user, budget, amountInUserCurrency, isIncome);
         } catch (CurrencyConversionException e) {
-            log.error("Currency conversion failed", e);
+            log.error("Konwersja waluty nie powiodła się", e);
         }
     }
 
@@ -135,42 +135,49 @@ public class UserService {
     @Transactional
     public UserResponse updateUserDetails(UserDetails userDetails, UserDetailsRequest request) {
         if (request == null) {
-            throw new IllegalArgumentException("Update request cannot be null");
+            throw new IllegalArgumentException("Żądanie aktualizacji nie może być puste");
         }
 
         User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Użytkownik nie został znaleziony"));
 
-        if (request.email() != null && !request.email().equals(user.getEmail()) &&
-                userRepository.findByEmail(request.email()).isPresent()) {
-            throw new IllegalArgumentException("Email is already in use");
+        if (request.email() != null) {
+            validateAndUpdateEmail(request, user);
         }
 
         if (request.firstName() != null) {
-            user.setFirstName(request.firstName());
+            validateAndUpdateName("First", request.firstName(), user);
         }
 
         if (request.lastName() != null) {
-            user.setLastName(request.lastName());
-        }
-
-        if (request.email() != null) {
-            user.setEmail(request.email());
+            validateAndUpdateName("Last", request.lastName(), user);
         }
 
         if (request.phoneNumber() != null) {
+            if (!request.phoneNumber().matches("^\\d{9}$")) {
+                throw new IllegalArgumentException("Numer telefonu musi składać się dokładnie z 9 cyfr");
+            }
             user.setPhoneNumber(request.phoneNumber());
         }
 
         if (request.darkMode() != null) {
+            if (!request.darkMode().matches("^(true|false)$")) {
+                throw new IllegalArgumentException("Wartość trybu ciemnego musi być 'true' lub 'false'");
+            }
             user.setDarkMode(Boolean.parseBoolean(request.darkMode()));
         }
 
         if (request.notificationsByEmail() != null) {
+            if (!request.notificationsByEmail().matches("^(true|false)$")) {
+                throw new IllegalArgumentException("Wartość powiadomień e-mail musi być 'true' lub 'false'");
+            }
             user.setNotificationsByEmail(Boolean.parseBoolean(request.notificationsByEmail()));
         }
 
         if (request.notificationsByPhone() != null) {
+            if (!request.notificationsByPhone().matches("^(true|false)$")) {
+                throw new IllegalArgumentException("Wartość powiadomień telefonicznych musi być 'true' lub 'false'");
+            }
             user.setNotificationsByPhone(Boolean.parseBoolean(request.notificationsByPhone()));
         }
 
@@ -190,30 +197,66 @@ public class UserService {
         );
     }
 
+    private void validateAndUpdateName(String flag, String name, User user) {
+        if (name.isEmpty()) {
+            throw new IllegalArgumentException(("First".equals(flag) ? "Imię" : "Nazwisko") + " nie może być puste");
+        }
+        if (name.length() < 2 || name.length() > 50) {
+            throw new IllegalArgumentException(("First".equals(flag) ? "Imię" : "Nazwisko") + " musi zawierać od 2 do 50 znaków");
+        }
+        if (!name.matches("^[a-zA-ZąćęłńóśźżĄĆĘŁŃÓŚŹŻ\\s-]+$")) {
+            throw new IllegalArgumentException(("First".equals(flag) ? "Imię" : "Nazwisko") + " może zawierać tylko litery, spacje i myślniki");
+        }
+        if ("First".equals(flag)) {
+            user.setFirstName(name);
+        } else {
+            user.setLastName(name);
+        }
+    }
+
+    private void validateAndUpdateEmail(UserDetailsRequest request, User user) {
+        if (!request.email().matches("^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$")) {
+            throw new IllegalArgumentException("Nieprawidłowy format adresu e-mail");
+        }
+        if (!request.email().equals(user.getEmail()) &&
+                userRepository.findByEmail(request.email()).isPresent()) {
+            throw new IllegalArgumentException("Adres e-mail jest już używany");
+        }
+        user.setEmail(request.email());
+    }
+
     @Transactional
     public void updateUserPassword(UserDetails userDetails, UpdatePasswordRequest request) {
         if (request == null) {
-            throw new IllegalArgumentException("Password update request cannot be null");
+            throw new IllegalArgumentException("Żądanie aktualizacji hasła nie może być puste");
         }
 
         if (request.newPassword() == null || request.oldPassword() == null || request.confirmNewPassword() == null) {
-            throw new IllegalArgumentException("Passwords cannot be null");
+            throw new IllegalArgumentException("Hasła nie mogą być puste");
+        }
+
+        if (request.newPassword().length() < 6) {
+            throw new IllegalArgumentException("Nowe hasło musi mieć co najmniej 6 znaków");
         }
 
         User user = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Użytkownik nie został znaleziony"));
 
         if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Current password is incorrect");
+            throw new IllegalArgumentException("Aktualne hasło jest nieprawidłowe");
         }
 
         if (!request.newPassword().equals(request.confirmNewPassword())) {
-            throw new IllegalArgumentException("New password and confirmation do not match");
+            throw new IllegalArgumentException("Nowe hasło i potwierdzenie nie są zgodne");
+        }
+
+        if (passwordEncoder.matches(request.newPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Nowe hasło musi być różne od obecnego hasła");
         }
 
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
 
-        log.info("Password updated successfully for user ID: {}", user.getUserId());
+        log.info("Hasło zostało pomyślnie zaktualizowane dla użytkownika o ID: {}", user.getUserId());
     }
 }

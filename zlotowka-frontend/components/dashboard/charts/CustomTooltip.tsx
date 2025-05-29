@@ -17,13 +17,19 @@ export default function CustomChartTooltip({
       .filter((tx) => tx.date === hoveredDate)
       .sort((a, b) => a.amount - b.amount);
 
+
   return (
       <div className="bg-white p-2 rounded shadow-md text-sm font-lato">
-        <div className="font-bold mb-1">
-          Stan konta: {payload[0].value} PLN
-        </div>
-        {dayTransactions.length > 0 ? (
+          {dayTransactions.length > 0 ? (
+              <>
+              <div className="font-bold mb-1">
+                  Data: {dayTransactions[0].date}
+              </div>
+            <div className="font-bold mb-1">
+              Stan konta: {payload[0].value} PLN
+            </div>
             <ul className="mt-1 space-y-1">
+
               {dayTransactions.map((tx) => (
                   <li key={tx.transactionId}>
               <span
@@ -38,6 +44,7 @@ export default function CustomChartTooltip({
                   </li>
               ))}
             </ul>
+              </>
         ) : (
             <div className="text-muted">Brak transakcji</div>
         )}

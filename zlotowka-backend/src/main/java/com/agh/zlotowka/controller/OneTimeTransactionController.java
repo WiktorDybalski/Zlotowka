@@ -51,7 +51,4 @@ public class OneTimeTransactionController {
         oneTimeTransactionService.deleteTransaction(id);
         return ResponseEntity.noContent().build();
     }
-
-
-
 }

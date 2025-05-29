@@ -1,8 +1,14 @@
-"use client"
+"use client";
 
-import {createContext, ReactNode, useContext, useEffect, useState} from "react";
-import { useQuery } from "@tanstack/react-query";
-import {Dream, useDreamsService} from "@/services/DreamsService";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { Dream, useDreamsService } from "@/services/DreamsService";
+import { useQueryWithToast } from "@/lib/data-grabbers";
 
 type DreamContextType = {
   pickedDream: number | null;
@@ -15,7 +21,7 @@ export const DreamProvider = ({ children }: { children: ReactNode }) => {
   const [pickedDream, setPickedDream] = useState<number | null>(null);
   const DreamService = useDreamsService();
 
-  const { data: dreams } = useQuery<Dream[]>({
+  const { data: dreams } = useQueryWithToast<Dream[]>({
     queryKey: ["dreams", "getAllDreams"],
     queryFn: DreamService.getAllDreams,
     enabled: pickedDream === null && typeof window !== "undefined",
@@ -41,9 +47,9 @@ export const DreamProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-      <DreamContext.Provider value={{ pickedDream, handlePickDream }}>
-        {children}
-      </DreamContext.Provider>
+    <DreamContext.Provider value={{ pickedDream, handlePickDream }}>
+      {children}
+    </DreamContext.Provider>
   );
 };
 

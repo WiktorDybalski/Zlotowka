@@ -21,21 +21,28 @@ export default function DreamCard({ dream }: DreamCardProps) {
   if (dream.canBeCompleted) completedMessage = "Można wykonać!";
   if (dream.completed) completedMessage = "Zrealizowano!";
 
-
   return (
-    <figure style={{ width: "370px", height: "270px" }}>
+    <figure>
       <GenericCard
-        className={`pt-4 ${dream.completed ? "bg-lightAccent" : ""}`}
+        className={`pt-1 ${dream.completed ? "bg-lightAccent" : ""}`}
       >
         <Link href={`/dreams/${dream.planId}`}>
           <ThreeElementsCard
             top={
               <>
-                <p className="text-3xl font-semibold flex">
-
+                <div className="flex items-center gap-x-2">
                   <span className="mr-4">#</span>
                   <span>{dream.name}</span>
-                </p>
+                  {dream.completed && (
+                    <span
+                      className="material-symbols "
+                      style={{ fontSize: "1.7rem" }}
+                    >
+                      done
+                    </span>
+                  )}
+                </div>
+
                 <p className="font-lato text-xl mt-3 mb-2">
                   <span>
                     {Math.min(dream.actualAmount, dream.amount).toLocaleString(
@@ -53,7 +60,9 @@ export default function DreamCard({ dream }: DreamCardProps) {
                   </span>
                 </p>
                 <ProgressBar progress={dream.actualAmount / dream.amount} />
-                <p className="text-sm mt-6">{truncatedDescription}</p>
+                <p className="text-sm mt-6 overflow-hidden whitespace-nowrap text-ellipsis">
+                  {truncatedDescription}
+                </p>
               </>
             }
             middle={<></>}

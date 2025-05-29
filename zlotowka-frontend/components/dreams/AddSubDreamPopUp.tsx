@@ -31,16 +31,21 @@ interface AddSubDreamComponentPopupProps {
   onSubmit: (data: DreamComponentData) => void;
   onClose: () => void;
   currency: Currency;
+  providedSubDream?: DreamComponentData;
+  windowTitle?: string;
+  submitButtonText?: string;
 }
 
 export default function AddSubDreamComponentPopup({
   onSubmit,
   onClose,
   currency,
+  providedSubDream = defaultDreamComponentData,
+  windowTitle = "Dodaj nową składową marzenia",
+  submitButtonText = "Dodaj składową marzenia",
 }: AddSubDreamComponentPopupProps) {
-  const [formData, setFormData] = useState<DreamComponentData>(
-    defaultDreamComponentData
-  );
+  const [formData, setFormData] =
+    useState<DreamComponentData>(providedSubDream);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -85,7 +90,7 @@ export default function AddSubDreamComponentPopup({
 
   return (
     <GenericPopup
-      title="Dodaj składową marzenia"
+      title={windowTitle}
       onCloseAction={onClose}
       showConfirm={false}
     >
@@ -126,7 +131,7 @@ export default function AddSubDreamComponentPopup({
             name="currency"
             value={formData.currency.currencyId}
             onChange={handleInputChange}
-            className="border border-neutral-300 rounded px-4 py-2 w-32 bg-background"
+            className="border border-neutral-300 rounded px-4 py-2 w-32 bg-background  disabled:cursor-not-allowed"
             disabled
           >
             <option key={currency.currencyId} value={currency.currencyId}>
@@ -137,7 +142,7 @@ export default function AddSubDreamComponentPopup({
         <div className="mt-7">
           <DarkButton
             icon="add"
-            text="Dodaj składową marzenia"
+            text={submitButtonText}
             onClick={handleSubmit}
           />
         </div>

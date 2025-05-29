@@ -1,11 +1,11 @@
+import { useQueryWithToast } from "@/lib/data-grabbers";
 import { useUserService } from "@/services/UserService";
-import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import toast from "react-hot-toast";
 
 export default function UserInfo() {
   const UserService = useUserService();
-  const { data } = useQuery({
+  const { data } = useQueryWithToast({
     queryKey: ["user"],
     queryFn: UserService.fetchUserData,
   });
