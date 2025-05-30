@@ -98,7 +98,7 @@ export default function MainChartPopup({ onCloseAction }: MainChartPopupProps) {
         </div>
 
         <div className="py-1">
-          <h3 className="my-2">Szybki wybór twoja stara</h3>
+          <h3 className="my-2">Szybki wybór</h3>
           <QuickDates
             setTempStartDate={setTempStartDate}
             setTempEndDate={setTempEndDate}
