@@ -5,11 +5,13 @@ import LightLink from "@/components/general/LightLink";
 import FormInput from "@/components/login_pages/FormInput";
 import RegisterButton from "@/components/general/Button";
 
-interface FormInputData {
+export interface FormInputData {
   id: "firstName" | "lastName" | "email" | "password" | string;
   type?: "password" | "email" | "text";
   placeholder: string;
   inputLeftElement?: React.ReactNode;
+  defaultValue?: string;
+  readOnly?: boolean;
 }
 
 interface LinkData {
@@ -51,6 +53,9 @@ export default function RegistrationForm({
 
     // Data validation
     inputs.forEach((input) => {
+      if (input.readOnly){
+        return;
+      }
       if (!formData[input.id] || formData[input.id].trim() === "") {
         newErrors[input.id] = "To pole jest wymagane.";
       } else if (input.id === "email" && !emailRegex.test(formData[input.id])) {
@@ -91,6 +96,8 @@ export default function RegistrationForm({
             type={input.type}
             placeholder={input.placeholder}
             inputLeftElement={input.inputLeftElement}
+            defaultValue={input.defaultValue}
+            readOnly={input.readOnly}
             className="w-full"
             onChange={(e) => handleChange(input.id, e.target.value)}
             errorMessage={errors[input.id]}

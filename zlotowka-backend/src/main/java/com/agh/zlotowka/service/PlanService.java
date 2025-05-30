@@ -5,6 +5,7 @@ import com.agh.zlotowka.dto.PlanRequest;
 import com.agh.zlotowka.exception.*;
 import com.agh.zlotowka.model.*;
 import com.agh.zlotowka.repository.*;
+import com.agh.zlotowka.security.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -241,5 +242,18 @@ public class PlanService {
             log.error("Unexpected error from CurrencyService", e);
         }
         return BigDecimal.ZERO;
+    }
+
+    public void validateUserId(Integer userId, CustomUserDetails userDetails) {
+        if (!userId.equals(userDetails.getUser().getUserId())) {
+            throw new IllegalArgumentException("Dostęp zabroniony");
+        }
+    }
+    public void validateOwnershipByPlanId(Integer planId, CustomUserDetails userDetails) {
+        Plan plan = planRepository.findById(planId)
+                .orElseThrow(() -> new EntityNotFoundException("Plan nie został znaleziony"));
+        if (!plan.getUser().getUserId().equals(userDetails.getUser().getUserId())) {
+            throw new IllegalArgumentException("Dostęp zabroniony");
+        }
     }
 }

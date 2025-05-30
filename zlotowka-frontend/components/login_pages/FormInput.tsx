@@ -10,6 +10,8 @@ interface FormInputProps {
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   required?: boolean;
   errorMessage?: string; // Jeśli jest zapala na czerwono
+  defaultValue?: string;
+  readOnly?: boolean;
 }
 
 export default function FormInput({
@@ -21,7 +23,7 @@ export default function FormInput({
   inputLeftElement,
   onChange,
   required = true,
-  errorMessage,
+  errorMessage, defaultValue,readOnly,
 }: FormInputProps) {
   return (
     (label = errorMessage ? errorMessage : label), //podmiana label na errorMessage
@@ -55,6 +57,8 @@ export default function FormInput({
             placeholder={placeholder}
             onChange={onChange}
             required={required}
+            defaultValue={defaultValue}
+            readOnly={readOnly}
             className={clsx(
               "w-full border rounded-md py-2 px-3 focus:outline-none focus:ring-2",
               inputLeftElement ? "pl-10" : "",
