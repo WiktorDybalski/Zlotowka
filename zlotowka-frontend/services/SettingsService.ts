@@ -12,14 +12,15 @@ export function useSettingsService() {
   async function updateUserDetails(
     details: UserDetailsRequest
   ): Promise<UserResponse> {
-    return await sendToBackend(
-      `user/user-details`,
-      {
-        ...withAuthHeader,
-        method: "PUT",
-        body: JSON.stringify(details),
-      },
-    );
+      return await sendToBackend(
+          `user/user-details`,
+          {
+              ...withAuthHeader,
+              method: "PUT",
+              body: JSON.stringify(details),
+          }
+      );
+
   }
   return {
     updateUserDetails,

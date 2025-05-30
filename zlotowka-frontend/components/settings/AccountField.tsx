@@ -9,7 +9,7 @@ export const AccountField: React.FC<AccountFieldProps> = ({ text, value, avatar,
       <div className="flex row-start-2 sm:row-start-1 justify-left xl:justify-center items-center">
         {avatar && <div>{avatar}</div>}
         {value && (
-            <span className="text-neutral-600 text-md xl:text-lg font-lato">
+            <span className="text-neutral-600 dark:text-lightAccent text-md xl:text-lg font-lato">
           {value}
         </span>
         )}
