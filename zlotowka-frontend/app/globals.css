@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+html {
+  @apply transition-colors duration-200;
+}
+
 p {
   padding: 0;
 }
@@ -13,6 +19,7 @@ p {
 
 @theme {
   /* Tailwind CSS zmienne*/
+  --color-dark: #1d1d1d;
   --color-accent: #262626;
   --color-lightAccent: #f2f2f7;
   --color-lightAccentDark: #303031;
@@ -21,6 +28,7 @@ p {
   --color-backgroundDark: #3a3a3a;
   --color-backgroundLightDark: #8e8e93;
   --color-error: #fb2c36;
+  --color-veryDark: #141414;
   --color-border-color: oklch(27.27% 0 0 / 0.5);
   --font-lato: "Lato", sans-serif;
 }
@@ -58,7 +66,7 @@ input {
 }
 
 .chart-options-buttons {
-  @apply px-3 py-1 border-[1px] rounded border-border-color transition-colors duration-200 hover:bg-accent hover:text-background hover:cursor-pointer;
+  @apply px-3 py-1  rounded  transition-colors duration-200 border-[1px] border-neutral-300 hover:bg-neutral-300 dark:border-none dark:bg-accent dark:hover:bg-veryDark dark:text-background hover:cursor-pointer;
 }
 
 .form-input {

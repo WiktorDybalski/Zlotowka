@@ -152,7 +152,7 @@ export default function AddDreamComponentPopup({
               name="currency"
               value={formData.currency.currencyId}
               onChange={handleInputChange}
-              className="border border-neutral-300 rounded px-4 py-2 w-32 bg-background"
+              className="border border-neutral-300 rounded px-4 py-2 w-32 bg-background dark:bg-dark"
             >
               {currencyList.map((currency) => (
                 <option key={currency.currencyId} value={currency.currencyId}>
