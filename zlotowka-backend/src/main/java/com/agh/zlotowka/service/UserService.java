@@ -267,4 +267,15 @@ public class UserService {
         log.info("Hasło zostało pomyślnie zaktualizowane dla użytkownika o ID: {}", user.getUserId());
         emailService.sendUserPasswordChangedEmail(user.getEmail(), user.getFirstName());
     }
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Nie znaleziono użytkownika o emailu: " + email)
+                );
+    }
+
+    public void updatePassword(User user, String rawPassword) {
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        userRepository.save(user);
+    }
 }

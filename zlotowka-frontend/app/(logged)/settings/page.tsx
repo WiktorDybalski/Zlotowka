@@ -132,9 +132,14 @@ export default function Settings(): JSX.Element {
       }
 
       settingsService
-          .changePassword(oldPassword, newPassword, confirmNewPassword)
+          .changePassword({
+            oldPassword,
+            newPassword,
+            confirmNewPassword,
+          })
           .then(() => {
             toast.success("Hasło zostało zmienione! Zaloguj się ponownie.");
+            closeEditPopup();
             setTimeout(() => {
               setLogout();
             }, 1000);

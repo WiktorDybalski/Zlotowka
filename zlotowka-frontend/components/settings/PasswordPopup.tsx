@@ -15,7 +15,6 @@ export default function PasswordPopup({ onCloseAction, onSave }: PasswordPopupPr
 
     const handleSave = () => {
         onSave(`${oldPassword}::${newPassword}::${confirmNewPassword}`, "password");
-        onCloseAction();
     };
 
     return (

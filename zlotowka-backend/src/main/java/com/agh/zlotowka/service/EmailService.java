@@ -19,6 +19,7 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
+            helper.setFrom("mail@example.com");
             helper.setTo(email.getTo());
             helper.setSubject(email.getSubject());
             helper.setText(email.getBody(), true);
@@ -96,5 +97,28 @@ public class EmailService {
                 .subject("Powiadomienia e-mail zostały aktywowane")
                 .body(htmlBody)
                 .build());
+    }
+    public void sendForgotPasswordTokenEmail(String to, String firstName, String token) {
+        String htmlBody = """
+        <html>
+          <body style="font-family: sans-serif; background: #f9f9f9; padding: 20px;">
+            <div style="background: #ffffff; border-radius: 8px; padding: 20px; max-width: 600px; margin: auto;">
+              <h2 style="color: #264653;">Cześć %s!</h2>
+              <p>Otrzymaliśmy prośbę o zresetowanie hasła.</p>
+              <p>Twój kod to: <strong style="font-size:1.5em;">%s</strong></p>
+              <p>Kod jest ważny 15 minut.</p>
+              <hr/>
+              <p style="font-size:0.9em; color:#999;">Jeśli nie prosiłeś o zmianę, zignoruj ten email.</p>
+            </div>
+          </body>
+        </html>
+        """.formatted(firstName, token);
+
+        sendEmail(EmailDTO.builder()
+                .to(to)
+                .subject("Reset hasła w Złotówce")
+                .body(htmlBody)
+                .build()
+        );
     }
 }
