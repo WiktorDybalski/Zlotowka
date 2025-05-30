@@ -46,7 +46,9 @@ export default function CustomChartTooltip({
             </ul>
               </>
         ) : (
-            <div className="text-muted">Brak transakcji</div>
+          <div className="font-bold mb-1">
+            Stan konta: {payload[0].value} PLN
+          </div>
         )}
       </div>
   );
