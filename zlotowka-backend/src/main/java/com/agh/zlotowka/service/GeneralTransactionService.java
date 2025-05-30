@@ -111,32 +111,24 @@ public class GeneralTransactionService {
         futureTransactions.sort(Comparator.comparing(TransactionBudgetInfo::date));
         pastTransactions.sort(Comparator.comparing(TransactionBudgetInfo::date).reversed());
 
-        List<SinglePlotData> transactionBudgetInfoList = new ArrayList<>();
+        Map<LocalDate, SinglePlotData> uniqueByDateMap = new TreeMap<>();
         BigDecimal updatedBudget = budget;
 
         for (TransactionBudgetInfo transaction : pastTransactions) {
-            transactionBudgetInfoList.add(new SinglePlotData(transaction.date(), updatedBudget, userCurrency));
+            if (!uniqueByDateMap.containsKey(transaction.date()))
+                uniqueByDateMap.put(transaction.date(), new SinglePlotData(transaction.date(), updatedBudget, userCurrency));
             updatedBudget = updatedBudget.subtract(transaction.amount());
         }
 
-        transactionBudgetInfoList.add(new SinglePlotData(request.startDate(), updatedBudget, userCurrency));
-
+        uniqueByDateMap.put(request.startDate(), new SinglePlotData(request.startDate(), updatedBudget, userCurrency));
         updatedBudget = budget;
-        transactionBudgetInfoList.add(new SinglePlotData(LocalDate.now(), updatedBudget, userCurrency));
+        uniqueByDateMap.put(LocalDate.now(), new SinglePlotData(LocalDate.now(), updatedBudget, userCurrency));
 
         for (TransactionBudgetInfo transaction : futureTransactions) {
             updatedBudget = updatedBudget.add(transaction.amount());
-            transactionBudgetInfoList.add(new SinglePlotData(transaction.date(), updatedBudget, userCurrency));
+            uniqueByDateMap.put(transaction.date(), new SinglePlotData(transaction.date(), updatedBudget, userCurrency));
         }
-
-        transactionBudgetInfoList.add(new SinglePlotData(request.endDate(), updatedBudget, userCurrency));
-
-        Map<LocalDate, SinglePlotData> uniqueByDate = new TreeMap<>();
-        for (SinglePlotData data : transactionBudgetInfoList) {
-            uniqueByDate.put(data.date(), data);
-        }
-
-        return new ArrayList<>(uniqueByDate.values());
+        return new ArrayList<>(uniqueByDateMap.values());
     }
 
     public void validateUserId(Integer userId, CustomUserDetails userDetails) {
@@ -154,7 +146,7 @@ public class GeneralTransactionService {
             LocalDate nextPaymentDate = recurringTransaction.getNextPaymentDate();
             String transactionCurrency = recurringTransaction.getCurrency().getIsoCode();
 
-            while (!nextPaymentDate.isAfter(endDate) && !nextPaymentDate.isAfter(recurringTransaction.getFinalPaymentDate())) {
+            while (!nextPaymentDate.isAfter(endDate) && nextPaymentDate.isBefore(recurringTransaction.getFinalPaymentDate())) {
                 addToAllTransactions(userCurrency, allTransactions, recurringTransaction, transactionCurrency, nextPaymentDate);
 
                 nextPaymentDate = period.addToDate(nextPaymentDate, recurringTransaction.getFirstPaymentDate());
@@ -276,7 +268,7 @@ public class GeneralTransactionService {
 
     private List<TransactionDTO> getAllTransactionsByUserId(Integer userId, LocalDate startDate, LocalDate endDate) {
         List<OneTimeTransaction> oneTimeTransactions = oneTimeTransactionRepository.getTransactionsInRange(userId, startDate, endDate);
-        List<RecurringTransaction> recurringTransactions = recurringTransactionRepository.getActiveTransactionsByUser(userId, startDate, endDate);
+        List<RecurringTransaction> recurringTransactions = recurringTransactionRepository.getActiveRecurringTransactionsByUser(userId, startDate, endDate);
 
         return Stream.concat(
                         oneTimeTransactions.stream().map(this::mapOneTimeTransaction),
