@@ -128,6 +128,9 @@ public class GeneralTransactionService {
             updatedBudget = updatedBudget.add(transaction.amount());
             uniqueByDateMap.put(transaction.date(), new SinglePlotData(transaction.date(), updatedBudget, userCurrency));
         }
+
+        uniqueByDateMap.put(request.endDate(), new SinglePlotData(request.endDate(), updatedBudget, userCurrency));
+
         return new ArrayList<>(uniqueByDateMap.values());
     }
 
