@@ -48,6 +48,7 @@ public class RecurringTransaction {
     private LocalDate finalPaymentDate;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "\"interval\"")
     private PeriodEnum interval;
 
     @Column(name = "description", length = 512)
