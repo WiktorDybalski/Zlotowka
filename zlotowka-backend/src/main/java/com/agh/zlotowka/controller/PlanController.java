@@ -46,6 +46,12 @@ public class PlanController {
         return ResponseEntity.ok(completedPlan);
     }
 
+    @PostMapping("/uncomplete/{id}")
+    public ResponseEntity<PlanDTO> uncompletePlan(@PathVariable Integer id){
+        PlanDTO uncompletedPlan = planService.undoCompletePlan(id);
+        return ResponseEntity.ok(uncompletedPlan);
+    }
+
     @GetMapping("/all/{userId}")
     public ResponseEntity<List<PlanDTO>> getAllPlans(@PathVariable Integer userId) {
         List<PlanDTO> plans = planService.getAllPlansByUserId(userId);

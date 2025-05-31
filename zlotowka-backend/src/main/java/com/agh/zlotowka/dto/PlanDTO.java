@@ -16,6 +16,7 @@ public record PlanDTO (
         Boolean completed,
         BigDecimal actualAmount,
         Boolean canBeCompleted,
-        Double subplansCompleted
+        Double subplansCompleted,
+        LocalDate estimatedCompletionDate
 )
 {}
