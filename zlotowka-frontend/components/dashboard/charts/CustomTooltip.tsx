@@ -47,9 +47,6 @@ export default function CustomChartTooltip({
               </>
         ) : (
             <>
-              <div className="font-bold mb-1">
-                  Data: {dayTransactions[0].date}
-              </div>
               <div className="font-bold">
                 Stan konta: {payload[0].value} PLN
               </div>
