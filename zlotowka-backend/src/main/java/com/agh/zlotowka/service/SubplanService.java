@@ -284,11 +284,9 @@ public class SubplanService {
         subPlanRepository.delete(subplan);
         calculatePlanSubplanCompletion(subplan.getPlan());
 
-        if (deleteTransaction){
-            OneTimeTransaction transaction = subplan.getTransaction();
-            if (transaction == null) {
-                throw new EntityNotFoundException("Nie znaleziona transackji powiązanej z daną składową marzenia");
-            }
+        OneTimeTransaction transaction = subplan.getTransaction();
+
+        if (deleteTransaction && transaction != null) {
             oneTimeTransactionRepository.delete(transaction);
             try {
                 BigDecimal correctAmount = currencyService.convertCurrency(
