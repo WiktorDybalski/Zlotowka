@@ -60,14 +60,6 @@ export default function DreamCard({ dream }: DreamCardProps) {
                   </span>
                 </p>
                 <ProgressBar progress={dream.actualAmount / dream.amount} />
-                {dream.estimatedCompletionDate && (
-                  <p className="text-base mt-3">
-                    <span className="font-semibold">Uda ci się ukończyć:</span>
-                    <span className="ml-2 font-extrabold font-lato">
-                      {dream.estimatedCompletionDate}
-                    </span>
-                  </p>
-                )}
                 <p className="text-sm mt-6 overflow-hidden whitespace-nowrap text-ellipsis">
                   {truncatedDescription}
                 </p>

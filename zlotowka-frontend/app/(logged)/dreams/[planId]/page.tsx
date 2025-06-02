@@ -18,7 +18,6 @@ import toast from "react-hot-toast";
 import { useDreamContext } from "@/components/dreams/DreamsContext";
 import { useQueryWithToast } from "@/lib/data-grabbers";
 import AddDreamComponentPopup from "@/components/dreams/AddDreamPopUp";
-import PickDreamDatePopup from "@/components/dreams/PickDreamDate";
 
 export default function DreamDetailsPage() {
   const { planId } = useParams();
@@ -32,12 +31,6 @@ export default function DreamDetailsPage() {
   const [subDreamForEdit, setSubDreamForEdit] = useState<SubDream | null>(null);
 
   const [showEditDreamPopup, setShowEditDreamPopup] = useState(false);
-  const [showDatePickerForDreamComplete, setShowDatePickerForDreamComplete] =
-    useState(false);
-  const [
-    showDatePickerForSubDreamComplete,
-    setShowDatePickerForSubDreamComplete,
-  ] = useState(false);
 
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -54,14 +47,8 @@ export default function DreamDetailsPage() {
   });
 
   const completeDreamMutation = useMutation({
-    mutationFn: async ({
-      dreamId,
-      date,
-    }: {
-      dreamId: number;
-      date: string;
-    }) => {
-      const res = DreamService.completeDream(dreamId, date);
+    mutationFn: async ({ dreamId }: { dreamId: number }) => {
+      const res = DreamService.completeDream(dreamId);
       toast.promise(res, {
         loading: "Modyfikowanie marzenia...",
         success: "Marzenie ukończone!",
@@ -113,25 +100,13 @@ export default function DreamDetailsPage() {
     onSuccess: () => {
       // Invalidate queries to refetch data after mutation
       queryClient.invalidateQueries({ queryKey: ["dreams"] });
-      toast.success(
-        "Pamiętaj o usunięciu transakcji związanej z tym marzeniem jeśli potrzeba!",
-        {
-          duration: 5000,
-        }
-      );
       router.replace(routes.dreams.pathname); // redirect to the dreams page after deletion
     },
   });
 
   const completeSubDreamMutation = useMutation({
-    mutationFn: async ({
-      subDreamId,
-      date,
-    }: {
-      subDreamId: number;
-      date: string;
-    }) => {
-      const res = DreamService.completeSubDream(subDreamId, date);
+    mutationFn: async (subDreamId: number) => {
+      const res = DreamService.completeSubDream(subDreamId);
       toast.promise(res, {
         loading: "Zaznaczanie składowej marzenia jako ukończona...",
         success: "Składowa marzenia oznaczona jako ukończona!",
@@ -201,51 +176,6 @@ export default function DreamDetailsPage() {
         success: "Składowa marzenia zmodyfikowana!",
         error: (error) =>
           `Wystąpił błąd podczas modyfikowania składowej marzenia: ${error.message}`,
-      });
-      return await res;
-    },
-    onSuccess: () => {
-      // Invalidate queries to refetch data after mutation
-      queryClient.invalidateQueries({
-        queryKey: ["dreams", "getDreamById", planId],
-      });
-    },
-  });
-
-  const unCompleteDreamMutation = useMutation({
-    mutationFn: async ({ dreamId }: { dreamId: number }) => {
-      const res = DreamService.unCompleteDream(dreamId);
-      toast.promise(res, {
-        loading: "Odznaczanie marzenia jako zrealizowane...",
-        success: "Marzenie odznaczone jako zrealizowane!",
-        error: (error) =>
-          `Wystąpił błąd podczas odznaczania marzenia jako zrealizowane: ${error.message}`,
-      });
-      return await res;
-    },
-    onSuccess: () => {
-      // Invalidate queries to refetch data after mutation
-      queryClient.invalidateQueries({ queryKey: ["dreams"] });
-      queryClient.invalidateQueries({
-        queryKey: ["dreams", "getDreamById", planId],
-      });
-      toast.success(
-        "Pamiętaj o usunięciu transakcji związanej z tym marzeniem jeśli potrzeba!",
-        {
-          duration: 5000,
-        }
-      );
-    },
-  });
-
-  const unCompleteSubDreamMutation = useMutation({
-    mutationFn: async (subDreamId: number) => {
-      const res = DreamService.unCompleteSubDream(subDreamId);
-      toast.promise(res, {
-        loading: "Odznaczanie składowej marzenia jako zrealizowana...",
-        success: "Składowa marzenia odznaczona jako zrealizowana!",
-        error: (error) =>
-          `Wystąpił błąd podczas odznaczania składowej marzenia jako zrealizowana: ${error.message}`,
       });
       return await res;
     },
@@ -334,28 +264,6 @@ export default function DreamDetailsPage() {
           }}
         />
       )}
-      {showDatePickerForDreamComplete && (
-        <PickDreamDatePopup
-          onCloseAction={() => setShowDatePickerForDreamComplete(false)}
-          onConfirmAction={(date) => {
-            completeDreamMutation.mutate({
-              dreamId: numericPlanId,
-              date: date.format("YYYY-MM-DD"),
-            });
-          }}
-        />
-      )}
-      {showDatePickerForSubDreamComplete && (
-        <PickDreamDatePopup
-          onCloseAction={() => setShowDatePickerForSubDreamComplete(false)}
-          onConfirmAction={(date) => {
-            completeSubDreamMutation.mutate({
-              subDreamId: subDreamForEdit.subplanId,
-              date: date.format("YYYY-MM-DD"),
-            });
-          }}
-        />
-      )}
       <div className="flex flex-col h-full overflow-x-hidden">
         <header>
           <div className="flex flex-row items-center justify-between mb-5">
@@ -366,9 +274,9 @@ export default function DreamDetailsPage() {
               <span
                 className={`${
                   dream.planId === pickedDream
-                    ? "material-symbol-outlined "
-                    : "material-symbols hover:cursor-pointer"
-                } `}
+                    ? "material-symbol-outlined"
+                    : "material-symbols"
+                }`}
                 onClick={() => handlePickDream(dream.planId)}
                 style={{ fontSize: "2.5rem" }}
               >
@@ -402,30 +310,12 @@ export default function DreamDetailsPage() {
           </div>
           <ProgressBar progress={dream.actualAmount / dream.amount} />
           <div className="flex flex-col gap-2 mt-3">
-            {dream.estimatedCompletionDate && !dream.completed && (
-              <p>
-                {dream.canBeCompleted ? (
-                  <span className="font-bold">Można zrealizować!</span>
-                ) : (
-                  <>
-                    <span className="font-semibold">Uda ci się ukończyć:</span>
-                    <span className="ml-2 font-extrabold font-lato">
-                      {dream.estimatedCompletionDate}
-                    </span>
-                  </>
-                )}
-              </p>
+            {dream.canBeCompleted && !dream.completed && (
+              <p className="text-sm">Można zrealizować!</p>
             )}
-
-            {dream.date && dream.completed && (
-              <p>
-                <span className="font-semibold">Zrealizowano w dniu :</span>
-                <span className="ml-2 font-extrabold font-lato">
-                  {dream.date}
-                </span>
-              </p>
+            {dream.completed && (
+              <p className="text-sm">Marzenie zrealizowane!</p>
             )}
-
             <p>
               <span className="font-extrabold">Opis:</span>{" "}
               {dream.description ? dream.description : "Nie podano opisu"}
@@ -434,28 +324,17 @@ export default function DreamDetailsPage() {
         </header>
 
         <footer className="grid grid-cols-1 md:grid-cols-4 sm:grid-cols-2 gap-x-10 gap-y-5 mt-3">
-          {!dream.completed ? (
-            <DarkButton
-              icon={"check_circle_outline"}
-              text={"Zrealizuj"}
-              onClick={() => {
-                setShowDatePickerForDreamComplete(true);
-              }}
-              className="bg-green-600 hover:bg-green-700 "
-              disabled={!(dream.canBeCompleted && !dream.completed)}
-            />
-          ) : (
-            <DarkButton
-              icon={"undo"}
-              text={"Cofnij ukończenie"}
-              onClick={() => {
-                unCompleteDreamMutation.mutate({
-                  dreamId: numericPlanId,
-                });
-              }}
-            />
-          )}
-
+          <DarkButton
+            icon={"check_circle_outline"}
+            text={"Zrealizuj"}
+            onClick={() => {
+              completeDreamMutation.mutate({
+                dreamId: numericPlanId,
+              });
+            }}
+            className="bg-green-600 hover:bg-green-700 "
+            disabled={!(dream.canBeCompleted && !dream.completed)}
+          />
           <DarkButton
             icon={"add"}
             text={"Dodaj składową"}
@@ -494,8 +373,7 @@ export default function DreamDetailsPage() {
                 key={subDream.subplanId}
                 subdream={subDream}
                 onCompleteClicked={() => {
-                  setShowDatePickerForSubDreamComplete(true);
-                  setSubDreamForEdit(subDream);
+                  completeSubDreamMutation.mutate(subDream.subplanId);
                 }}
                 onDeleteClicked={() => {
                   deleteSubDreamMutation.mutate(subDream.subplanId);
@@ -503,9 +381,6 @@ export default function DreamDetailsPage() {
                 onEditClicked={() => {
                   setSubDreamForEdit(subDream);
                   setShowEditSubDreamPopup(true);
-                }}
-                onUnCompleteClicked={() => {
-                  unCompleteSubDreamMutation.mutate(subDream.subplanId);
                 }}
               />
             ))}

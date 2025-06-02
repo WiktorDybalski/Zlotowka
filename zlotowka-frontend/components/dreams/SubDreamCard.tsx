@@ -12,7 +12,6 @@ interface SubDreamCardProps {
   onCompleteClicked?: () => void;
   onDeleteClicked?: () => void;
   onEditClicked?: () => void;
-  onUnCompleteClicked?: () => void;
 }
 
 export default function SubDreamCard({
@@ -20,7 +19,6 @@ export default function SubDreamCard({
   onCompleteClicked = () => {},
   onDeleteClicked = () => {},
   onEditClicked = () => {},
-  onUnCompleteClicked = () => {},
 }: SubDreamCardProps) {
   return (
     <div>
@@ -60,30 +58,11 @@ export default function SubDreamCard({
               <ProgressBar progress={subdream.actualAmount / subdream.amount} />
 
               <div className="flex flex-col gap-2 mt-3">
-                {subdream.estimatedCompletionDate && !subdream.completed && (
-                  <p className="text-base">
-                    {subdream.canBeCompleted ? (
-                      <span className="font-bold">Można zrealizować!</span>
-                    ) : (
-                      <>
-                        <span className="font-semibold">
-                          Uda ci się ukończyć:
-                        </span>
-                        <span className="ml-2 font-extrabold font-lato">
-                          {subdream.estimatedCompletionDate}
-                        </span>
-                      </>
-                    )}
-                  </p>
+                {subdream.canBeCompleted && !subdream.completed && (
+                  <p className="text-sm">Można zrealizować!</p>
                 )}
-
-                {subdream.date && subdream.completed && (
-                  <p className="text-base">
-                    <span className="font-semibold">Zrealizowano w dniu :</span>
-                    <span className="ml-2 font-extrabold font-lato">
-                      {subdream.date}
-                    </span>
-                  </p>
+                {subdream.completed && (
+                  <p className="text-sm ">Zrealizowano!</p>
                 )}
                 <p className="text-base">
                   <span className="font-extrabold">Opis:</span>{" "}
@@ -97,21 +76,12 @@ export default function SubDreamCard({
           bottom={
             <>
               <footer className="mt-6 flex justify-end gap-4">
-                {!subdream.completed ? (
-                  <DarkButton
-                    icon={"check_circle_outline"}
-                    onClick={onCompleteClicked}
-                    className="bg-green-600 hover:bg-green-700 text-white max-w-14"
-                    disabled={!(subdream.canBeCompleted && !subdream.completed)}
-                  />
-                ) : (
-                  <DarkButton
-                    icon={"undo"}
-                    onClick={onUnCompleteClicked}
-                    className="max-w-14"
-                  />
-                )}
-
+                <DarkButton
+                  icon={"check_circle_outline"}
+                  onClick={onCompleteClicked}
+                  className="bg-green-600 hover:bg-green-700 text-white max-w-14"
+                  disabled={!(subdream.canBeCompleted && !subdream.completed)}
+                />
                 <DarkButton
                   icon={"edit"}
                   onClick={onEditClicked}
