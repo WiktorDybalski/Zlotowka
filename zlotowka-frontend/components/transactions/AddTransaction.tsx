@@ -16,10 +16,10 @@ export default function AddTransaction({
   const mutation = useMutation({
     mutationFn: async (data: TransactionData) => {
       const res =
-        data.frequency.code === "No period"
+        data.frequency.code === "Brak okresu"
           ? TransactionService.createNewOneTimeTransaction(data)
           : TransactionService.createNewRecurringTransaction(data);
-      const isRecurring = data.frequency.code !== "No period";
+      const isRecurring = data.frequency.code !== "Brak okresu";
       toast.promise(res as Promise<unknown>, {
         loading: `Dodawanie transakcji ${
           isRecurring ? "rekurencyjnej" : "jednorazowej"
