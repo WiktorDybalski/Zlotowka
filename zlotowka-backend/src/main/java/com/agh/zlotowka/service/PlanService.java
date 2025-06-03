@@ -26,6 +26,7 @@ public class PlanService {
     private final SubPlanRepository subPlanRepository;
     private final CurrencyService currencyService;
     private final OneTimeTransactionRepository oneTimeTransactionRepository;
+    private final GeneralPlansService generalPlansService;
 
     @Transactional
     public PlanDTO createPlan(PlanRequest request){
@@ -82,6 +83,12 @@ public class PlanService {
 
     private PlanDTO getPlanDTO(Plan plan) {
         BigDecimal currentAmount = calculateCurrentBudget(plan);
+        LocalDate estimatedCompletionDate = !plan.getCompleted() ?
+                generalPlansService.estimateCompletionDate(
+                        plan,
+                        plan.getRequiredAmount().subtract(subPlanRepository.getTotalSubPlanAmountCompleted(plan.getPlanId()))
+                ) :
+                plan.getDate();
 
         return new PlanDTO(
                 plan.getPlanId(),
@@ -94,7 +101,8 @@ public class PlanService {
                 plan.getCompleted(),
                 currentAmount,
                 currentAmount.compareTo(plan.getRequiredAmount()) >= 0,
-                plan.getSubplansCompleted()
+                plan.getSubplansCompleted(),
+                estimatedCompletionDate
         );
     }
 
@@ -110,6 +118,23 @@ public class PlanService {
         planRepository.delete(plan);
     }
 
+    @Transactional
+    public PlanDTO undoCompletePlan(Integer id) {
+        Plan plan = planRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Marzenie o Id %d nie zostało znalezione", id)));
+
+        validateIncompletePlan(plan);
+
+        plan.setCompleted(false);
+        plan.setDate(null);
+        planRepository.save(plan);
+        return getPlanDTO(plan);
+    }
+
+    private void validateIncompletePlan(Plan plan) {
+        if (!plan.getCompleted())
+            throw new PlanCompletionException("Marzenie nie jest zrealizowane, nie można cofnąć realizacji");
+    }
 
     @Transactional
     public PlanDTO completePlan(Integer id, LocalDate completionDate) {
@@ -129,7 +154,7 @@ public class PlanService {
 
             plan.getUser().setCurrentBudget(plan.getUser().getCurrentBudget().subtract(correctedAmount));
         } catch (CurrencyConversionException e) {
-            log.error("Unexpected error from CurrencyService", e);
+            log.error("Nieoczekiwany błąd w CurrencyService", e);
         }
 
         if (completionDate == null)
@@ -238,7 +263,7 @@ public class PlanService {
             return currentBudget.add(subPlanRepository.getTotalSubPlanAmountCompleted(plan.getPlanId()));
         }
         catch (CurrencyConversionException e) {
-            log.error("Unexpected error from CurrencyService", e);
+            log.error("Nieoczekiwany błąd w CurrencyService", e);
         }
         return BigDecimal.ZERO;
     }

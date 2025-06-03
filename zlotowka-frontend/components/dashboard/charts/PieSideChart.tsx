@@ -60,7 +60,7 @@ export function PieSideChart() {
               content={({ active, payload }) => {
                 if (active && payload && payload.length) {
                   return (
-                    <div className="font-lato p-2 bg-background dark:bg-dark dark:text-background z-[999] border rounded shadow">
+                    <div className="font-lato p-2 bg-background z-[999] border rounded shadow">
                       <p>{formatMoney(Number(payload[0].value))} PLN</p>
                     </div>
                   );

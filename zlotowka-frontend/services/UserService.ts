@@ -1,8 +1,6 @@
 import { useAuth } from "@/components/providers/AuthProvider";
 import sendToBackend, { getAuthHeader } from "@/lib/sendToBackend";
 import { Currency } from "./CurrencyController";
-import {useEffect} from "react";
-import {applyDarkMode} from "@/utils/Darkmode";
 
 export interface UserData {
   firstName: string;
@@ -20,10 +18,6 @@ export interface UserData {
 export function useUserService() {
   const { token, userData, setUserDataWithinSameToken } = useAuth();
 
-  useEffect(() => {
-    if (userData) applyDarkMode(userData.darkMode);
-  }, [userData]);
-
   if (!token) throw new Error("User Logged Out (Token not provided)!");
 
   const withAuthHeader = getAuthHeader(token);
@@ -38,13 +32,11 @@ export function useUserService() {
   }
 
   async function fetchUserData(): Promise<UserData> {
-    const data = await sendToBackend(
-        `user/account`,
-        withAuthHeader,
-        "Nie udało się pobrać danych użytkownika"
+    return await sendToBackend(
+      `user/account`,
+      withAuthHeader,
+      "Nie udało się pobrać danych użytkownika"
     );
-    applyDarkMode(data.darkMode);
-    return data;
   }
 
   return {

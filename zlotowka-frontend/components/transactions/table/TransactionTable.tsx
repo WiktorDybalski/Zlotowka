@@ -190,8 +190,8 @@ export function TransactionTable({ dateRange }: TransactionTableProps) {
                     <span
                       className={
                         transaction.isIncome
-                          ? "bg-green-200 px-3 py-1 rounded dark:text-dark"
-                          : "bg-red-200 px-2 pb-1 rounded dark:text-dark"
+                          ? "bg-green-200 px-3 py-1 rounded "
+                          : "bg-red-200 px-3 py-1 rounded "
                       }
                     >
                       {transaction.isIncome ? "+" : "-"}
@@ -200,7 +200,7 @@ export function TransactionTable({ dateRange }: TransactionTableProps) {
                   </div>
                   <div className="hidden md:flex items-center">
                     {transaction.period !== "ONCE" ? (
-                      <span className="bg-blue-200 px-3 py-1 rounded dark:text-dark">
+                      <span className="bg-blue-200 px-3 py-1 rounded">
                         {`↻ ${transaction.name}`}
                       </span>
                     ) : (

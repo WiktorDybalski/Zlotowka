@@ -33,8 +33,6 @@ export function MainChart() {
   const DashboardService = useDashboardService();
   const TransactionService = useTransactionService();
   const DreamsService = useDreamsService();
-  const isDark = typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
-  const strokeColor = isDark ? '#fafafa' : '#212121';
 
   const { data: rawChartData, isLoading } = useQueryWithToast({
     queryKey: [
@@ -176,7 +174,7 @@ export function MainChart() {
               <Line
                 dataKey="amount"
                 type="linear"
-                stroke={strokeColor}
+                stroke="#262626"
                 strokeWidth={2}
                 dot={true}
               />
@@ -224,7 +222,7 @@ export function MainChart() {
           <div className="flex items-center gap-2">
             <span
               className="w-5 h-2"
-              style={{ backgroundColor: strokeColor }}
+              style={{ backgroundColor: "#262626" }}
             ></span>
             <span className="text-sm text-muted-foreground">Stan konta</span>
           </div>

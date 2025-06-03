@@ -25,7 +25,6 @@ export default function UserInfo() {
             height={65}
             alt="Avatar"
             className="rounded-full"
-            priority
           />
         </div>
         <div>
