@@ -39,9 +39,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const storedToken = localStorage.getItem(localStorageTokenField);
+      const storedToken = sessionStorage.getItem(localStorageTokenField);
       setToken(storedToken);
-      const storedUserId = localStorage.getItem(localStorageUserIdField);
+      const storedUserId = sessionStorage.getItem(localStorageUserIdField);
       if (storedUserId) {
         setUserId(parseInt(storedUserId, 10));
       } else {
@@ -60,15 +60,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const setLogin = (newToken: string, newUserId: number) => {
     setToken(newToken);
     setUserId(newUserId);
-    localStorage.setItem(localStorageTokenField, newToken);
-    localStorage.setItem(localStorageUserIdField, newUserId.toString());
+    sessionStorage.setItem(localStorageTokenField, newToken);
+    sessionStorage.setItem(localStorageUserIdField, newUserId.toString());
   };
 
   const setLogout = () => {
     setToken(null);
     setUserId(null);
-    localStorage.removeItem(localStorageTokenField);
-    localStorage.removeItem(localStorageUserIdField);
+    sessionStorage.removeItem(localStorageTokenField);
+    sessionStorage.removeItem(localStorageUserIdField);
   };
 
   function setUserDataWithinSameToken(newUserData: UserData) {
