@@ -107,7 +107,6 @@ export default function TransactionForm({
       ...prev,
       [name]: value,
     }));
-    console.log(formData);
   };
 
   const handleTypeChange = (isIncome: boolean) => {
