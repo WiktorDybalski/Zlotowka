@@ -11,6 +11,7 @@ import com.agh.zlotowka.repository.OneTimeTransactionRepository;
 import com.agh.zlotowka.repository.PlanRepository;
 import com.agh.zlotowka.repository.SubPlanRepository;
 import com.agh.zlotowka.repository.UserRepository;
+import com.agh.zlotowka.security.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,24 @@ public class SubplanService {
     private final UserRepository userRepository;
     private final CurrencyService currencyService;
     private final OneTimeTransactionRepository oneTimeTransactionRepository;
+
+    public void validateOwnershipBySubplanId(Integer subplanId, CustomUserDetails userDetails) {
+        Subplan subplan = subPlanRepository.findById(subplanId)
+                .orElseThrow(() -> new EntityNotFoundException("Nie znaleziono podplanu o ID " + subplanId));
+        Integer ownerId = subplan.getPlan().getUser().getUserId();
+        if (!ownerId.equals(userDetails.getUser().getUserId())) {
+            throw new PlanOwnershipException("Dostęp zabroniony do tego podplanu");
+        }
+    }
+
+    public void validateOwnershipByPlanId(Integer planId, CustomUserDetails userDetails) {
+        Plan plan = planRepository.findById(planId)
+                .orElseThrow(() -> new EntityNotFoundException("Nie znaleziono planu o ID " + planId));
+        Integer ownerId = plan.getUser().getUserId();
+        if (!ownerId.equals(userDetails.getUser().getUserId())) {
+            throw new PlanOwnershipException("Dostęp zabroniony do tego planu");
+        }
+    }
 
     @Transactional
     public SubplanDTO createSubplan(SubplanRequest request) {

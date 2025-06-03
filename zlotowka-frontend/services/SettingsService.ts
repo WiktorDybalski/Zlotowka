@@ -22,7 +22,23 @@ export function useSettingsService() {
       );
 
   }
+
+  interface PasswordChangePayload {
+      oldPassword: string;
+      newPassword: string;
+      confirmNewPassword: string;
+  }
+
+  async function changePassword(payload: PasswordChangePayload) {
+      return await sendToBackend(`user/password`, {
+          ...withAuthHeader,
+          method: "PUT",
+          body: JSON.stringify(payload),
+      });
+  }
+
+
   return {
-    updateUserDetails,
+    updateUserDetails,changePassword,
   };
 }
