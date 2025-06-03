@@ -1,5 +1,9 @@
 import type {ChartConfig} from "@/components/ui/chart";
 
+const isDark = typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
+const strokeIncome = isDark ? '#858383' : '#262626';
+const strokeExpense = isDark ? '#fafafa' : '#e9e9e9';
+
 export const MainChartConfig = {
   amount: {
     label: "Stan konta",
@@ -13,10 +17,10 @@ export const PieChartConfig = {
   },
   Income: {
     label: "Przychody",
-    color: "#262626",
+    color: strokeIncome,
   },
   Expenses: {
     label: "Wydatki",
-    color: "#e9e9e9",
+    color: strokeExpense,
   },
 } satisfies ChartConfig;

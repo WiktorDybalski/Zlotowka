@@ -47,14 +47,14 @@ export default function CardsPopup({
           {AVAILABLE_CARDS.map((card) => (
               <div
                   key={card.id}
-                  className="flex items-center p-2 rounded hover:bg-neutral-200 transition-colors"
+                  className="flex items-center p-2 rounded hover:bg-neutral-200 dark:hover:bg-veryDark transition-colors"
               >
                 <input
                     type="checkbox"
                     id={card.id}
                     checked={localSelectedCards.includes(card.id)}
                     onChange={() => handleCardToggle(card.id)}
-                    className="h-5 w-5 accent-accent"
+                    className="h-5 w-5 accent-accent  "
                 />
                 <label htmlFor={card.id} className="text-sm ml-4">
                   {card.label}

@@ -19,7 +19,7 @@ export default function CustomChartTooltip({
 
 
   return (
-      <div className="bg-white p-2 rounded shadow-md text-sm font-lato">
+      <div className="bg-background dark:bg-accent  p-2 rounded shadow-md text-sm font-lato">
           {dayTransactions.length > 0 ? (
               <>
               <div className="font-bold mb-1">
@@ -46,7 +46,11 @@ export default function CustomChartTooltip({
             </ul>
               </>
         ) : (
-            <div className="text-muted">Brak transakcji</div>
+            <>
+              <div className="font-bold">
+                Stan konta: {payload[0].value} PLN
+              </div>
+            </>
         )}
       </div>
   );

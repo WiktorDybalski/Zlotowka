@@ -16,7 +16,7 @@ export default function DarkButton({
   return (
     <button
       className={clsx(
-        ` ${className} w-full h-full bg-accent hover:bg-[#141414] rounded-[8px] flex justify-center items-center text-background py-2 text-sm gap-x-2 transition duration-200 ease-in-out hover:cursor-pointer disabled:cursor-not-allowed disabled:bg-accent/50 disabled:text-background/50`
+        ` ${className} w-full h-full bg-accent hover:bg-veryDark rounded-[8px] flex justify-center items-center text-background py-2 text-sm gap-x-2 transition duration-200 ease-in-out hover:cursor-pointer disabled:cursor-not-allowed disabled:bg-accent/50 disabled:text-background/50`
       )}
       onClick={onClick}
       disabled={disabled}
