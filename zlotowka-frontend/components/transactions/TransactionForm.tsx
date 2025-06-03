@@ -215,7 +215,7 @@ export default function TransactionForm({
           </div>
         )}
 
-        {formData.frequency.code !== "No period" ? (
+        {formData.frequency.code !== "Brak okresu" ? (
           <>
             <div className="py-1">
               <h3 className="text-md my-2 font-medium">Data początkowa</h3>
