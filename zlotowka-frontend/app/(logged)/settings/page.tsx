@@ -125,7 +125,6 @@ export default function Settings(): JSX.Element {
           fieldName === "notificationsByEmail" ? parsedValue : notificationsByEmail!,
           fieldName === "notificationsByPhone" ? parsedValue : notificationsByPhone!
       );
-
       mutation.mutate(payload, {
         onSuccess: () => {
           toast.success("Udało się zmienić dane!");

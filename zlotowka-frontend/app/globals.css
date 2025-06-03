@@ -61,8 +61,9 @@ input {
   font-family: var(--font-lato), serif;
 }
 
-.custom-scroll::-webkit-scrollbar {
-  display: none;
+@utility custom-scroll {
+  scrollbar-color: #3c3c3c transparent;
+  scrollbar-width: thin;
 }
 
 .chart-options-buttons {

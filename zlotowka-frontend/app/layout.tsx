@@ -49,10 +49,7 @@ export default function RootLayout({
   return (
     <html
       lang="pl"
-      style={{
-        scrollbarColor: "#3c3c3c transparent",
-        scrollbarWidth: "thin",
-      }}
+      className="custom-scroll"
     >
       <body
         className={`${raleway.variable} ${lato.variable} ${materialSymbols.variable} ${materialSymbolsOutlined.variable} font-(family-name:--font-raleway) bg-background`}
