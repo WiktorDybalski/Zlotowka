@@ -284,9 +284,17 @@ public class SubplanService {
         subPlanRepository.delete(subplan);
         calculatePlanSubplanCompletion(subplan.getPlan());
 
+<<<<<<< HEAD
         OneTimeTransaction transaction = subplan.getTransaction();
 
         if (deleteTransaction && transaction != null) {
+=======
+        if (deleteTransaction){
+            OneTimeTransaction transaction = subplan.getTransaction();
+            if (transaction == null) {
+                throw new EntityNotFoundException("Nie znaleziona transackji powiązanej z daną składową marzenia");
+            }
+>>>>>>> c96d7dd (Revert "Merge branch 'main' into app_fixes")
             oneTimeTransactionRepository.delete(transaction);
             try {
                 BigDecimal correctAmount = currencyService.convertCurrency(

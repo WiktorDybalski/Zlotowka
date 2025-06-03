@@ -40,10 +40,4 @@ public interface RecurringTransactionRepository extends JpaRepository<RecurringT
             @Param("userId") int userId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
-
-    @Query("SELECT rt FROM RecurringTransaction rt WHERE rt.user.userId = :userId AND rt.nextPaymentDate >= :startDate AND rt.nextPaymentDate <= :endDate AND rt.nextPaymentDate > CURRENT_DATE ")
-    List<RecurringTransaction> getActiveRecurringTransactionsByUser(
-            @Param("userId") int userId,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate);
 }

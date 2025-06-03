@@ -12,7 +12,7 @@ export default function ThreeElementsCard({
   bottom,
 }: ThreeElementsCardProps) {
   return (
-    <div className="w-full h-full px-7 py-5 flex flex-col justify-center ">
+    <div className="w-full h-full px-7 py-5 flex flex-col justify-center text-accent">
       {top && (
         <div className="w-full text-xl lg:text-lg 2xl:text-xl">{top}</div>
       )}

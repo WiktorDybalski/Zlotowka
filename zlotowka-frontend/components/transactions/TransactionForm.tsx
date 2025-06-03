@@ -28,7 +28,7 @@ const defaultTransactionData: TransactionData = {
   description: "",
   frequency: {
     name: "Raz",
-    code: "Brak okresu",
+    code: "No period",
   },
   date: dayjs().format("YYYY-MM-DD"),
   startDate: dayjs().format("YYYY-MM-DD"),
@@ -107,6 +107,7 @@ export default function TransactionForm({
       ...prev,
       [name]: value,
     }));
+    // console.log(formData);
   };
 
   const handleTypeChange = (isIncome: boolean) => {
@@ -203,6 +204,7 @@ export default function TransactionForm({
               value={formData.frequency.name}
               onChange={handleInputChange}
               className={"form-input" + " bg-background"}
+              className={"form-input" + " bg-background"}
             >
               {isPeriodListReady && periodList.length > 0
                 ? periodList.map((period: Period) => (
@@ -215,9 +217,79 @@ export default function TransactionForm({
           </div>
         )}
 
-        {formData.frequency.code !== "Brak okresu" ? (
+        {formData.frequency.code !== "No period" ? (
           <>
             <div className="py-1">
+              <h3 className="text-md my-2 font-medium">Data początkowa</h3>
+              <input
+                name="startDate"
+                className={"form-input"}
+                type="text"
+                value={formData.startDate}
+                onChange={handleInputChange}
+                onClick={() => setIsStartDatePickerOpen((prev) => !prev)}
+                readOnly={true}
+              />
+              <DatePicker
+                isOpen={isStartDatePickerOpen}
+                currentDate={formData.startDate}
+                setIsOpenAction={setIsStartDatePickerOpen}
+                setDateAction={(newDate) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    startDate: dayjs(newDate).format("YYYY-MM-DD"),
+                  }))
+                }
+              />
+            </div>
+            <div className="py-1">
+              <h3 className="text-md my-2 font-medium">Data końcowa</h3>
+              <input
+                name="endDate"
+                className={"form-input"}
+                type="text"
+                value={formData.endDate}
+                onChange={handleInputChange}
+                onClick={() => setIsEndDatePickerOpen((prev) => !prev)}
+                readOnly={true}
+              />
+              <DatePicker
+                isOpen={isEndDatePickerOpen}
+                currentDate={formData.endDate}
+                setIsOpenAction={setIsEndDatePickerOpen}
+                setDateAction={(newDate) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    endDate: dayjs(newDate).format("YYYY-MM-DD"),
+                  }))
+                }
+              />
+            </div>
+          </>
+        ) : (
+          <div className="py-1">
+            <h3 className="text-md my-2 font-medium">Data</h3>
+            <input
+              name="date"
+              className={"form-input"}
+              type="text"
+              value={formData.date}
+              onChange={handleInputChange}
+              onClick={() => setIsStartDatePickerOpen((prev) => !prev)}
+              readOnly={true}
+            />
+            <DatePicker
+              isOpen={isStartDatePickerOpen}
+              currentDate={formData.date}
+              setIsOpenAction={setIsStartDatePickerOpen}
+              setDateAction={(newDate) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  date: dayjs(newDate).format("YYYY-MM-DD"),
+                }))
+              }
+            />
+          </div>
               <h3 className="text-md my-2 font-medium">Data początkowa</h3>
               <input
                 name="startDate"
@@ -330,6 +402,7 @@ export default function TransactionForm({
               name="currency"
               value={formData.currency.isoCode}
               onChange={handleInputChange}
+              className="border-[1px] border-neutral-300 rounded-[5px] px-2 text-md bg-background"
               className="border-[1px] border-neutral-300 rounded-[5px] px-2 text-md bg-background"
             >
               {currencyList.map((currency) => (

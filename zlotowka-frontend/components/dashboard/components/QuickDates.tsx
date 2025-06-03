@@ -31,7 +31,7 @@ export default function QuickDates( { setTempStartDate, setTempEndDate }) {
   };
 
   const getButtonClass = (period: timePeriod) => {
-    return `chart-options-buttons ${quickDate === period ? "!bg-accent text-background dark:!bg-veryDark" : ""}`;
+    return `chart-options-buttons ${quickDate === period ? "bg-accent text-background" : ""}`;
   }
 
   return (
