@@ -548,8 +548,7 @@ Tworzy nowe marzenie.
   "completed": false,
   "actualAmount": 0.00,
   "canBeCompleted": false,
-  "subplansCompleted": 0.0,
-  "estimatedCompletionDate": "2025-10-10"
+  "subplansCompleted": 0.0
 }
 ```
 
@@ -582,8 +581,7 @@ GET /plan/201
   "completed": false,
   "actualAmount": 0.00,
   "canBeCompleted": false,
-  "subplansCompleted": 0.0,
-  "estimatedCompletionDate": "2025-10-10"
+  "subplansCompleted": 0.0
 }
 ```
 
@@ -630,8 +628,7 @@ Aktualizuje dane dla marzenia.
   "completed": false,
   "actualAmount": 0.00,
   "canBeCompleted": false,
-  "subplansCompleted": 0.0,
-  "estimatedCompletionDate": "2025-10-10"
+  "subplansCompleted": 0.0
 }
 ```
 
@@ -664,49 +661,7 @@ POST /plan/complete/201
   "completed": true,
   "actualAmount": 5000.00,
   "canBeCompleted": true,
-  "subplansCompleted": 1.0,
-  "estimatedCompletionDate": "2025-05-05"
-}
-```
-
-### Ustawianie innej daty
-
-Aby ustawić inną datę realizacji marzenia niż bieżący dzień, można opcjonalnie przekazać parametr completionDate w zapytaniu:
-```
-POST /plan/complete/201?completionDate=2025-04-04
-```
-
-## POST /plan/uncomplete/{id}
-
-### Opis
-
-Cofa oznaczenie marzenia jako zakończone.
-
-### Przykładowe zapytanie
-
-```
-POST /plan/uncomplete/201
-```
-
-### Przykładowa odpowiedź (Response Body)
-
-```
-{
-  "planId": 201,
-  "userId": 5,
-  "name": "Oszczędności wakacyjne",
-  "description": "Plan na wyjazd wakacyjny",
-  "amount": 5000.00,
-  "date": null,
-  "currency": {
-    "currencyId": 1,
-    "isoCode": "PLN"
-  },
-  "completed": true,
-  "actualAmount": 5000.00,
-  "canBeCompleted": true,
-  "subplansCompleted": 1.0,
-  "estimatedCompletionDate": "2025-05-25"
+  "subplansCompleted": 1.0
 }
 ```
 
@@ -740,8 +695,7 @@ GET /plan/all/5
     "completed": false,
     "actualAmount": 0.00,
     "canBeCompleted": false,
-    "subplansCompleted": 0.0,
-    "estimatedCompletionDate": "2025-05-05"
+    "subplansCompleted": 0.0
   }
 ]
 ```
@@ -973,8 +927,7 @@ Tworzy nowe pod-marzenie w ramach marzenia.
   "completed": false,
   "actualAmount": 0.00,
   "canBeCompleted": false,
-  "date": "2025-05-05",
-  "estimatedCompletionDate": "2025-05-05"
+  "date": "2025-05-05"
 }
 ```
 
@@ -1006,8 +959,7 @@ GET /subplan/501
   "completed": false,
   "actualAmount": 0.00,
   "canBeCompleted": false,
-  "date": "2025-05-05",
-  "estimatedCompletionDate": "2025-05-05"
+  "date": "2025-05-05"
 }
 ```
 
@@ -1055,8 +1007,7 @@ Aktualizuje dane pod-marzenia.
   "completed": false,
   "actualAmount": 0.00,
   "canBeCompleted": false,
-  "date": "2025-05-05",
-  "estimatedCompletionDate": "2025-05-05"
+  "date": "2025-05-05"
 }
 ```
 
@@ -1088,51 +1039,9 @@ POST /subplan/complete/501
   "completed": true,
   "actualAmount": 1200.00,
   "canBeCompleted": true,
-  "date": "2025-05-05",
-  "estimatedCompletionDate": "2025-05-05"
+  "date": "2025-05-05"
 }
 ```
-
-### Ustawienie innej daty
-Aby ustawić inną datę realizacji marzenia niż bieżący dzień, można opcjonalnie przekazać parametr completionDate w zapytaniu:
-```
-POST /subplan/complete/201?completionDate=2025-04-04
-```
-
-
-## POST /subplan/uncomplete/{id}
-
-### Opis
-
-Cofa oznaczenie pod-marzenia jako zakończone.
-
-### Przykładowe zapytanie
-
-```
-POST /subplan/uncomplete/501
-```
-
-### Przykładowa odpowiedź (Response Body)
-
-```
-{
-  "planId": 201,
-  "subplanId": 501,
-  "name": "Zakupy sprzętu",
-  "description": "Kupno nowego laptopa",
-  "amount": 1200.00,
-  "currency": {
-    "currencyId": 1,
-    "isoCode": "PLN"
-  },
-  "completed": true,
-  "actualAmount": 1200.00,
-  "canBeCompleted": true,
-  "date": "2025-05-05",
-  "estimatedCompletionDate": "2025-05-05"
-}
-```
-
 
 ## GET /subplan/all/{planId}
 
@@ -1163,8 +1072,7 @@ GET /subplan/all/201
     "completed": false,
     "actualAmount": 0.00,
     "canBeCompleted": false,
-    "date": "2025-05-05",
-    "estimatedCompletionDate": "2025-05-05"
+    "date": "2025-05-05"
   }
 ]
 ```
@@ -1185,13 +1093,6 @@ DELETE /subplan/501
 
 ```
 Status: 204 No Content
-```
-
-### Usuwanie powiązanej transakcji
-Parametr deleteTransaction jest opcjonalny i określa, czy wraz ze składową marzenia ma zostać usunięta również powiązana z nią transakcja — jeśli zostanie ustawiony na true, transakcja zostanie usunięta.
-
-```
-DELETE /subplan/501?deleteTransaction=true
 ```
 
 # User
