@@ -49,14 +49,10 @@ export default function RootLayout({
   return (
     <html
       lang="pl"
-<<<<<<< HEAD
-      className="custom-scroll"
-=======
       style={{
         scrollbarColor: "#3c3c3c transparent",
         scrollbarWidth: "thin",
       }}
->>>>>>> c96d7dd (Revert "Merge branch 'main' into app_fixes")
     >
       <body
         className={`${raleway.variable} ${lato.variable} ${materialSymbols.variable} ${materialSymbolsOutlined.variable} font-(family-name:--font-raleway) bg-background`}

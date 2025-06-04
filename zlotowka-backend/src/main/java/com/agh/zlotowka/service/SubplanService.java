@@ -32,6 +32,7 @@ public class SubplanService {
     private final CurrencyService currencyService;
     private final OneTimeTransactionRepository oneTimeTransactionRepository;
     private final GeneralPlansService generalPlansService;
+    private final GeneralPlansService generalPlansService;
 
     @Transactional
     public SubplanDTO createSubplan(SubplanRequest request) {
@@ -66,6 +67,9 @@ public class SubplanService {
         LocalDate estimatedCompletionDate = !subplan.getCompleted() ?
                 generalPlansService.estimateCompletionDate(subplan.getPlan(), subplan.getRequiredAmount()) :
                 subplan.getDate();
+        LocalDate estimatedCompletionDate = !subplan.getCompleted() ?
+                generalPlansService.estimateCompletionDate(subplan.getPlan(), subplan.getRequiredAmount()) :
+                subplan.getDate();
 
         return new SubplanDTO(
                 subplan.getPlan().getPlanId(),
@@ -77,6 +81,8 @@ public class SubplanService {
                 subplan.getCompleted(),
                 actualAmount,
                 canBeCompleted,
+                subplan.getDate(),
+                estimatedCompletionDate
                 subplan.getDate(),
                 estimatedCompletionDate
         );
@@ -184,6 +190,44 @@ public class SubplanService {
     }
 
     @Transactional
+    public SubplanDTO undoCompleteSubplan(Integer id) {
+        Subplan subplan = subPlanRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Składowa marzenia o Id %d nie została znaleziona", id)));
+
+        validatePlanCompletion(subplan.getPlan());
+        validateIncompleteSubPlan(subplan);
+        subplan.setCompleted(false);
+        subplan.setDate(null);
+        try {
+            BigDecimal correctAmount = currencyService.convertCurrency(
+                    subplan.getRequiredAmount(),
+                    subplan.getPlan().getCurrency().getIsoCode(),
+                    subplan.getPlan().getUser().getCurrency().getIsoCode()
+            );
+
+            subplan.getPlan().getUser().setCurrentBudget(
+                    subplan.getPlan().getUser().getCurrentBudget().add(correctAmount)
+            );
+        } catch (CurrencyConversionException e) {
+            log.error("Nieoczekiwany błąd w CurrencyService", e);
+        }
+        OneTimeTransaction transaction = subplan.getTransaction();
+        if (transaction != null) {
+            oneTimeTransactionRepository.delete(transaction);
+            subplan.setTransaction(null);
+        }
+        subPlanRepository.save(subplan);
+        calculatePlanSubplanCompletion(subplan.getPlan());
+        return getSubplanDTO(subplan);
+    }
+
+    private void validateIncompleteSubPlan(Subplan subplan) {
+        if (!subplan.getCompleted()) {
+            throw new PlanCompletionException("Składowa marzenia nie została zrealizowana, nie można cofnąć realizacji");
+        }
+    }
+
+    @Transactional
     public SubplanDTO completeSubplan(Integer id, LocalDate completionDate) {
         Subplan subplan = subPlanRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono podplanu o ID %d", id)));
@@ -230,6 +274,11 @@ public class SubplanService {
         subPlanRepository.save(subplan);
 
 
+        subplan.setTransaction(transaction);
+        userRepository.save(plan.getUser());
+        subPlanRepository.save(subplan);
+
+
         oneTimeTransactionRepository.save(transaction);
         return getSubplanDTO(subplan);
     }
@@ -250,6 +299,7 @@ public class SubplanService {
             );
         }
         catch (CurrencyConversionException e) {
+            log.error("Nieoczekiwany błąd w CurrencyService", e);
             log.error("Nieoczekiwany błąd w CurrencyService", e);
         }
         if (currentAmount.compareTo(subplan.getRequiredAmount()) < 0) {
@@ -278,6 +328,7 @@ public class SubplanService {
 
     @Transactional
     public void deleteSubplan(Integer id, boolean deleteTransaction) {
+    public void deleteSubplan(Integer id, boolean deleteTransaction) {
         Subplan subplan = subPlanRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono podplanu o ID %d", id)));
 
@@ -295,6 +346,25 @@ public class SubplanService {
                 throw new EntityNotFoundException("Nie znaleziona transackji powiązanej z daną składową marzenia");
             }
 >>>>>>> c96d7dd (Revert "Merge branch 'main' into app_fixes")
+            oneTimeTransactionRepository.delete(transaction);
+            try {
+                BigDecimal correctAmount = currencyService.convertCurrency(
+                        subplan.getRequiredAmount(),
+                        subplan.getPlan().getCurrency().getIsoCode(),
+                        subplan.getPlan().getUser().getCurrency().getIsoCode()
+                );
+                transaction.getUser().setCurrentBudget(transaction.getUser().getCurrentBudget().add(correctAmount));
+            }
+            catch (CurrencyConversionException e) {
+                log.error("Nieoczekiwany błąd w CurrencyService", e);
+            }
+        }
+
+        if (deleteTransaction){
+            OneTimeTransaction transaction = subplan.getTransaction();
+            if (transaction == null) {
+                throw new EntityNotFoundException("Nie znaleziona transackji powiązanej z daną składową marzenia");
+            }
             oneTimeTransactionRepository.delete(transaction);
             try {
                 BigDecimal correctAmount = currencyService.convertCurrency(
@@ -330,6 +400,7 @@ public class SubplanService {
                         subplan.getPlan().getCurrency().getIsoCode()
                 );
             } catch (CurrencyConversionException e) {
+                log.error("Nieoczekiwany błąd w CurrencyService", e);
                 log.error("Nieoczekiwany błąd w CurrencyService", e);
             }
         }
