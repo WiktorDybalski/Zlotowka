@@ -17,6 +17,8 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.agh.zlotowka.security.CustomUserDetails;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -140,8 +142,7 @@ public class GeneralPlansService {
                                 budget.subtract(amount);
 
                         iterator.remove();
-                    }
-                    else if (transaction.getDate().isAfter(date)) {
+                    } else if (transaction.getDate().isAfter(date)) {
                         break;
                     }
                 }
@@ -170,10 +171,15 @@ public class GeneralPlansService {
 
                 date = date.plusDays(1);
             }
-        }
-        catch (CurrencyConversionException e) {
+        } catch (CurrencyConversionException e) {
             log.error("Nieoczekiwany błąd w CurrencyService", e);
         }
         return null;
+    }
+
+    public void validateUserId(Integer userId, CustomUserDetails userDetails) {
+        if (!userId.equals(userDetails.getUser().getUserId())) {
+            throw new IllegalArgumentException("Dostęp zabroniony");
+        }
     }
 }
