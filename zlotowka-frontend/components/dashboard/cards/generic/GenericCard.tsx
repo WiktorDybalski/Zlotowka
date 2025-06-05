@@ -13,7 +13,7 @@ export default function GenericCard({
 }: GenericCardProps) {
   return (
     <div
-      className={`w-full h-full border-[1px] rounded-xl border-border-color ${className}`}
+      className={`w-full h-full border-[1px] rounded-xl border-border-color dark:border-background ${className}`}
       id={id}
     >
       {children}

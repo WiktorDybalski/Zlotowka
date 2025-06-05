@@ -34,7 +34,7 @@ export default function EditTransaction({
   const mutation = useMutation({
     mutationFn: async (data: TransactionData) => {
       const d = { ...transaction, ...data };
-      const isRecurring = data.frequency.code !== "No period";
+      const isRecurring = data.frequency.code !== "Brak okresu";
       const res = isRecurring
         ? TransactionService.editRecurringTransaction(d)
         : TransactionService.editOneTimeTransaction(d);
@@ -87,8 +87,6 @@ export default function EditTransaction({
     },
   });
 
-  console.log("fetchedTransaction", fetchedTransaction);
-
   return (
     <>
       {fetchedTransaction && (
@@ -103,7 +101,7 @@ export default function EditTransaction({
                     name: (fetchedTransaction as RecurringTransaction).interval,
                   }
                 : {
-                    code: "No period",
+                    code: "Brak okresu",
                     name: "Raz",
                   },
             startDate: (fetchedTransaction as RecurringTransaction)

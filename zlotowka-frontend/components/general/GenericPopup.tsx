@@ -52,14 +52,14 @@ export default function GenericPopup({
           }`}
       >
         {/* Background overlay */}
-        <div
-            className="absolute w-full h-full bg-[#818181] opacity-70 transition-opacity duration-300"
-            onClick={handleClose}
-        ></div>
+          <div
+              className="absolute w-full h-full bg-[#818181] dark:bg-lightAccentDark opacity-80 transition-opacity duration-300"
+              onClick={handleClose}
+          ></div>
 
         {/* Modal container */}
         <div
-            className={`bg-background border-[1px] max-w-[350px] overflow-y-auto max-h-[100dvh] custom-scroll lg:max-w-full border-[rgba(38,38,38,0.5)] p-6 lg:px-10 lg:py-10 rounded-[10px] z-10 transition-all duration-200 ease-in-out transform ${
+            className={`bg-background dark:bg-dark dark:text-background border-[1px] max-w-[350px] overflow-y-auto max-h-[100dvh] custom-scroll lg:max-w-full border-[rgba(38,38,38,0.5)] p-6 lg:px-10 lg:py-6 rounded-[10px] z-10 transition-all duration-200 ease-in-out transform ${
                 isVisible ? "scale-100 opacity-100" : "scale-90 opacity-0"
             }`}
         >

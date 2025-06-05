@@ -3,7 +3,6 @@
 import { UserData, useUserService } from "@/services/UserService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { JSX, useEffect, useState } from "react";
-import Image from "next/image";
 import { AccountSection } from "@/components/settings/AccountSection";
 import { PreferencesSection } from "@/components/settings/PreferencesSection";
 import { NotificationsSection } from "@/components/settings/NotificationSection";
@@ -126,7 +125,6 @@ export default function Settings(): JSX.Element {
           fieldName === "notificationsByEmail" ? parsedValue : notificationsByEmail!,
           fieldName === "notificationsByPhone" ? parsedValue : notificationsByPhone!
       );
-
       mutation.mutate(payload, {
         onSuccess: () => {
           toast.success("Udało się zmienić dane!");
@@ -136,22 +134,6 @@ export default function Settings(): JSX.Element {
   };
 
   const accountOptions: AccountOption[] = [
-    {
-      text: "Zdjęcie",
-      avatar: (
-        <Image
-          src="/avatar.png"
-          width={45}
-          height={45}
-          alt="Avatar"
-          className="rounded-full"
-        />
-      ),
-      onClick: () => {
-        toast.error("Funkcjonalność w przyszłości");
-      },
-      fieldName: "avatar",
-    },
     {
       text: "Nazwa użytkownika",
       value: data?.firstName
@@ -186,7 +168,7 @@ export default function Settings(): JSX.Element {
   ];
 
   return (
-    <div className="w-full p-8 min-h-screen xl:px-32 xl:py-20 font-semibold text-accent">
+    <div className="w-full p-8 min-h-screen xl:px-32 xl:py-20 font-semibold ">
       <div>
         <h1 className="text-4xl">Ustawienia</h1>
       </div>
@@ -195,7 +177,7 @@ export default function Settings(): JSX.Element {
         {navLinks.map((link) => (
           <div
             key={link}
-            className="px-6 py-2 bg-neutral-200 rounded-lg hover:cursor-pointer hover:bg-neutral-300 transition-all ease-in-out duration-200"
+            className="px-6 py-2 rounded-lg hover:cursor-pointer bg-accent hover:bg-veryDark text-background transition-all ease-in-out duration-200"
             onClick={() => scrollToSection(link)}
           >
             <p className="text-lg">{link}</p>

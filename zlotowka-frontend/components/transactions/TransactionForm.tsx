@@ -28,7 +28,7 @@ const defaultTransactionData: TransactionData = {
   description: "",
   frequency: {
     name: "Raz",
-    code: "No period",
+    code: "Brak okresu",
   },
   date: dayjs().format("YYYY-MM-DD"),
   startDate: dayjs().format("YYYY-MM-DD"),
@@ -107,7 +107,6 @@ export default function TransactionForm({
       ...prev,
       [name]: value,
     }));
-    console.log(formData);
   };
 
   const handleTypeChange = (isIncome: boolean) => {
@@ -216,7 +215,7 @@ export default function TransactionForm({
           </div>
         )}
 
-        {formData.frequency.code !== "No period" ? (
+        {formData.frequency.code !== "Brak okresu" ? (
           <>
             <div className="py-1">
               <h3 className="text-md my-2 font-medium">Data początkowa</h3>
