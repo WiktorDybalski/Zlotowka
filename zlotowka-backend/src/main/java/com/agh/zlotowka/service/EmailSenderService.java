@@ -15,7 +15,7 @@ public class EmailSenderService {
     private final JavaMailSender mailSender;
     private final MailConfig mailConfig;
 
-    public void send(String to, String subject, String text) {
+    public void sendEmail(String to, String subject, String text) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(to);
@@ -24,7 +24,6 @@ public class EmailSenderService {
             message.setFrom(mailConfig.getFromAddress());
 
             mailSender.send(message);
-            log.info("E-mail sent to {}", to);
         } catch (Exception e) {
             log.error("Error while sending email to " + to, e);
         }
