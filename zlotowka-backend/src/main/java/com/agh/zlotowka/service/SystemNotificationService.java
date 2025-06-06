@@ -25,6 +25,9 @@ public class SystemNotificationService {
     private final EmailSenderService emailSenderService;
     private final SmsSenderService smsSenderService;
     private final SystemNotificationRepository notificationRepository;
+
+    private final AppUserNotificationService appUserNotificationService;
+
     private final BigDecimal THRESHOLD = BigDecimal.ZERO;
 
     @Scheduled(cron = "0 0 8 * * ?")
@@ -198,5 +201,9 @@ public class SystemNotificationService {
                 .byPhone(byPhone)
                 .build();
         notificationRepository.save(notification);
+
+        if (Boolean.TRUE.equals(byEmail)) {
+            appUserNotificationService.createNotification(user, category, text, true, false);
+        }
     }
 }

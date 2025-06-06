@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,9 +23,11 @@ public class SystemNotificationController {
     public ResponseEntity<List<SystemNotificationModel>> getAll(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        return ResponseEntity.ok(
-                notificationService.fetchUserNotifications(userDetails.getUser())
-        );
+        List<SystemNotificationModel> all = notificationService.fetchUserNotifications(userDetails.getUser());
+        List<SystemNotificationModel> filtered = all.stream()
+                .filter(n -> Boolean.TRUE.equals(n.getByEmail()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(filtered);
     }
 
     @DeleteMapping("/{id}")
@@ -36,4 +39,3 @@ public class SystemNotificationController {
         return ResponseEntity.ok(Map.of("message", "Powiadomienie usunięte"));
     }
 }
-

@@ -8,7 +8,6 @@ export interface AppNotificationDTO {
 }
 
 export function useNotificationService() {
-
     async function fetchNotifications(token: string): Promise<AppNotificationDTO[]> {
         const response = await fetch("http://localhost:8080/notifications", {
             method: "GET",
@@ -22,7 +21,6 @@ export function useNotificationService() {
         }
         return await response.json();
     }
-
 
     async function markAsRead(notificationId: number, token: string) {
         const response = await fetch(
