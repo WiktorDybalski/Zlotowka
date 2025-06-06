@@ -53,8 +53,12 @@ public class SystemNotificationIntegrationTests {
     @Autowired
     private SystemNotificationRepository systemNotificationRepository;
 
+    @Autowired
+    private AppUserNotificationRepository appUserNotificationRepository;
+
     @AfterEach
     void cleanup() {
+        appUserNotificationRepository.deleteAll();
         systemNotificationRepository.deleteAll();
         subPlanRepository.deleteAll();
         planRepository.deleteAll();
@@ -62,7 +66,6 @@ public class SystemNotificationIntegrationTests {
         userRepository.deleteAll();
         currencyRepository.deleteAll();
     }
-
 
     @Test
     void testSendRealBalanceWarningEmail() {

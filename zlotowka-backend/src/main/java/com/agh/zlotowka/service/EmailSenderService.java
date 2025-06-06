@@ -1,6 +1,5 @@
 package com.agh.zlotowka.service;
 
-import com.agh.zlotowka.config.MailConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 public class EmailSenderService {
 
     private final JavaMailSender mailSender;
-    private final MailConfig mailConfig;
 
     public void sendEmail(String to, String subject, String text) {
         try {
@@ -21,11 +19,10 @@ public class EmailSenderService {
             message.setTo(to);
             message.setSubject(subject);
             message.setText(text);
-            message.setFrom(mailConfig.getFromAddress());
-
+            message.setFrom("zlotowkaapp@gmail.com");
             mailSender.send(message);
         } catch (Exception e) {
-            log.error("Error while sending email to " + to, e);
+            log.error("Wystąpił błąd podczas wysyłania wiadomości e-mail do" + to, e);
         }
     }
 }

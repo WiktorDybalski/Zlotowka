@@ -31,6 +31,7 @@ public class UserService {
     private final CurrencyRepository currencyRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final AppUserNotificationService appUserNotificationService;
 
     @PostConstruct
     public void initializeCurrencies() {
@@ -176,8 +177,13 @@ public class UserService {
 
             if (!oldValue && newValue) {
                 emailService.sendUserOptInWelcomeEmail(user.getEmail(), user.getFirstName());
+
+                String category = "NOTIFICATIONS";
+                String text = "Aktywowano powiadomienia e-mail. Będziesz otrzymywać powiadomienia w aplikacji.";
+                appUserNotificationService.createNotification(user, category, text, true, false);
             }
         }
+
 
         if (request.notificationsByPhone() != null) {
             if (!request.notificationsByPhone().matches("^(true|false)$")) {

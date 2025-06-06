@@ -49,7 +49,7 @@ public class SystemNotificationService {
                     sendBalanceEmailToUser(user, tomorrowBalance, "jutro");
                 }
             } catch (Exception e) {
-                log.error("Error while checking balance for user " + user.getUserId(), e);
+                log.error("Błąd podczas sprawdzania salda użytkownika " + user.getUserId(), e);
             }
         }
     }
@@ -101,7 +101,7 @@ public class SystemNotificationService {
         try {
             smsSenderService.sendSms(phoneNumber, messageText);
         } catch (Exception e) {
-            log.error("Error while sending SMS to {}: {}", phoneNumber, e.getMessage());
+            log.error("Wystąpił błąd podczas wysyłania wiadomości SMS do {}: {}", phoneNumber, e.getMessage());
         }
     }
 
