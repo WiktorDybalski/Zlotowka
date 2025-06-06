@@ -13,7 +13,7 @@ import org.springframework.test.context.jdbc.Sql;
                 "ON CONFLICT (currency_id) DO UPDATE SET iso_code = 'PLN'",
 
         "INSERT INTO users(user_id, currency_id, email, first_name, last_name, password, date_of_joining, current_budget, dark_mode, notifications_by_email, notifications_by_phone, phone_number) " +
-                "VALUES (100, 1, 'your_test_email@mailtrap.io', 'Tester', 'Testowy', 'testpassword', CURRENT_DATE, 100.00, false, true, true, '+15074105639') " +
+                "VALUES (100, 1, 'kamil.lesinski@vp.pl', 'Tester', 'Testowy', 'testpassword', CURRENT_DATE, 100.00, false, true, true, '+15074105639') " +
                 "ON CONFLICT (user_id) DO UPDATE SET email = 'your_test_email@mailtrap.io'",
 
         "INSERT INTO one_time_transactions(transaction_id, user_id, name, amount, currency_id, is_income, date, description) " +
