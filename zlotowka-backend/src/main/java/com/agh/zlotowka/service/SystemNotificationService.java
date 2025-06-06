@@ -130,7 +130,7 @@ public class SystemNotificationService {
         String smsText = String.format("Złotówka: saldo %s wyniesie %s PLN. Sprawdź budżet!", day, formattedBalance);
 
         if (sendEmail) {
-            emailSenderService.send(user.getEmail(), subject, text);
+            emailSenderService.sendEmail(user.getEmail(), subject, text);
         }
         if (sendSms) {
             sendSms(user.getPhoneNumber(), smsText);
@@ -156,7 +156,7 @@ public class SystemNotificationService {
         String smsText = String.format("Złotówka: plan \"%s\" – %s. Sprawdź aplikację.", planName, messageSuffix);
 
         if (sendEmail) {
-            emailSenderService.send(toEmail, subject, text);
+            emailSenderService.sendEmail(toEmail, subject, text);
         }
         if (sendSms) {
             sendSms(user.getPhoneNumber(), smsText);
@@ -182,7 +182,7 @@ public class SystemNotificationService {
         String smsText = String.format("Złotówka: subplan \"%s\" – %s. Sprawdź aplikację.", name, messageSuffix);
 
         if (sendEmail) {
-            emailSenderService.send(toEmail, subject, text);
+            emailSenderService.sendEmail(toEmail, subject, text);
         }
         if (sendSms) {
             sendSms(user.getPhoneNumber(), smsText);
