@@ -23,10 +23,9 @@ public class SystemNotificationService {
     private final GeneralTransactionService generalTransactionService;
     private final PlanRepository planRepository;
     private final SubPlanRepository subPlanRepository;
-    private final EmailService emailService;
+    private final EmailSenderService emailSenderService;
     private final SmsSenderService smsSenderService;
     private final SystemNotificationRepository notificationRepository;
-
     private final AppUserNotificationService appUserNotificationService;
 
     private final BigDecimal THRESHOLD = BigDecimal.ZERO;
@@ -37,7 +36,6 @@ public class SystemNotificationService {
         LocalDate tomorrow = today.plusDays(1);
 
         List<User> users = userRepository.findAll();
-
         for (User user : users) {
             try {
                 BigDecimal todayBalance = generalTransactionService.getEstimatedBalanceForDate(user.getUserId(), today);
@@ -45,6 +43,7 @@ public class SystemNotificationService {
                     sendBalanceEmailToUser(user, todayBalance, "dzisiaj");
                     continue;
                 }
+
                 BigDecimal tomorrowBalance = generalTransactionService.getEstimatedBalanceForDate(user.getUserId(), tomorrow);
                 if (tomorrowBalance.compareTo(THRESHOLD) < 0) {
                     sendBalanceEmailToUser(user, tomorrowBalance, "jutro");
@@ -115,7 +114,6 @@ public class SystemNotificationService {
     private void sendBalanceEmailToUser(User user, BigDecimal balance, String day) {
         boolean sendEmail = Boolean.TRUE.equals(user.getNotificationsByEmail());
         boolean sendSms = Boolean.TRUE.equals(user.getNotificationsByPhone());
-        if (!sendEmail && !sendSms) return;
 
         String subject = "Ostrzeżenie o stanie konta";
         DecimalFormat df = new DecimalFormat("#,##0.00");
@@ -134,12 +132,10 @@ public class SystemNotificationService {
                 </div>
               </body>
             </html>
-            """.formatted(user.getFirstName(), day, formattedBalance);
-
-        String smsText = String.format("Złotówka: saldo %s wyniesie %s PLN. Sprawdź budżet!", day, formattedBalance);
+        """.formatted(user.getFirstName(), day, formattedBalance);
 
         if (sendEmail) {
-            emailService.sendEmail(
+            emailSenderService.sendHtmlEmail(
                     EmailDTO.builder()
                             .to(user.getEmail())
                             .subject(subject)
@@ -147,26 +143,21 @@ public class SystemNotificationService {
                             .build()
             );
         }
+
         if (sendSms) {
+            String smsText = String.format("Złotówka: saldo %s wyniesie %s PLN. Sprawdź budżet!", day, formattedBalance);
             sendSms(user.getPhoneNumber(), smsText);
         }
 
-        createNotification(
-                user,
-                "Saldo",
-                String.format("Saldo %s wyniesie: %s PLN", day, formattedBalance),
-                sendEmail,
-                sendSms
-        );
+        createNotification(user, "Saldo", String.format("Saldo %s wyniesie: %s PLN", day, formattedBalance), sendEmail, sendSms);
     }
 
     private void sendPlanDeadlineEmail(Plan plan, String messageSuffix) {
         User user = plan.getUser();
         boolean sendEmail = Boolean.TRUE.equals(user.getNotificationsByEmail());
         boolean sendSms = Boolean.TRUE.equals(user.getNotificationsByPhone());
-        if (!sendEmail && !sendSms) return;
 
-        String subject = "Ostrzeżenie dotyczące planu";
+        String subject = "Ostrzeżenie dotyczące marzenia";
         String planNameShort = shorten(plan.getName(), 20);
         String planNameFull = plan.getName();
 
@@ -174,25 +165,19 @@ public class SystemNotificationService {
             <html>
               <body style="font-family: sans-serif; background: #f0f0f0; padding: 20px;">
                 <div style="background: #ffffff; border-radius: 8px; padding: 20px; max-width: 600px; margin: auto;">
-                  <h2 style="color: #457b9d;">Ostrzeżenie dotyczące planu</h2>
+                  <h2 style="color: #457b9d;">Ostrzeżenie dotyczące marzenia</h2>
                   <p>Cześć %s,</p>
-                  <p>Termin Twojego planu <strong>"%s"</strong> jest <strong>%s</strong>.</p>
+                  <p>Termin Twojego marzenia <strong>"%s"</strong> jest <strong>%s</strong>.</p>
                   <p>Prosimy o podjęcie odpowiednich działań.</p>
                   <hr />
                   <p style="font-size: 0.9em; color: #666;">Zespół Złotówka</p>
                 </div>
               </body>
             </html>
-            """.formatted(user.getFirstName(), planNameFull, messageSuffix);
-
-        String smsText = String.format(
-                "Złotówka: plan \"%s\" – %s. Sprawdź aplikację.",
-                planNameShort,
-                messageSuffix
-        );
+        """.formatted(user.getFirstName(), planNameFull, messageSuffix);
 
         if (sendEmail) {
-            emailService.sendEmail(
+            emailSenderService.sendHtmlEmail(
                     EmailDTO.builder()
                             .to(user.getEmail())
                             .subject(subject)
@@ -200,26 +185,21 @@ public class SystemNotificationService {
                             .build()
             );
         }
+
         if (sendSms) {
+            String smsText = String.format("Złotówka: marzenia \"%s\" – %s. Sprawdź aplikację.", planNameShort, messageSuffix);
             sendSms(user.getPhoneNumber(), smsText);
         }
 
-        createNotification(
-                user,
-                "Plan",
-                String.format("Plan \"%s\" – %s", planNameFull, messageSuffix),
-                sendEmail,
-                sendSms
-        );
+        createNotification(user, "Marzenie", String.format("Marzenie \"%s\" – %s", planNameFull, messageSuffix), sendEmail, sendSms);
     }
 
     private void sendSubplanDeadlineEmail(Subplan subplan, String messageSuffix) {
         User user = subplan.getPlan().getUser();
         boolean sendEmail = Boolean.TRUE.equals(user.getNotificationsByEmail());
         boolean sendSms = Boolean.TRUE.equals(user.getNotificationsByPhone());
-        if (!sendEmail && !sendSms) return;
 
-        String subject = "Ostrzeżenie dotyczące części planu";
+        String subject = "Ostrzeżenie dotyczące części marzenia";
         String subplanNameShort = shorten(subplan.getName(), 20);
         String subplanNameFull = subplan.getName();
 
@@ -227,25 +207,19 @@ public class SystemNotificationService {
             <html>
               <body style="font-family: sans-serif; background: #eef2f3; padding: 20px;">
                 <div style="background: #ffffff; border-radius: 8px; padding: 20px; max-width: 600px; margin: auto;">
-                  <h2 style="color: #2a9d8f;">Ostrzeżenie dotyczące części planu</h2>
+                  <h2 style="color: #2a9d8f;">Ostrzeżenie dotyczące części marzenia</h2>
                   <p>Cześć %s,</p>
-                  <p>Termin Twojej części planu <strong>"%s"</strong> jest <strong>%s</strong>.</p>
+                  <p>Termin Twojej części marzenia <strong>"%s"</strong> jest <strong>%s</strong>.</p>
                   <p>Prosimy o podjęcie odpowiednich działań.</p>
                   <hr />
                   <p style="font-size: 0.9em; color: #555;">Zespół Złotówka</p>
                 </div>
               </body>
             </html>
-            """.formatted(user.getFirstName(), subplanNameFull, messageSuffix);
-
-        String smsText = String.format(
-                "Złotówka: subplan \"%s\" – %s. Sprawdź aplikację.",
-                subplanNameShort,
-                messageSuffix
-        );
+        """.formatted(user.getFirstName(), subplanNameFull, messageSuffix);
 
         if (sendEmail) {
-            emailService.sendEmail(
+            emailSenderService.sendHtmlEmail(
                     EmailDTO.builder()
                             .to(user.getEmail())
                             .subject(subject)
@@ -253,17 +227,13 @@ public class SystemNotificationService {
                             .build()
             );
         }
+
         if (sendSms) {
+            String smsText = String.format("Złotówka: marzenia \"%s\" – %s. Sprawdź aplikację.", subplanNameShort, messageSuffix);
             sendSms(user.getPhoneNumber(), smsText);
         }
 
-        createNotification(
-                user,
-                "Subplan",
-                String.format("Część planu \"%s\" – %s", subplanNameFull, messageSuffix),
-                sendEmail,
-                sendSms
-        );
+        createNotification(user, "Marzenia", String.format("Część marzenia \"%s\" – %s", subplanNameFull, messageSuffix), sendEmail, sendSms);
     }
 
     private void createNotification(User user, String category, String text, boolean byEmail, boolean byPhone) {
@@ -275,10 +245,13 @@ public class SystemNotificationService {
                 .byEmail(byEmail)
                 .byPhone(byPhone)
                 .build();
-        notificationRepository.save(notification);
-
-        if (Boolean.TRUE.equals(byEmail)) {
-            appUserNotificationService.createNotification(user, category, text, true, false);
+        try {
+            notificationRepository.save(notification);
+            if (byEmail) {
+                appUserNotificationService.createNotification(user, category, text, true, false);
+            }
+        } catch (Exception e) {
+            log.error("Błąd podczas zapisu powiadomienia do bazy: {}", e.getMessage(), e);
         }
     }
 }
