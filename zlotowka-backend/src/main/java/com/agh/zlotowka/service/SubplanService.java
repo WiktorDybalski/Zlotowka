@@ -1,9 +1,12 @@
 package com.agh.zlotowka.service;
 
-
 import com.agh.zlotowka.dto.SubplanDTO;
 import com.agh.zlotowka.dto.SubplanRequest;
-import com.agh.zlotowka.exception.*;
+import com.agh.zlotowka.exception.CurrencyConversionException;
+import com.agh.zlotowka.exception.InsufficientBudgetException;
+import com.agh.zlotowka.exception.PlanAmountExceededException;
+import com.agh.zlotowka.exception.PlanCompletionException;
+import com.agh.zlotowka.exception.PlanOwnershipException;
 import com.agh.zlotowka.model.OneTimeTransaction;
 import com.agh.zlotowka.model.Plan;
 import com.agh.zlotowka.model.Subplan;
@@ -11,6 +14,7 @@ import com.agh.zlotowka.repository.OneTimeTransactionRepository;
 import com.agh.zlotowka.repository.PlanRepository;
 import com.agh.zlotowka.repository.SubPlanRepository;
 import com.agh.zlotowka.repository.UserRepository;
+import com.agh.zlotowka.security.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +37,24 @@ public class SubplanService {
     private final OneTimeTransactionRepository oneTimeTransactionRepository;
     private final GeneralPlansService generalPlansService;
 
+    public void validateOwnershipBySubplanId(Integer subplanId, CustomUserDetails userDetails) {
+        Subplan subplan = subPlanRepository.findById(subplanId)
+                .orElseThrow(() -> new EntityNotFoundException("Nie znaleziono podplanu o ID " + subplanId));
+        Integer ownerId = subplan.getPlan().getUser().getUserId();
+        if (!ownerId.equals(userDetails.getUser().getUserId())) {
+            throw new PlanOwnershipException("Dostęp zabroniony do tego podplanu");
+        }
+    }
+
+    public void validateOwnershipByPlanId(Integer planId, CustomUserDetails userDetails) {
+        Plan plan = planRepository.findById(planId)
+                .orElseThrow(() -> new EntityNotFoundException("Nie znaleziono planu o ID " + planId));
+        Integer ownerId = plan.getUser().getUserId();
+        if (!ownerId.equals(userDetails.getUser().getUserId())) {
+            throw new PlanOwnershipException("Dostęp zabroniony do tego planu");
+        }
+    }
+
     @Transactional
     public SubplanDTO createSubplan(SubplanRequest request) {
         userRepository.findById(request.userId())
@@ -44,7 +66,6 @@ public class SubplanService {
         validateSubplanOwnership(request.userId(), plan.getUser().getUserId());
         validateSubplanAmount(plan, request.amount());
         validatePlanCompletion(plan);
-
 
         Subplan subplan = Subplan.builder()
                 .plan(plan)
@@ -64,7 +85,10 @@ public class SubplanService {
         BigDecimal actualAmount = calculateCurrentBudget(subplan);
         boolean canBeCompleted = actualAmount.compareTo(subplan.getRequiredAmount()) >= 0;
         LocalDate estimatedCompletionDate = !subplan.getCompleted() ?
-                generalPlansService.estimateCompletionDate(subplan.getPlan(), subplan.getRequiredAmount()) :
+                generalPlansService.estimateCompletionDate(
+                        subplan.getPlan(),
+                        subplan.getRequiredAmount()
+                ) :
                 subplan.getDate();
 
         return new SubplanDTO(
@@ -89,7 +113,6 @@ public class SubplanService {
 
     @Transactional
     public SubplanDTO updateSubplan(SubplanRequest request, Integer subplanId) {
-
         userRepository.findById(request.userId())
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono użytkownika o ID %d", request.userId())));
 
@@ -100,13 +123,9 @@ public class SubplanService {
         validateSubplanOwnership(request.userId(), subplan.getPlan().getUser().getUserId());
         validateUpdatedSubplanAmount(subplan.getPlan(), request.amount(), subplan);
 
-
         subplan.setName(request.name());
         subplan.setRequiredAmount(request.amount());
-
         subplan.setDescription(request.description());
-        subplan.setRequiredAmount(request.amount());
-        subplan.setName(request.name());
 
         subPlanRepository.save(subplan);
         return getSubplanDTO(subplan);
@@ -202,8 +221,7 @@ public class SubplanService {
             );
 
             plan.getUser().setCurrentBudget(plan.getUser().getCurrentBudget().subtract(correctAmount));
-        }
-        catch (CurrencyConversionException e) {
+        } catch (CurrencyConversionException e) {
             log.error("Nieoczekiwany błąd z CurrencyService", e);
         }
 
@@ -214,6 +232,9 @@ public class SubplanService {
         subplan.setDate(completionDate);
 
         calculatePlanSubplanCompletion(plan);
+
+        userRepository.save(plan.getUser());
+        subPlanRepository.save(subplan);
 
         OneTimeTransaction transaction = OneTimeTransaction.builder()
                 .user(plan.getUser())
@@ -226,10 +247,6 @@ public class SubplanService {
                 .build();
 
         subplan.setTransaction(transaction);
-        userRepository.save(plan.getUser());
-        subPlanRepository.save(subplan);
-
-
         oneTimeTransactionRepository.save(transaction);
         return getSubplanDTO(subplan);
     }
@@ -248,8 +265,7 @@ public class SubplanService {
                     subplan.getPlan().getUser().getCurrency().getIsoCode(),
                     subplan.getPlan().getCurrency().getIsoCode()
             );
-        }
-        catch (CurrencyConversionException e) {
+        } catch (CurrencyConversionException e) {
             log.error("Nieoczekiwany błąd w CurrencyService", e);
         }
         if (currentAmount.compareTo(subplan.getRequiredAmount()) < 0) {
@@ -295,8 +311,7 @@ public class SubplanService {
                         subplan.getPlan().getUser().getCurrency().getIsoCode()
                 );
                 transaction.getUser().setCurrentBudget(transaction.getUser().getCurrentBudget().add(correctAmount));
-            }
-            catch (CurrencyConversionException e) {
+            } catch (CurrencyConversionException e) {
                 log.error("Nieoczekiwany błąd w CurrencyService", e);
             }
         }
@@ -313,8 +328,7 @@ public class SubplanService {
         BigDecimal currentBudget = BigDecimal.ZERO;
         if (subplan.getCompleted()) {
             currentBudget = subplan.getRequiredAmount();
-        }
-        else {
+        } else {
             try {
                 currentBudget = currencyService.convertCurrency(
                         subplan.getPlan().getUser().getCurrentBudget(),

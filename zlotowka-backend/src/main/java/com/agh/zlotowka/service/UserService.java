@@ -30,6 +30,8 @@ public class UserService {
     private final CurrencyService currencyService;
     private final CurrencyRepository currencyRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
+    private final AppUserNotificationService appUserNotificationService;
 
     @PostConstruct
     public void initializeCurrencies() {
@@ -46,7 +48,6 @@ public class UserService {
 
         Currency defaultCurrency = currencyRepository.findByIsoCode("PLN")
                 .orElseThrow(() -> new EntityNotFoundException("Domyślna waluta PLN nie została znaleziona"));
-
 
         User newUser = User.builder()
                 .firstName(request.firstName())
@@ -102,7 +103,6 @@ public class UserService {
                 user.getNotificationsByPhone()
         );
     }
-
 
     public void addTransactionAmountToBudget(int currencyId, BigDecimal amount, boolean isIncome, User user) {
         BigDecimal budget = user.getCurrentBudget();
@@ -173,8 +173,19 @@ public class UserService {
             if (!request.notificationsByEmail().matches("^(true|false)$")) {
                 throw new IllegalArgumentException("Wartość powiadomień e-mail musi być 'true' lub 'false'");
             }
-            user.setNotificationsByEmail(Boolean.parseBoolean(request.notificationsByEmail()));
+            boolean oldValue = user.getNotificationsByEmail();
+            boolean newValue = Boolean.parseBoolean(request.notificationsByEmail());
+            user.setNotificationsByEmail(newValue);
+
+            if (!oldValue && newValue) {
+                emailService.sendUserOptInWelcomeEmail(user.getEmail(), user.getFirstName());
+
+                String category = "NOTIFICATIONS";
+                String text = "Aktywowano powiadomienia e-mail. Będziesz otrzymywać powiadomienia w aplikacji.";
+                appUserNotificationService.createNotification(user, category, text, true, false);
+            }
         }
+
 
         if (request.notificationsByPhone() != null) {
             if (!request.notificationsByPhone().matches("^(true|false)$")) {
@@ -260,5 +271,18 @@ public class UserService {
         userRepository.save(user);
 
         log.info("Hasło zostało pomyślnie zaktualizowane dla użytkownika o ID: {}", user.getUserId());
+        emailService.sendUserPasswordChangedEmail(user.getEmail(), user.getFirstName());
+    }
+
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Nie znaleziono użytkownika o emailu: " + email)
+                );
+    }
+
+    public void updatePassword(User user, String rawPassword) {
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        userRepository.save(user);
     }
 }

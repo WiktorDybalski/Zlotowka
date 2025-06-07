@@ -39,14 +39,15 @@ public class SecurityConfig {
                                 "/user/**",
                                 "/plan/**",
                                 "/subplan/**",
-                                "/general-plans/**"
+                                "/general-plans/**",
+                                "/notifications/**"
                         )
                 )
                 .sessionManagement(sess -> sess
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/auth/**","/user/currency").permitAll()
+                        .requestMatchers("/", "/auth/login", "/auth/register","/auth/password/**","/user/currency").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(e -> e

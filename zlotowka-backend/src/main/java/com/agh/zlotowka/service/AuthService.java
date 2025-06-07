@@ -21,10 +21,15 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
     private final UserService userService;
+    private final EmailService emailService;
+    private final AppUserNotificationService appUserNotificationService;
 
     public Map<String, Object> login(LoginRequest loginRequest) {
         Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.email(),
+                        loginRequest.password()
+                )
         );
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
         User user = userDetails.getUser();
@@ -38,19 +43,41 @@ public class AuthService {
     }
 
     public Map<String, Object> register(RegistrationRequest registrationRequest) {
-        var newUser = userService.registerUser(registrationRequest);
+        User newUser = userService.registerUser(registrationRequest);
+
+        emailService.sendUserWelcomeEmail(newUser.getEmail(), newUser.getFirstName());
+
+        String category = "WELCOME";
+        String body = "Witamy w aplikacji Złotówka! Możesz teraz zarządzać swoim budżetem.";
+        appUserNotificationService.createNotification(
+                newUser,
+                category,
+                body,
+                true,
+                false
+        );
 
         Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(newUser.getEmail(), registrationRequest.password())
+                new UsernamePasswordAuthenticationToken(
+                        newUser.getEmail(),
+                        registrationRequest.password()
+                )
         );
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-        User user = userDetails.getUser();
         String token = jwtUtil.generateToken(userDetails);
 
         return Map.of(
                 "token", token,
                 "message", "Rejestracja zakończona pomyślnie!",
-                "user", mapToUserResponse(user)
+                "user", mapToUserResponse(newUser)
+        );
+    }
+
+    public Map<String, Object> refreshToken(CustomUserDetails userDetails) {
+        String newToken = jwtUtil.generateToken(userDetails);
+        return Map.of(
+                "token", newToken,
+                "message", "Token odświeżony pomyślnie!"
         );
     }
 

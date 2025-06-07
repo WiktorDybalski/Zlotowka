@@ -9,7 +9,10 @@ const routes = {
     pathname: "/auth/register",
   },
   forgotPassword: {
-    pathname: "/auth/forgot-password",
+    pathname: "/auth/password/forgot"
+  },
+  resetPassword:  {
+    pathname: "/auth/password/reset"
   },
   dashboard: {
     pathname: "/dashboard",

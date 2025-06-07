@@ -1,14 +1,15 @@
 package com.agh.zlotowka.controller;
 
-
 import com.agh.zlotowka.dto.SubplanDTO;
 import com.agh.zlotowka.dto.SubplanRequest;
+import com.agh.zlotowka.security.CustomUserDetails;
 import com.agh.zlotowka.service.SubplanService;
 import com.agh.zlotowka.validation.DateAfter2000;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,19 +21,29 @@ public class SubplanController {
     private final SubplanService subplanService;
 
     @PostMapping
-    public ResponseEntity<SubplanDTO> createSubplan(@Valid @RequestBody SubplanRequest request) {
+    public ResponseEntity<SubplanDTO> createSubplan(
+            @Valid @RequestBody SubplanRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        subplanService.validateOwnershipByPlanId(request.planId(), userDetails);
         SubplanDTO subplan = subplanService.createSubplan(request);
         return ResponseEntity.ok(subplan);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SubplanDTO> getSubplan(@PathVariable Integer id) {
+    public ResponseEntity<SubplanDTO> getSubplan(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        subplanService.validateOwnershipBySubplanId(id, userDetails);
         SubplanDTO subplan = subplanService.getSubplan(id);
         return ResponseEntity.ok(subplan);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SubplanDTO> updateSubplan(@PathVariable Integer id, @Valid @RequestBody SubplanRequest request) {
+    public ResponseEntity<SubplanDTO> updateSubplan(
+            @PathVariable Integer id,
+            @Valid @RequestBody SubplanRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        subplanService.validateOwnershipBySubplanId(id, userDetails);
         SubplanDTO updatedSubplan = subplanService.updateSubplan(request, id);
         return ResponseEntity.ok(updatedSubplan);
     }
@@ -40,20 +51,27 @@ public class SubplanController {
     @PostMapping("/complete/{id}")
     public ResponseEntity<SubplanDTO> completeSubplan(
             @PathVariable Integer id,
-            @RequestParam(required = false) @DateAfter2000 LocalDate completionDate
-            ) {
+            @RequestParam(required = false) @DateAfter2000 LocalDate completionDate,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        subplanService.validateOwnershipBySubplanId(id, userDetails);
         SubplanDTO completedSubplan = subplanService.completeSubplan(id, completionDate);
         return ResponseEntity.ok(completedSubplan);
     }
 
     @PostMapping("/uncomplete/{id}")
-    public ResponseEntity<SubplanDTO> uncompleteSubplan(@PathVariable Integer id) {
+    public ResponseEntity<SubplanDTO> uncompleteSubplan(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        subplanService.validateOwnershipBySubplanId(id, userDetails);
         SubplanDTO uncompletedSubplan = subplanService.undoCompleteSubplan(id);
         return ResponseEntity.ok(uncompletedSubplan);
     }
 
     @GetMapping("/all/{planId}")
-    public ResponseEntity<List<SubplanDTO>> getAllSubplans(@PathVariable Integer planId) {
+    public ResponseEntity<List<SubplanDTO>> getAllSubplans(
+            @PathVariable Integer planId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        subplanService.validateOwnershipByPlanId(planId, userDetails);
         List<SubplanDTO> subplans = subplanService.getAllSubplansByPlanId(planId);
         return ResponseEntity.ok(subplans);
     }
@@ -61,8 +79,9 @@ public class SubplanController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSubplan(
             @PathVariable Integer id,
-            @RequestParam(required = false) boolean deleteTransaction
-        ) {
+            @RequestParam(required = false) boolean deleteTransaction,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        subplanService.validateOwnershipBySubplanId(id, userDetails);
         subplanService.deleteSubplan(id, deleteTransaction);
         return ResponseEntity.noContent().build();
     }
