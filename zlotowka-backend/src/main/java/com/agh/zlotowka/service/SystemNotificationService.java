@@ -237,21 +237,24 @@ public class SystemNotificationService {
     }
 
     private void createNotification(User user, String category, String text, boolean byEmail, boolean byPhone) {
-        SystemNotificationModel notification = SystemNotificationModel.builder()
-                .user(user)
-                .createdAt(LocalDateTime.now())
-                .category(category)
-                .text(text)
-                .byEmail(byEmail)
-                .byPhone(byPhone)
-                .build();
         try {
+            SystemNotificationModel notification = SystemNotificationModel.builder()
+                    .user(user)
+                    .createdAt(LocalDateTime.now())
+                    .category(category)
+                    .text(text)
+                    .byEmail(byEmail)
+                    .byPhone(byPhone)
+                    .build();
             notificationRepository.save(notification);
-            if (byEmail) {
-                appUserNotificationService.createNotification(user, category, text, true, false);
-            }
         } catch (Exception e) {
-            log.error("Błąd podczas zapisu powiadomienia do bazy: {}", e.getMessage(), e);
+            log.error("Błąd podczas zapisu do system_notification: {}", e.getMessage(), e);
+        }
+
+        try {
+            appUserNotificationService.createNotification(user, category, text, true, false);
+        } catch (Exception e) {
+            log.error("Błąd podczas zapisu do app_user_notification: {}", e.getMessage(), e);
         }
     }
 }
