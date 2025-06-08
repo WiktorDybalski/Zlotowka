@@ -30,7 +30,7 @@ public class UserService {
     private final CurrencyService currencyService;
     private final CurrencyRepository currencyRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
+    private final UserNotificationService userNotificationService;
     private final AppUserNotificationService appUserNotificationService;
 
     @PostConstruct
@@ -171,25 +171,25 @@ public class UserService {
             if (!request.notificationsByEmail().matches("^(true|false)$")) {
                 throw new IllegalArgumentException("Wartość powiadomień e-mail musi być 'true' lub 'false'");
             }
-            boolean oldValue = user.getNotificationsByEmail();
-            boolean newValue = Boolean.parseBoolean(request.notificationsByEmail());
-            user.setNotificationsByEmail(newValue);
+            boolean oldValueEmail = user.getNotificationsByEmail();
+            boolean newValueEmail = Boolean.parseBoolean(request.notificationsByEmail());
+            user.setNotificationsByEmail(newValueEmail);
 
-            if (!oldValue && newValue) {
-                emailService.sendUserOptInWelcomeEmail(user.getEmail(), user.getFirstName());
-
-                String category = "NOTIFICATIONS";
-                String text = "Aktywowano powiadomienia e-mail. Będziesz otrzymywać powiadomienia w aplikacji.";
-                appUserNotificationService.createNotification(user, category, text, true, false);
+            if (!oldValueEmail && newValueEmail) {
+                userNotificationService.sendUserEmailChangeNotification(user);
             }
         }
-
 
         if (request.notificationsByPhone() != null) {
             if (!request.notificationsByPhone().matches("^(true|false)$")) {
                 throw new IllegalArgumentException("Wartość powiadomień telefonicznych musi być 'true' lub 'false'");
             }
-            user.setNotificationsByPhone(Boolean.parseBoolean(request.notificationsByPhone()));
+            boolean oldValuePhone = user.getNotificationsByPhone();
+            boolean newValuePhone= Boolean.parseBoolean(request.notificationsByPhone());
+            user.setNotificationsByPhone(newValuePhone);
+            if (!oldValuePhone && newValuePhone) {
+                userNotificationService.sendUserPhoneChangeNotification(user);
+            }
         }
 
         User updatedUser = userRepository.save(user);
@@ -268,8 +268,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
 
-        log.info("Hasło zostało pomyślnie zaktualizowane dla użytkownika o ID: {}", user.getUserId());
-        emailService.sendUserPasswordChangedEmail(user.getEmail(), user.getFirstName());
+        userNotificationService.sendUserPasswordChangedEmail(user.getEmail(), user.getFirstName());
     }
 
     public User findByEmail(String email) {

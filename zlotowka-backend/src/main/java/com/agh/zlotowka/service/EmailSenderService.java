@@ -26,15 +26,15 @@ public class EmailSenderService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setTo(emailDTO.getTo());
-            helper.setSubject(emailDTO.getSubject());
-            helper.setText(emailDTO.getBody(), true);
+            helper.setTo(emailDTO.to());
+            helper.setSubject(emailDTO.subject());
+            helper.setText(emailDTO.body(), true);
 
             helper.setFrom(fromAddress);
 
             mailSender.send(message);
         } catch (Exception e) {
-            log.error("Błąd podczas wysyłania emaila HTML do {}: {}", emailDTO.getTo(), e.getMessage(), e);
+            log.error("Błąd podczas wysyłania emaila HTML do {}: {}", emailDTO.to(), e.getMessage(), e);
         }
     }
 }

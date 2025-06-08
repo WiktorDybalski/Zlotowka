@@ -19,7 +19,7 @@ import java.util.Base64;
 public class PasswordResetService {
 
     private final UserService userService;
-    private final EmailService emailService;
+    private final UserNotificationService userNotificationService;
 
     @Value("${jwt.secret}")
     private String base64Secret;
@@ -30,7 +30,7 @@ public class PasswordResetService {
     public String createResetToken(ForgotPasswordRequest req) {
         User user = userService.findByEmail(req.email());
         String code = generateCode(user.getEmail(), Instant.now());
-        emailService.sendForgotPasswordTokenEmail(
+        userNotificationService.sendForgotPasswordTokenEmail(
                 user.getEmail(),
                 user.getFirstName(),
                 code
@@ -44,7 +44,7 @@ public class PasswordResetService {
             throw new IllegalArgumentException("Nieprawidłowy lub przeterminowany token");
         }
         userService.updatePassword(user, req.newPassword());
-        emailService.sendUserPasswordChangedEmail(
+        userNotificationService.sendUserPasswordChangedEmail(
                 user.getEmail(),
                 user.getFirstName()
         );

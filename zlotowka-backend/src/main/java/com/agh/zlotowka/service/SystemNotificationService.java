@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -25,7 +24,6 @@ public class SystemNotificationService {
     private final SubPlanRepository subPlanRepository;
     private final EmailSenderService emailSenderService;
     private final SmsSenderService smsSenderService;
-    private final SystemNotificationRepository notificationRepository;
     private final AppUserNotificationService appUserNotificationService;
 
     private final BigDecimal THRESHOLD = BigDecimal.ZERO;
@@ -80,21 +78,6 @@ public class SystemNotificationService {
                 }
             }
         }
-    }
-
-    public List<SystemNotificationModel> fetchUserNotifications(User user) {
-        return notificationRepository.findAllByUserOrderByCreatedAtDesc(user);
-    }
-
-    public void deleteByIdAndUser(Integer id, User user) {
-        SystemNotificationModel notification = notificationRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Nie znaleziono powiadomienia"));
-
-        if (!notification.getUser().getUserId().equals(user.getUserId())) {
-            throw new SecurityException("Brak dostępu");
-        }
-
-        notificationRepository.delete(notification);
     }
 
     private void sendSms(String phoneNumber, String messageText) {
@@ -238,23 +221,9 @@ public class SystemNotificationService {
 
     private void createNotification(User user, String category, String text, boolean byEmail, boolean byPhone) {
         try {
-            SystemNotificationModel notification = SystemNotificationModel.builder()
-                    .user(user)
-                    .createdAt(LocalDateTime.now())
-                    .category(category)
-                    .text(text)
-                    .byEmail(byEmail)
-                    .byPhone(byPhone)
-                    .build();
-            notificationRepository.save(notification);
-        } catch (Exception e) {
-            log.error("Błąd podczas zapisu do system_notification: {}", e.getMessage(), e);
-        }
-
-        try {
             appUserNotificationService.createNotification(user, category, text, true, false);
         } catch (Exception e) {
-            log.error("Błąd podczas zapisu do app_user_notification: {}", e.getMessage(), e);
+            log.error("Błąd podczas zapisu do bazy: {}", e.getMessage(), e);
         }
     }
 }

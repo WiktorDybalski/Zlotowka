@@ -51,15 +51,11 @@ public class SystemNotificationIntegrationTests {
     private CurrencyRepository currencyRepository;
 
     @Autowired
-    private SystemNotificationRepository systemNotificationRepository;
-
-    @Autowired
     private AppUserNotificationRepository appUserNotificationRepository;
 
     @AfterEach
     void cleanup() {
         appUserNotificationRepository.deleteAll();
-        systemNotificationRepository.deleteAll();
         subPlanRepository.deleteAll();
         planRepository.deleteAll();
         oneTimeTransactionRepository.deleteAll();
