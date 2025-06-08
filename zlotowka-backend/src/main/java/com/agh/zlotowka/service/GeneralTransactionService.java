@@ -251,7 +251,9 @@ public class GeneralTransactionService {
             throw new IllegalArgumentException("Strona musi być >= 1, a limit musi być > 0");
         }
 
-        validateFirstAndFinalDates(startDate, endDate);
+        if (startDate != null && endDate != null) {
+            validateFirstAndFinalDates(startDate, endDate);
+        }
 
         List<TransactionDTO> allTransactions = getAllTransactionsByUserId(userId, startDate, endDate);
         int total = allTransactions.size();
@@ -270,8 +272,16 @@ public class GeneralTransactionService {
     }
 
     private List<TransactionDTO> getAllTransactionsByUserId(Integer userId, LocalDate startDate, LocalDate endDate) {
-        List<OneTimeTransaction> oneTimeTransactions = oneTimeTransactionRepository.getTransactionsInRange(userId, startDate, endDate);
-        List<RecurringTransaction> recurringTransactions = recurringTransactionRepository.getActiveRecurringTransactionsByUser(userId, startDate, endDate);
+        List<OneTimeTransaction> oneTimeTransactions;
+        List<RecurringTransaction> recurringTransactions;
+
+        if (startDate == null || endDate == null) {
+            oneTimeTransactions = oneTimeTransactionRepository.findAllByUserId(userId);
+            recurringTransactions = recurringTransactionRepository.findAllByUserId(userId);
+        } else {
+            oneTimeTransactions = oneTimeTransactionRepository.getTransactionsInRange(userId, startDate, endDate);
+            recurringTransactions = recurringTransactionRepository.getActiveRecurringTransactionsByUser(userId, startDate, endDate);
+        }
 
         return Stream.concat(
                         oneTimeTransactions.stream().map(this::mapOneTimeTransaction),
@@ -298,6 +308,13 @@ public class GeneralTransactionService {
         List<TransactionDTO> list = new ArrayList<>();
         PeriodEnum period = recurringTransaction.getInterval();
         LocalDate nextDate = recurringTransaction.getNextPaymentDate();
+
+        if (endDate == null) {
+            endDate = recurringTransaction.getFinalPaymentDate();
+            if (endDate == null) {
+                endDate = LocalDate.now().plusYears(1);
+            }
+        }
 
         while (!nextDate.isAfter(endDate) && !nextDate.isAfter(recurringTransaction.getFinalPaymentDate())) {
             list.add(new TransactionDTO(

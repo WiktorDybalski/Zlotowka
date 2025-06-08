@@ -1,5 +1,6 @@
 package com.agh.zlotowka.repository;
 
+import com.agh.zlotowka.model.OneTimeTransaction;
 import com.agh.zlotowka.model.RecurringTransaction;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -46,4 +47,8 @@ public interface RecurringTransactionRepository extends JpaRepository<RecurringT
             @Param("userId") int userId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
+
+
+    @Query("SELECT rt FROM RecurringTransaction rt WHERE rt.user.userId = :userId AND rt.nextPaymentDate > CURRENT_DATE ")
+    List<RecurringTransaction> findAllByUserId(@Param("userId") int userId);
 }
