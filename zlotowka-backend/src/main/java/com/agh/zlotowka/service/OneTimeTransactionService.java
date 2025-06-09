@@ -120,8 +120,8 @@ public class OneTimeTransactionService {
 
     private void updateTransactionBeforeCurrentTime(OneTimeTransactionRequest request, OneTimeTransaction transaction) {
         if (!transaction.getDate().isAfter(LocalDate.now())) {
-            if ((!request.amount().equals(transaction.getAmount()) || request.currencyId().equals(transaction.getCurrency().getCurrencyId()))) {
-                userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), request.isIncome(), transaction.getUser());
+            if ((!request.amount().equals(transaction.getAmount()) || request.currencyId().equals(transaction.getCurrency().getCurrencyId())) || request.isIncome() != transaction.getIsIncome()) {
+                userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
                 userService.addTransactionAmountToBudget(request.currencyId(), request.amount(), request.isIncome(), transaction.getUser());
             }
         } else {
