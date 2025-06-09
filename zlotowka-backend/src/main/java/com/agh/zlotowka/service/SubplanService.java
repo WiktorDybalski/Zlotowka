@@ -120,7 +120,7 @@ public class SubplanService {
 
     private void validatePlanCompletion(Plan plan) {
         if (plan.getCompleted()) {
-            throw new PlanCompletionException("Plan jest już ukończony, nie można dodać podplanu");
+            throw new PlanCompletionException("Plan jest już ukończony, nie można wykonać tej operacji");
         }
     }
 
@@ -154,23 +154,25 @@ public class SubplanService {
         validateIncompleteSubPlan(subplan);
         subplan.setCompleted(false);
         subplan.setDate(null);
-        try {
-            BigDecimal correctAmount = currencyService.convertCurrency(
-                    subplan.getRequiredAmount(),
-                    subplan.getPlan().getCurrency().getIsoCode(),
-                    subplan.getPlan().getUser().getCurrency().getIsoCode()
-            );
 
-            subplan.getPlan().getUser().setCurrentBudget(
-                    subplan.getPlan().getUser().getCurrentBudget().add(correctAmount)
-            );
-        } catch (CurrencyConversionException e) {
-            log.error("Nieoczekiwany błąd w CurrencyService", e);
-        }
         OneTimeTransaction transaction = subplan.getTransaction();
         if (transaction != null) {
             oneTimeTransactionRepository.delete(transaction);
             subplan.setTransaction(null);
+
+            try {
+                BigDecimal correctAmount = currencyService.convertCurrency(
+                        subplan.getRequiredAmount(),
+                        subplan.getPlan().getCurrency().getIsoCode(),
+                        subplan.getPlan().getUser().getCurrency().getIsoCode()
+                );
+
+                subplan.getPlan().getUser().setCurrentBudget(
+                        subplan.getPlan().getUser().getCurrentBudget().add(correctAmount)
+                );
+            } catch (CurrencyConversionException e) {
+                log.error("Nieoczekiwany błąd w CurrencyService", e);
+            }
         }
         subPlanRepository.save(subplan);
         calculatePlanSubplanCompletion(subplan.getPlan());

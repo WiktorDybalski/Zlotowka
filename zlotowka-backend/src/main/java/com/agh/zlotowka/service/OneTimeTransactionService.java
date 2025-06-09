@@ -4,7 +4,9 @@ import com.agh.zlotowka.dto.OneTimeTransactionDTO;
 import com.agh.zlotowka.dto.OneTimeTransactionRequest;
 import com.agh.zlotowka.model.Currency;
 import com.agh.zlotowka.model.OneTimeTransaction;
+import com.agh.zlotowka.model.Subplan;
 import com.agh.zlotowka.model.User;
+import com.agh.zlotowka.repository.SubPlanRepository;
 import com.agh.zlotowka.repository.CurrencyRepository;
 import com.agh.zlotowka.repository.OneTimeTransactionRepository;
 import com.agh.zlotowka.repository.UserRepository;
@@ -27,6 +29,7 @@ public class OneTimeTransactionService {
     private final UserService userService;
     private final UserRepository userRepository;
     private final CurrencyRepository currencyRepository;
+    private final SubPlanRepository subplanRepository;
 
     @Transactional
     public OneTimeTransactionDTO createTransaction(OneTimeTransactionRequest request) {
@@ -81,6 +84,13 @@ public class OneTimeTransactionService {
         if (!transaction.getDate().isAfter(LocalDate.now())) {
             userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
         }
+
+        Subplan subplan = subplanRepository.findByTransactionId(id);
+        if (subplan != null) {
+            subplan.setTransaction(null);
+            subplanRepository.save(subplan);
+        }
+
         oneTimeTransactionRepository.delete(transaction);
     }
 
