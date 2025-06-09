@@ -83,8 +83,8 @@ public class GeneralTransactionController {
             @PathVariable Integer userId,
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "20") Integer limit,
-            @RequestParam(defaultValue = "2025-01-01") @DateAfter2000 LocalDate startDate,
-            @RequestParam(defaultValue = "2025-07-01") @DateAfter2000 LocalDate endDate,
+            @RequestParam(required = false) @DateAfter2000 LocalDate startDate,
+            @RequestParam(required = false) @DateAfter2000 LocalDate endDate,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         generalTransactionService.validateUserId(userId, userDetails);

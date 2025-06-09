@@ -153,7 +153,9 @@ public class UserService {
             validateAndUpdateName("Last", request.lastName(), user);
         }
 
-        if (request.phoneNumber() != null) {
+        if (request.phoneNumber() == null || request.phoneNumber().isBlank()) {
+            user.setPhoneNumber(null);
+        } else {
             if (!request.phoneNumber().matches("^\\d{9}$")) {
                 throw new IllegalArgumentException("Numer telefonu musi składać się dokładnie z 9 cyfr");
             }
