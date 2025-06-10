@@ -119,26 +119,25 @@ public class GeneralTransactionService {
         Map<LocalDate, SinglePlotData> uniqueByDateMap = new TreeMap<>();
         BigDecimal updatedBudget = budget;
 
-        LocalDate lastDate = LocalDate.now();
         for (TransactionBudgetInfo transaction : pastTransactions) {
             if (!uniqueByDateMap.containsKey(transaction.date()))
                 uniqueByDateMap.put(transaction.date(), new SinglePlotData(transaction.date(), updatedBudget, userCurrency));
 
-            if (transaction.date().isAfter(request.startDate()) && daysBetween(transaction.date(), lastDate) > 1)
-                uniqueByDateMap.put(lastDate.minusDays(1), new SinglePlotData(lastDate.minusDays(1), updatedBudget, userCurrency));
-
-            lastDate = transaction.date();
             updatedBudget = updatedBudget.subtract(transaction.amount());
-        }
-
-        if (!pastTransactions.isEmpty() && pastTransactions.getLast().date().isAfter(request.startDate())) {
-            lastDate = pastTransactions.getLast().date().minusDays(1);
-            uniqueByDateMap.put(lastDate, new SinglePlotData(lastDate, updatedBudget, userCurrency));
         }
 
         uniqueByDateMap.put(request.startDate(), new SinglePlotData(request.startDate(), updatedBudget, userCurrency));
         updatedBudget = budget;
         uniqueByDateMap.put(LocalDate.now(), new SinglePlotData(LocalDate.now(), updatedBudget, userCurrency));
+
+
+        List<SinglePlotData> pastValues = new ArrayList<>(uniqueByDateMap.values());
+        for (int i=pastValues.size()-1; i>0; i--) {
+            SinglePlotData transaction = pastValues.get(i);
+            LocalDate dayBefore = transaction.date().minusDays(1);
+            if (!uniqueByDateMap.containsKey(dayBefore) && dayBefore.isAfter(request.startDate()))
+                uniqueByDateMap.put(dayBefore, new SinglePlotData(dayBefore, pastValues.get(i-1).amount(), transaction.currencyIsoCode()));
+        }
 
         BigDecimal previousBalance = updatedBudget;
         for (TransactionBudgetInfo transaction : futureTransactions) {
