@@ -26,7 +26,7 @@ export interface AccountOption {
   value?: string;
   placeholder?: string;
   avatar?: ReactNode;
-  onClick: () => void;
+  onClick?: () => void;
   fieldName: string;
 }
 

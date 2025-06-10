@@ -140,7 +140,6 @@ export default function Settings(): JSX.Element {
     {
       text: "Zdjęcie",
       avatar: <Image src="/avatar.png" width={45} height={45} alt="Avatar" className="rounded-full" />,
-      onClick: () => toast.error("Funkcjonalność w przyszłości"),
       fieldName: "avatar",
     },
     {
@@ -157,7 +156,6 @@ export default function Settings(): JSX.Element {
     {
       text: "E-mail",
       value: data?.email || "Email...",
-      onClick: () => openEditPopup("email", "Edytuj adres email", data?.email || ""),
       fieldName: "email",
     },
     {
