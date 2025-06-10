@@ -1,11 +1,10 @@
-"use client";
-
 import React from "react";
 import { createPortal } from "react-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { useNotificationService } from "@/services/NotificationService";
 import { AppNotificationDTO } from "@/interfaces/notifications/Notifications";
+import { NotificationsList } from "./NotificationsList";
 
 interface NotificationsPanelProps {
     onClose: () => void;
@@ -16,16 +15,19 @@ export default function NotificationsPanel({ onClose }: NotificationsPanelProps)
     const { fetchNotifications, markAsRead } = useNotificationService();
     const queryClient = useQueryClient();
 
-    const { data: notifications = [], isLoading, isError } = useQuery<AppNotificationDTO[], Error>({
+    const { data: notifications = [], isLoading, isError } = useQuery<
+        AppNotificationDTO[],
+        Error
+    >({
         queryKey: ["notifications"],
-        queryFn: () => fetchNotifications(),
-        enabled: !!token
+        queryFn: fetchNotifications,
+        enabled: !!token,
     });
 
     const markRead = useMutation<void, Error, number>({
-        mutationFn: (id) => markAsRead(id),
+        mutationFn: markAsRead,
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
-        onError: () => alert("Nie udało się oznaczyć powiadomienia jako przeczytane")
+        onError: () => alert("Nie udało się oznaczyć powiadomienia jako przeczytane"),
     });
 
     if (!token) return null;
@@ -42,30 +44,12 @@ export default function NotificationsPanel({ onClose }: NotificationsPanelProps)
                 <h2 className="px-6 text-2xl font-semibold mb-4">Powiadomienia</h2>
                 <hr />
                 <div className="px-6 py-4 flex-1">
-                    {isLoading ? (
-                        <p>Ładowanie...</p>
-                    ) : isError ? (
-                        <p className="text-red-600">Nie można pobrać powiadomień</p>
-                    ) : notifications.length === 0 ? (
-                        <p>Brak nowych powiadomień.</p>
-                    ) : (
-                        notifications.map((notif) => (
-                            <div key={notif.id} className="bg-gray-100 rounded-lg p-4 mb-4">
-                                <div className="flex justify-between">
-                                    <h3 className="text-lg font-medium text-[#2a9d8f]">{notif.category}</h3>
-                                    <button
-                                        onClick={() => markRead.mutate(notif.id)}
-                                        aria-label="Oznacz jako przeczytane"
-                                        className="text-neutral-500 hover:text-neutral-700"
-                                    >
-                                        <span className="material-symbols-outlined text-xl">x</span>
-                                    </button>
-                                </div>
-                                <p className="text-gray-700">{notif.text}</p>
-                                <p className="text-xs text-gray-500 mt-1">{new Date(notif.createdAt).toLocaleString()}</p>
-                            </div>
-                        ))
-                    )}
+                    <NotificationsList
+                        notifications={notifications}
+                        isLoading={isLoading}
+                        isError={isError}
+                        onMarkRead={(id) => markRead.mutate(id)}
+                    />
                 </div>
             </div>
         </div>
