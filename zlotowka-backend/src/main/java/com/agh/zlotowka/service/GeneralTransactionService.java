@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -93,6 +94,10 @@ public class GeneralTransactionService {
         }
     }
 
+    public static long daysBetween(LocalDate startDate, LocalDate endDate) {
+        return ChronoUnit.DAYS.between(startDate, endDate);
+    }
+
     public List<SinglePlotData> getEstimatedBudgetInDateRange(UserDataInDateRangeRequest request) {
         BigDecimal budget = userRepository.getUserBudget(request.userId())
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono użytkownika o ID %d", request.userId())));
@@ -117,6 +122,7 @@ public class GeneralTransactionService {
         for (TransactionBudgetInfo transaction : pastTransactions) {
             if (!uniqueByDateMap.containsKey(transaction.date()))
                 uniqueByDateMap.put(transaction.date(), new SinglePlotData(transaction.date(), updatedBudget, userCurrency));
+
             updatedBudget = updatedBudget.subtract(transaction.amount());
         }
 
@@ -124,9 +130,22 @@ public class GeneralTransactionService {
         updatedBudget = budget;
         uniqueByDateMap.put(LocalDate.now(), new SinglePlotData(LocalDate.now(), updatedBudget, userCurrency));
 
+
+        List<SinglePlotData> pastValues = new ArrayList<>(uniqueByDateMap.values());
+        for (int i=pastValues.size()-1; i>0; i--) {
+            SinglePlotData transaction = pastValues.get(i);
+            LocalDate dayBefore = transaction.date().minusDays(1);
+            if (!uniqueByDateMap.containsKey(dayBefore) && dayBefore.isAfter(request.startDate()))
+                uniqueByDateMap.put(dayBefore, new SinglePlotData(dayBefore, pastValues.get(i-1).amount(), transaction.currencyIsoCode()));
+        }
+
+        BigDecimal previousBalance = updatedBudget;
         for (TransactionBudgetInfo transaction : futureTransactions) {
             updatedBudget = updatedBudget.add(transaction.amount());
             uniqueByDateMap.put(transaction.date(), new SinglePlotData(transaction.date(), updatedBudget, userCurrency));
+            if (!uniqueByDateMap.containsKey(transaction.date().minusDays(1)))
+                uniqueByDateMap.put(transaction.date().minusDays(1), new SinglePlotData(transaction.date().minusDays(1), previousBalance, userCurrency));
+            previousBalance = updatedBudget;
         }
 
         uniqueByDateMap.put(request.endDate(), new SinglePlotData(request.endDate(), updatedBudget, userCurrency));
