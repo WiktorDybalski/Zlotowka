@@ -1,6 +1,7 @@
 "use client";
 
 import { UserData, useUserService } from "@/services/UserService";
+import { useQueryWithToast } from "@/lib/data-grabbers";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { JSX, useEffect, useState } from "react";
 import Image from "next/image";
@@ -17,7 +18,6 @@ import PasswordPopup from "@/components/settings/PasswordPopup";
 import { useSettingsService } from "@/services/SettingsService";
 import { createPayload, validateSettings } from "@/lib/utils";
 import toast from "react-hot-toast";
-import { useQueryWithToast } from "@/lib/data-grabbers";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 const scrollToSection = (id: string) => {
@@ -26,7 +26,7 @@ const scrollToSection = (id: string) => {
 
 export default function Settings(): JSX.Element {
   const navLinks = ["Konto", "Preferencje", "Powiadomienia"];
-  const UserService = useUserService();
+  const userService = useUserService();
   const settingsService = useSettingsService();
   const queryClient = useQueryClient();
   const { setLogout } = useAuth();
@@ -42,7 +42,7 @@ export default function Settings(): JSX.Element {
 
   const { data } = useQueryWithToast<UserData>({
     queryKey: ["user"],
-    queryFn: UserService.fetchUserData,
+    queryFn: userService.fetchUserData,
     staleTime: 0,
   });
 
@@ -54,14 +54,31 @@ export default function Settings(): JSX.Element {
     }
   }, [data]);
 
-  const mutation = useMutation({
-    mutationFn: (details: UserDetailsRequest) => settingsService.updateUserDetails(details),
+  const updateDetailsMutation = useMutation<UserData, Error, UserDetailsRequest>({
+    mutationFn: (details) => settingsService.updateUserDetails(details),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
+      toast.success("Udało się zmienić dane!");
     },
-    onError: (error: unknown) => {
-      const message: string = error instanceof Error ? error.message : "Nie udało się zmienić danych!";
+    onError: (err) => {
+      const message = err instanceof Error ? err.message : "Nie udało się zmienić danych!";
       toast.error(message);
+    },
+  });
+
+  const changePasswordMutation = useMutation<
+      void,
+      Error,
+      { oldPassword: string; newPassword: string; confirmNewPassword: string }
+  >({
+    mutationFn: (payload) => settingsService.changePassword(payload),
+    onSuccess: () => {
+      toast.success("Hasło zostało zmienione! Zaloguj się ponownie.");
+      closeEditPopup();
+      setTimeout(() => setLogout(), 1000);
+    },
+    onError: () => {
+      toast.error("Nie udało się zmienić hasła");
     },
   });
 
@@ -81,31 +98,20 @@ export default function Settings(): JSX.Element {
   };
 
   const openEditPopup = (fieldName: string, title: string, value: string = "") => {
-    setEditingField({
-      isOpen: true,
-      fieldName,
-      title,
-      value,
-    });
+    setEditingField({ isOpen: true, fieldName, title, value });
   };
-
   const closeEditPopup = () => {
-    setEditingField({
-      ...editingField,
-      isOpen: false,
-    });
+    setEditingField((prev) => ({ ...prev, isOpen: false }));
   };
 
   const handleSaveField = (value: string, fieldName?: string) => {
     if (!data || !fieldName) return;
     const parsedValue = value === "true";
-
     const error = validateSettings(value, fieldName);
     if (error) {
       toast.error(error);
       return;
     }
-
     if (fieldName === "password") {
       const [oldPassword, newPassword, confirmNewPassword] = value.split("::");
       if (!oldPassword || !newPassword || !confirmNewPassword) {
@@ -116,27 +122,8 @@ export default function Settings(): JSX.Element {
         toast.error("Nowe hasła nie są zgodne");
         return;
       }
-
-      settingsService
-          .changePassword({
-            oldPassword,
-            newPassword,
-            confirmNewPassword,
-          })
-          .then(() => {
-            toast.success("Hasło zostało zmienione! Zaloguj się ponownie.");
-            closeEditPopup();
-            setTimeout(() => {
-              setLogout();
-            }, 1000);
-          })
-          .catch(() => {
-            toast.error("Nie udało się zmienić hasła");
-          });
-      return;
-    }
-
-    setTimeout(() => {
+      changePasswordMutation.mutate({ oldPassword, newPassword, confirmNewPassword });
+    } else {
       const payload = createPayload(
           fieldName,
           value,
@@ -145,40 +132,25 @@ export default function Settings(): JSX.Element {
           fieldName === "notificationsByEmail" ? parsedValue : notificationsByEmail!,
           fieldName === "notificationsByPhone" ? parsedValue : notificationsByPhone!
       );
-
-      mutation.mutate(payload, {
-        onSuccess: () => {
-          toast.success("Udało się zmienić dane!");
-        },
-      });
-    }, 50);
+      updateDetailsMutation.mutate(payload);
+    }
   };
 
   const accountOptions: AccountOption[] = [
     {
       text: "Zdjęcie",
-      avatar: (
-          <Image
-              src="/avatar.png"
-              width={45}
-              height={45}
-              alt="Avatar"
-              className="rounded-full"
-          />
-      ),
-      onClick: () => {
-        toast.error("Funkcjonalność w przyszłości");
-      },
+      avatar: <Image src="/avatar.png" width={45} height={45} alt="Avatar" className="rounded-full" />,
+      onClick: () => toast.error("Funkcjonalność w przyszłości"),
       fieldName: "avatar",
     },
     {
       text: "Nazwa użytkownika",
-      value: data?.firstName ? `${data.firstName} ${data.lastName}` : "Użytkownik...",
+      value: data ? `${data.firstName} ${data.lastName}` : "Użytkownik...",
       onClick: () =>
           openEditPopup(
               "name",
               "Edytuj nazwę użytkownika",
-              data?.firstName ? `${data.firstName} ${data.lastName}` : ""
+              data ? `${data.firstName} ${data.lastName}` : ""
           ),
       fieldName: "name",
     },
@@ -190,7 +162,7 @@ export default function Settings(): JSX.Element {
     },
     {
       text: "Hasło",
-      value: "********",
+      placeholder: "********",
       onClick: () => openEditPopup("password", "Zmień hasło"),
       fieldName: "password",
     },
@@ -205,15 +177,13 @@ export default function Settings(): JSX.Element {
 
   return (
       <div className="w-full p-8 min-h-screen xl:px-32 xl:py-20 font-semibold text-accent">
-        <div>
-          <h1 className="text-4xl">Ustawienia</h1>
-        </div>
+        <h1 className="text-4xl mb-4">Ustawienia</h1>
 
-        <div className="flex flex-col sm:flex-row gap-y-2 sm:gap-x-6 mt-8">
+        <div className="flex flex-col sm:flex-row gap-y-2 sm:gap-x-6 mb-6">
           {navLinks.map((link) => (
               <div
                   key={link}
-                  className="px-6 py-2 bg-neutral-200 rounded-lg hover:cursor-pointer hover:bg-neutral-300 transition-all ease-in-out duration-200"
+                  className="px-6 py-2 bg-neutral-200 rounded-lg hover:cursor-pointer hover:bg-neutral-300 transition-colors"
                   onClick={() => scrollToSection(link)}
               >
                 <p className="text-lg">{link}</p>

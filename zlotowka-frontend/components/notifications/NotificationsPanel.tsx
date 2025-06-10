@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { createPortal } from "react-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/components/providers/AuthProvider";
 import {
     AppNotificationDTO,
@@ -14,72 +15,48 @@ interface NotificationsPanelProps {
 
 export default function NotificationsPanel({ onClose }: NotificationsPanelProps) {
     const { token } = useAuth();
-
-    const [mounted, setMounted] = useState(false);
-
     const { fetchNotifications, markAsRead } = useNotificationService();
+    const queryClient = useQueryClient();
 
-    const [notifications, setNotifications] = useState<AppNotificationDTO[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const notificationsQuery = useQuery<AppNotificationDTO[], Error>({
+        queryKey: ["notifications"],
+        queryFn: () => fetchNotifications(token!),
+        enabled: !!token,
+    });
 
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+    const { data: notifications = [], isLoading, isError } = notificationsQuery;
 
-    useEffect(() => {
-        if (!mounted || !token) return;
-        setLoading(true);
-        setError(null);
+    const markReadMutation = useMutation<void, Error, number>({
+        mutationFn: (id) => markAsRead(id, token!),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        },
+        onError: () => {
+            alert("Nie udało się oznaczyć powiadomienia jako przeczytane");
+        },
+    });
 
-        fetchNotifications(token)
-            .then((data) => {
-                setNotifications(data);
-                setLoading(false);
-            })
-            .catch((err) => {
-                console.error("Błąd podczas pobierania notyfikacji:", err);
-                setError("Nie można pobrać powiadomień");
-                setLoading(false);
-            });
-    }, [mounted, token]);
+    if (!token) return null;
 
-    const handleMarkAsRead = (id: number) => {
-        if (!token) return;
-        markAsRead(id, token)
-            .then(() => {
-                setNotifications((prev) => prev.filter((n) => n.id !== id));
-            })
-            .catch((err) => {
-                console.error("Błąd podczas oznaczania jako przeczytane:", err);
-                alert("Nie udało się oznaczyć powiadomienia jako przeczytane");
-            });
-    };
-
-    if (!mounted) return null;
-
-    let notificationsRoot = document.getElementById("notifications-root");
-    if (!notificationsRoot) {
-        notificationsRoot = document.createElement("div");
-        notificationsRoot.setAttribute("id", "notifications-root");
-        document.body.appendChild(notificationsRoot);
-    }
-
-    const panelContent = (
-        <div className="fixed inset-0 z-[9999]">
+    const panel = (
+        <div className="fixed inset-0 z-50">
             <div
-                className="absolute inset-0 bg-black/40 z-[9999]"
+                className="absolute inset-0 bg-black/40"
                 onClick={onClose}
             />
 
             <div
                 className="
-          absolute top-0 left-0 ml-[250px]
-          w-[33vw] max-w-[400px] h-full bg-white shadow-lg
-          flex flex-col overflow-y-auto z-[10000]
+          absolute top-0 left-0
+          ml-[250px]
+          w-[33vw] max-w-[400px] h-full
+          bg-white
+          shadow-lg
+          flex flex-col overflow-y-auto
+          z-50
         "
             >
-                <div className="flex justify-end p-4 z-[10001]">
+                <div className="flex justify-end p-4">
                     <button
                         onClick={onClose}
                         className="text-neutral-600 hover:text-neutral-800 transition-colors"
@@ -94,11 +71,11 @@ export default function NotificationsPanel({ onClose }: NotificationsPanelProps)
                 <h2 className="px-6 text-2xl font-semibold mb-4">Powiadomienia</h2>
                 <hr />
 
-                <div className="px-6 py-4 flex-1">
-                    {loading ? (
+                <div className="px-6 py-4 flex-1 bg-white">
+                    {isLoading ? (
                         <p>Ładowanie...</p>
-                    ) : error ? (
-                        <p className="text-red-600">{error}</p>
+                    ) : isError ? (
+                        <p className="text-red-600">Nie można pobrać powiadomień</p>
                     ) : notifications.length === 0 ? (
                         <p>Brak nowych powiadomień.</p>
                     ) : (
@@ -112,7 +89,7 @@ export default function NotificationsPanel({ onClose }: NotificationsPanelProps)
                                         {notif.category}
                                     </h3>
                                     <button
-                                        onClick={() => handleMarkAsRead(notif.id)}
+                                        onClick={() => markReadMutation.mutate(notif.id)}
                                         className="text-neutral-500 hover:text-neutral-700"
                                         aria-label="Oznacz jako przeczytane"
                                     >
@@ -133,5 +110,6 @@ export default function NotificationsPanel({ onClose }: NotificationsPanelProps)
         </div>
     );
 
-    return createPortal(panelContent, notificationsRoot);
+    const root = document.getElementById("notifications-root")!;
+    return createPortal(panel, root);
 }

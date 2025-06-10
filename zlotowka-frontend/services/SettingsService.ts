@@ -1,17 +1,16 @@
 import { useAuth } from "@/components/providers/AuthProvider";
 import sendToBackend, { getAuthHeader } from "@/lib/sendToBackend";
 import { UserDetailsRequest } from "@/interfaces/settings/Settings";
-
-class UserResponse {}
+import { UserData } from "@/services/UserService";
 
 export function useSettingsService() {
     const { token } = useAuth();
-    const withAuthHeader = getAuthHeader(token);
+    const withAuthHeader = getAuthHeader(token!);
     if (!token) throw new Error("User Logged Out (Token not provided)!");
 
     async function updateUserDetails(
         details: UserDetailsRequest
-    ): Promise<UserResponse> {
+    ): Promise<UserData> {
         return await sendToBackend(
             `user/user-details`,
             {
@@ -19,6 +18,7 @@ export function useSettingsService() {
                 method: "PUT",
                 body: JSON.stringify(details),
             },
+            "Nie udało się zaktualizować danych"
         );
     }
 
@@ -28,12 +28,18 @@ export function useSettingsService() {
         confirmNewPassword: string;
     }
 
-    async function changePassword(payload: PasswordChangePayload) {
-        return await sendToBackend(`user/password`, {
-            ...withAuthHeader,
-            method: "PUT",
-            body: JSON.stringify(payload),
-        });
+    async function changePassword(
+        payload: PasswordChangePayload
+    ): Promise<void> {
+        await sendToBackend(
+            `user/password`,
+            {
+                ...withAuthHeader,
+                method: "PUT",
+                body: JSON.stringify(payload),
+            },
+            "Nie udało się zmienić hasła"
+        );
     }
 
     return {

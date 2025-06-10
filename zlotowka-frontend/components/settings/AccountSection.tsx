@@ -11,6 +11,7 @@ export const AccountSection: React.FC<AccountSectionProps> = ({ accountOptions }
                 key={index}
                 text={option.text}
                 value={option.value}
+                placeholder={option.placeholder}
                 avatar={option.avatar}
                 onClick={option.onClick}
             />
