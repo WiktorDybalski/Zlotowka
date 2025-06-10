@@ -1,41 +1,26 @@
-import { API_HOST } from "@/lib/config";
-
-export interface AppNotificationDTO {
-    id: number;
-    category: string;
-    text: string;
-    createdAt: string;
-    byEmail: boolean;
-    byPhone: boolean;
-}
+import sendToBackend, { sendToBackendWithoutReturningJson, getAuthHeader } from "@/lib/sendToBackend";
+import { AppNotificationDTO } from "@/interfaces/notifications/Notifications";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 export function useNotificationService() {
-    async function fetchNotifications(token: string): Promise<AppNotificationDTO[]> {
-        const response = await fetch(`${API_HOST}/notifications`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        if (!response.ok) {
-            throw new Error("Nie można pobrać powiadomień");
-        }
-        return await response.json();
+    const { token } = useAuth();
+    if (!token) throw new Error("User not authenticated");
+    const authHeader = getAuthHeader(token);
+
+    async function fetchNotifications(): Promise<AppNotificationDTO[]> {
+        return await sendToBackend(
+            "notifications",
+            { ...authHeader, method: "GET" },
+            "Nie można pobrać powiadomień"
+        );
     }
 
-    async function markAsRead(notificationId: number, token: string) {
-        const response = await fetch(`${API_HOST}/notifications/${notificationId}`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-            }
+    async function markAsRead(notificationId: number): Promise<void> {
+        await sendToBackendWithoutReturningJson(
+            `notifications/${notificationId}`,
+            { ...authHeader, method: "DELETE" },
+            "Nie udało się oznaczyć powiadomienia jako przeczytane"
         );
-        if (!response.ok) {
-            throw new Error("Nie udało się oznaczyć powiadomienia jako przeczytane");
-        }
     }
 
     return { fetchNotifications, markAsRead };
