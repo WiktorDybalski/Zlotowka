@@ -33,16 +33,6 @@ export function validateSettings(value: string, fieldName?: string): string | nu
   if (!fieldName) return null;
 
   if (fieldName === "phoneNumber") {
-    if (!/^\d+$/.test(value)) {
-      return "Numer telefonu może zawierać tylko cyfry!";
-    }
-
-    if (value.length !== 9) {
-      return "Numer telefonu musi mieć dokładnie dziewięć cyfr!";
-    }
-  }
-
-  if (fieldName === "phoneNumber") {
     if (!value || typeof value !== "string" || !value.trim()) {
       return;
     }
