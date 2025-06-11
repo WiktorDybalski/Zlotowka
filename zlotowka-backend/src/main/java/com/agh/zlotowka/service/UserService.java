@@ -153,11 +153,15 @@ public class UserService {
             validateAndUpdateName("Last", request.lastName(), user);
         }
 
-        if (request.phoneNumber() != null) {
-            if (!request.phoneNumber().matches("^\\d{9}$")) {
-                throw new IllegalArgumentException("Numer telefonu musi składać się dokładnie z 9 cyfr");
+        if (request.phoneNumber() != null && !request.phoneNumber().trim().isEmpty()) {
+            String phoneNumber = request.phoneNumber().replaceAll("[\\s-]+", "").trim();
+            if (!phoneNumber.startsWith("+")) {
+                phoneNumber = "+48" + phoneNumber; // Poland by default
             }
-            user.setPhoneNumber(request.phoneNumber());
+            if (!phoneNumber.matches("^\\+?[1-9]\\d{1,14}$")) { // E.164 standard
+                throw new IllegalArgumentException("Numer telefonu musi być w formacie międzynarodowym, zaczynając od '+' i używając tylko cyfr (np. +48 123 456 789).");
+            }
+            user.setPhoneNumber(phoneNumber);
         }
 
         if (request.darkMode() != null) {

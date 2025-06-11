@@ -29,6 +29,7 @@ public class RecurringTransactionService {
     private final OneTimeTransactionRepository oneTimeTransactionRepository;
     private final UserRepository userRepository;
     private final CurrencyRepository currencyRepository;
+    private final SystemNotificationService systemNotificationService;
 
     @Transactional
     public RecurringTransactionDTO createTransaction(RecurringTransactionRequest request) {
@@ -145,8 +146,13 @@ public class RecurringTransactionService {
     }
 
     private void addOverdueTransactionsToBudget(Currency currency, RecurringTransactionRequest request, List<OneTimeTransaction> transactionsList, User user) {
+        BigDecimal oldBudget = user.getCurrentBudget();
         userService.addTransactionAmountToBudget(currency.getCurrencyId(),
                 request.amount().multiply(new BigDecimal(transactionsList.size())), request.isIncome(), user);
+        BigDecimal newBudget = user.getCurrentBudget();
+        if (oldBudget.compareTo(BigDecimal.ZERO) >= 0 && newBudget.compareTo(BigDecimal.ZERO) < 0) {
+            systemNotificationService.checkUserBalanceAndSendWarning(user);
+        }
         oneTimeTransactionRepository.saveAll(transactionsList);
     }
 

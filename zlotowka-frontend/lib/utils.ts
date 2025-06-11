@@ -42,6 +42,22 @@ export function validateSettings(value: string, fieldName?: string): string | nu
     }
   }
 
+  if (fieldName === "phoneNumber") {
+    if (!value || typeof value !== "string" || !value.trim()) {
+      return;
+    }
+
+    let phoneNumber = value.replaceAll("[\\s-]+", "").trim();
+
+    if (!phoneNumber.startsWith("+")) {
+      phoneNumber = "+48" + phoneNumber; // Poland by default
+    }
+
+    if (!/^\+?[1-9]\d{1,14}$/.test(phoneNumber)) { // E.164 standard
+      return "Numer telefonu musi być w formacie międzynarodowym, zaczynając od '+' i używając tylko cyfr (np. +48 123 456 789).";
+    }
+  }
+
   if (fieldName === "name") {
     const parts = value.trim().split(" ");
     if (parts.length < 2 || parts.some((part) => part.length < 3)) {

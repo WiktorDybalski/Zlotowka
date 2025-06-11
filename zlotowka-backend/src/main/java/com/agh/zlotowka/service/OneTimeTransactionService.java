@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -27,6 +28,7 @@ public class OneTimeTransactionService {
     private final UserService userService;
     private final UserRepository userRepository;
     private final CurrencyRepository currencyRepository;
+    private final SystemNotificationService systemNotificationService;
 
     @Transactional
     public OneTimeTransactionDTO createTransaction(OneTimeTransactionRequest request) {
@@ -37,7 +39,13 @@ public class OneTimeTransactionService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono waluty o ID %d", request.currencyId())));
 
         if (!request.date().isAfter(LocalDate.now())) {
+            BigDecimal budgetBefore = user.getCurrentBudget();
             userService.addTransactionAmountToBudget(request.currencyId(), request.amount(), request.isIncome(), user);
+            BigDecimal budgetAfter = user.getCurrentBudget();
+            if (budgetBefore.compareTo(BigDecimal.ZERO) >= 0 &&
+                    budgetAfter.compareTo(BigDecimal.ZERO) < 0) {
+                systemNotificationService.checkUserBalanceAndSendWarning(user);
+            }
         }
         OneTimeTransaction transaction = OneTimeTransaction.builder()
                 .user(user)
@@ -65,8 +73,16 @@ public class OneTimeTransactionService {
 
         validateTransactionOwnership(request.userId(), transaction.getUser().getUserId());
 
-        if (!request.date().isAfter(LocalDate.now()))
+        if (!request.date().isAfter(LocalDate.now())) {
+            User user = transaction.getUser();
+            BigDecimal budgetBefore = user.getCurrentBudget();
             updateTransactionBeforeCurrentTime(request, transaction);
+            BigDecimal budgetAfter = user.getCurrentBudget();
+            if (budgetBefore.compareTo(BigDecimal.ZERO) >= 0 &&
+                    budgetAfter.compareTo(BigDecimal.ZERO) < 0) {
+                systemNotificationService.checkUserBalanceAndSendWarning(user);
+            }
+        }
         else {
             updateTransactionAfterCurrentTime(transaction);
         }
@@ -79,7 +95,14 @@ public class OneTimeTransactionService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono transakcji o ID %d", id)));
 
         if (!transaction.getDate().isAfter(LocalDate.now())) {
+            User user = transaction.getUser();
+            BigDecimal budgetBefore = user.getCurrentBudget();
             userService.removeTransactionAmountFromBudget(transaction.getCurrency().getCurrencyId(), transaction.getAmount(), transaction.getIsIncome(), transaction.getUser());
+            BigDecimal budgetAfter = user.getCurrentBudget();
+            if (budgetBefore.compareTo(BigDecimal.ZERO) >= 0 &&
+                    budgetAfter.compareTo(BigDecimal.ZERO) < 0) {
+                systemNotificationService.checkUserBalanceAndSendWarning(user);
+            }
         }
         oneTimeTransactionRepository.delete(transaction);
     }

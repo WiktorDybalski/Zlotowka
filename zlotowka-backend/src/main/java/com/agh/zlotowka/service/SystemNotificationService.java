@@ -53,6 +53,26 @@ public class SystemNotificationService {
         }
     }
 
+    public void checkUserBalanceAndSendWarning(User user) {
+        LocalDate today = LocalDate.now();
+        LocalDate tomorrow = today.plusDays(1);
+
+        try {
+            BigDecimal todayBalance = generalTransactionService.getEstimatedBalanceForDate(user.getUserId(), today);
+            if (todayBalance.compareTo(THRESHOLD) < 0) {
+                sendBalanceEmailToUser(user, todayBalance, "dzisiaj");
+                return;
+            }
+
+            BigDecimal tomorrowBalance = generalTransactionService.getEstimatedBalanceForDate(user.getUserId(), tomorrow);
+            if (tomorrowBalance.compareTo(THRESHOLD) < 0) {
+                sendBalanceEmailToUser(user, tomorrowBalance, "jutro");
+            }
+        } catch (Exception e) {
+            log.error("Błąd podczas sprawdzania salda użytkownika " + user.getUserId(), e);
+        }
+    }
+
     @Scheduled(cron = "0 0 8 * * ?")
     public void sendDeadlineWarnings() {
         LocalDate today = LocalDate.now();
