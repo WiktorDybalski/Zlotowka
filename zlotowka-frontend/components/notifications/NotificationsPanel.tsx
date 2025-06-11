@@ -5,6 +5,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useNotificationService } from "@/services/NotificationService";
 import { AppNotificationDTO } from "@/interfaces/notifications/Notifications";
 import { NotificationsList } from "./NotificationsList";
+import { toast } from 'react-toastify';
 
 interface NotificationsPanelProps {
     onClose: () => void;
@@ -27,7 +28,7 @@ export default function NotificationsPanel({ onClose }: NotificationsPanelProps)
     const markRead = useMutation<void, Error, number>({
         mutationFn: markAsRead,
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
-        onError: () => alert("Nie udało się oznaczyć powiadomienia jako przeczytane"),
+        onError: () => toast.error("Nie udało się oznaczyć powiadomienia jako przeczytane"),
     });
 
     if (!token) return null;
