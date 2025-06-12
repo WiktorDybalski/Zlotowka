@@ -153,7 +153,10 @@ public class UserService {
             validateAndUpdateName("Last", request.lastName(), user);
         }
 
-        if (request.phoneNumber() != null && !request.phoneNumber().trim().isEmpty()) {
+        if (request.phoneNumber() == null || request.phoneNumber().trim().isEmpty()) {
+            user.setPhoneNumber(null);
+        }
+        else {
             String phoneNumber = request.phoneNumber().replaceAll("[\\s-]+", "").trim();
             if (!phoneNumber.startsWith("+")) {
                 phoneNumber = "+48" + phoneNumber; // Poland by default
