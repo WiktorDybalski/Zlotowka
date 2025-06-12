@@ -5,7 +5,7 @@ import { useAuth } from "@/components/providers/AuthProvider";
 import { useNotificationService } from "@/services/NotificationService";
 import { AppNotificationDTO } from "@/interfaces/notifications/Notifications";
 import { NotificationsList } from "./NotificationsList";
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 
 interface NotificationsPanelProps {
     onClose: () => void;
