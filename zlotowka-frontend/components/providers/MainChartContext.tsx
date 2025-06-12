@@ -9,7 +9,7 @@ import dayjs, { Dayjs } from "dayjs";
 import { MainChartContextType } from "@/interfaces/dashboard/charts/MainChart";
 
 const MainChartContext = createContext<MainChartContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export function MainChartProvider({ children }: { children: ReactNode }) {
@@ -71,7 +71,7 @@ export function useMainChartContext() {
   const context = useContext(MainChartContext);
   if (!context) {
     throw new Error(
-      "useMainChartContext must be used within a MainChartProvider"
+      "useMainChartContext must be used within a MainChartProvider",
     );
   }
   return context;

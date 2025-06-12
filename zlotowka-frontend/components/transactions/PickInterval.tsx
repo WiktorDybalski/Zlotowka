@@ -28,10 +28,10 @@ export default function PickInterval({
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
 
   const [tempStartDate, setTempStartDate] = useState<Dayjs>(
-    initialStartDate || dayjs().subtract(30, "day")
+    initialStartDate || dayjs().subtract(30, "day"),
   );
   const [tempEndDate, setTempEndDate] = useState<Dayjs>(
-    initialEndDate || dayjs()
+    initialEndDate || dayjs(),
   );
 
   const handleConfirm = () => {

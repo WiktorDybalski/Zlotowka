@@ -10,10 +10,10 @@ import GenericPopup from "@/components/general/GenericPopup";
 import toast from "react-hot-toast";
 
 export default function CardsPopup({
-                                     setSelectedCards,
-                                     onClose,
-                                     selectedCards,
-                                   }: CardsPopupProps) {
+  setSelectedCards,
+  onClose,
+  selectedCards,
+}: CardsPopupProps) {
   const [localSelectedCards, setLocalSelectedCards] = useState<CardId[]>([
     ...selectedCards,
   ]);
@@ -37,31 +37,31 @@ export default function CardsPopup({
   };
 
   return (
-      <GenericPopup
-          title="Wybierz dokładnie trzy karty"
-          onCloseAction={onClose}
-          onConfirmAction={handleConfirm}
-          confirmText="Zatwierdź"
-      >
-        <div className="space-y-4">
-          {AVAILABLE_CARDS.map((card) => (
-              <div
-                  key={card.id}
-                  className="flex items-center p-2 rounded hover:bg-neutral-200 dark:hover:bg-veryDark transition-colors"
-              >
-                <input
-                    type="checkbox"
-                    id={card.id}
-                    checked={localSelectedCards.includes(card.id)}
-                    onChange={() => handleCardToggle(card.id)}
-                    className="h-5 w-5 accent-accent  "
-                />
-                <label htmlFor={card.id} className="text-sm ml-4">
-                  {card.label}
-                </label>
-              </div>
-          ))}
-        </div>
-      </GenericPopup>
+    <GenericPopup
+      title="Wybierz dokładnie trzy karty"
+      onCloseAction={onClose}
+      onConfirmAction={handleConfirm}
+      confirmText="Zatwierdź"
+    >
+      <div className="space-y-4">
+        {AVAILABLE_CARDS.map((card) => (
+          <div
+            key={card.id}
+            className="flex items-center p-2 rounded hover:bg-neutral-200 dark:hover:bg-veryDark transition-colors"
+          >
+            <input
+              type="checkbox"
+              id={card.id}
+              checked={localSelectedCards.includes(card.id)}
+              onChange={() => handleCardToggle(card.id)}
+              className="h-5 w-5 accent-accent  "
+            />
+            <label htmlFor={card.id} className="text-sm ml-4">
+              {card.label}
+            </label>
+          </div>
+        ))}
+      </div>
+    </GenericPopup>
   );
 }

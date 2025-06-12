@@ -33,8 +33,10 @@ export function MainChart() {
   const DashboardService = useDashboardService();
   const TransactionService = useTransactionService();
   const DreamsService = useDreamsService();
-  const isDark = typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
-  const strokeColor = isDark ? '#fafafa' : '#212121';
+  const isDark =
+    typeof window !== "undefined" &&
+    document.documentElement.classList.contains("dark");
+  const strokeColor = isDark ? "#fafafa" : "#212121";
 
   const { data: rawChartData, isLoading } = useQueryWithToast({
     queryKey: [
@@ -46,14 +48,15 @@ export function MainChart() {
     queryFn: () =>
       DashboardService.getMainChartData(
         startDate.format("YYYY-MM-DD"),
-        endDate.format("YYYY-MM-DD")
+        endDate.format("YYYY-MM-DD"),
       ),
   });
 
-  const chartData = rawChartData?.map((item) => ({
-    ...item,
-    date: new Date(item.date).getTime(),
-  })) || [];
+  const chartData =
+    rawChartData?.map((item) => ({
+      ...item,
+      date: new Date(item.date).getTime(),
+    })) || [];
 
   useEffect(() => {
     const updatePadding = () => {
@@ -85,7 +88,7 @@ export function MainChart() {
     queryFn: () =>
       TransactionService.getTransactionsFromRange(
         startDate.format("YYYY-MM-DD"),
-        endDate.format("YYYY-MM-DD")
+        endDate.format("YYYY-MM-DD"),
       ),
   });
 
@@ -102,10 +105,10 @@ export function MainChart() {
     showDreams && showSubDreams
       ? getRoundedDomain(dreams)
       : showSubDreams
-      ? getRoundedDomain(dreams, 100, "SUBPLAN")
-      : showDreams
-      ? getRoundedDomain(dreams, 100, "PLAN")
-      : ["auto", "auto"];
+        ? getRoundedDomain(dreams, 100, "SUBPLAN")
+        : showDreams
+          ? getRoundedDomain(dreams, 100, "PLAN")
+          : ["auto", "auto"];
 
   return (
     <>
@@ -136,21 +139,21 @@ export function MainChart() {
             >
               <CartesianGrid vertical={false} />
               <XAxis
-                  dataKey="date"
-                  type="number"
-                  domain={['dataMin', 'dataMax']}
-                  tickLine={false}
-                  axisLine={false}
-                  tickMargin={8}
-                  tickFormatter={(value) =>
-                      new Date(value).toLocaleDateString("pl-PL", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "2-digit",
-                      })
-                  }
-                  className="font-lato"
-                  padding={padding}
+                dataKey="date"
+                type="number"
+                domain={["dataMin", "dataMax"]}
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value) =>
+                  new Date(value).toLocaleDateString("pl-PL", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "2-digit",
+                  })
+                }
+                className="font-lato"
+                padding={padding}
               />
               <YAxis
                 axisLine={false}

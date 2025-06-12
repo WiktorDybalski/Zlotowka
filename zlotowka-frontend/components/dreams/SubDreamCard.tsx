@@ -49,7 +49,7 @@ export default function SubDreamCard({
                   <span>
                     {Math.min(
                       subdream.actualAmount,
-                      subdream.amount
+                      subdream.amount,
                     ).toLocaleString(undefined, {
                       minimumFractionDigits: 0,
                       maximumFractionDigits: 2,

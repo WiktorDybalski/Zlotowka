@@ -30,7 +30,7 @@ export function useCardService() {
     return await sendToBackend(
       `general-transactions/current-balance/${userId}`,
       withAuthHeader,
-      "Nieudało się pobrać aktualnego salda"
+      "Nieudało się pobrać aktualnego salda",
     );
   }
 
@@ -38,17 +38,17 @@ export function useCardService() {
     return await sendToBackend(
       `general-transactions/estimated-balance/${userId}`,
       withAuthHeader,
-      "Nie udało się pobrać szacowanego salda"
+      "Nie udało się pobrać szacowanego salda",
     );
   }
 
   async function getNextTransaction(
-    isIncome: boolean
+    isIncome: boolean,
   ): Promise<NextTransactionResponse> {
     return await sendToBackend(
       `general-transactions/next-transaction/${userId}?isIncome=${isIncome}`,
       withAuthHeader,
-      "Nie udało się pobrać następnej transakcji"
+      "Nie udało się pobrać następnej transakcji",
     );
   }
 

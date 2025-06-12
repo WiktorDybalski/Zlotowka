@@ -48,10 +48,10 @@ p {
 .material-symbol-outlined {
   font-family: var(--font-family-symbols-outlined), serif;
   font-variation-settings:
-          "FILL" 1,
-          "wght" 400,
-          "GRAD" 0,
-          "opsz" 48;
+    "FILL" 1,
+    "wght" 400,
+    "GRAD" 0,
+    "opsz" 48;
   font-size: 24px;
   display: inline-block;
   line-height: 1;

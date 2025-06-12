@@ -28,10 +28,10 @@ export default function MainChartPopup({ onCloseAction }: MainChartPopupProps) {
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
 
   const [tempStartDate, setTempStartDate] = useState<Dayjs>(
-    startDate || dayjs()
+    startDate || dayjs(),
   );
   const [tempEndDate, setTempEndDate] = useState<Dayjs>(
-    endDate || dayjs().add(30, "day")
+    endDate || dayjs().add(30, "day"),
   );
 
   const [tempShowDreams, setTempShowDreams] = useState(showDreams);

@@ -47,10 +47,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="pl"
-      className="custom-scroll"
-    >
+    <html lang="pl" className="custom-scroll">
       <body
         className={`${raleway.variable} ${lato.variable} ${materialSymbols.variable} ${materialSymbolsOutlined.variable} font-(family-name:--font-raleway) bg-background`}
       >

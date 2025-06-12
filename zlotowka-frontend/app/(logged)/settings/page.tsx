@@ -13,7 +13,7 @@ import {
 } from "@/interfaces/settings/Settings";
 import EditFieldPopup from "@/components/settings/EditFieldPopup";
 import { useSettingsService } from "@/services/SettingsService";
-import {createPayload, validateSettings} from "@/lib/utils";
+import { createPayload, validateSettings } from "@/lib/utils";
 import toast from "react-hot-toast";
 import { useQueryWithToast } from "@/lib/data-grabbers";
 
@@ -57,15 +57,15 @@ export default function Settings(): JSX.Element {
 
   const mutation = useMutation({
     mutationFn: (details: UserDetailsRequest) =>
-        settingsService.updateUserDetails(details),
+      settingsService.updateUserDetails(details),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user"] });
     },
     onError: (error: unknown) => {
       const message: string =
-          error instanceof Error
-              ? error.message
-              : "Nie udało się zmienić danych!";
+        error instanceof Error
+          ? error.message
+          : "Nie udało się zmienić danych!";
       toast.error(message);
     },
   });
@@ -85,11 +85,10 @@ export default function Settings(): JSX.Element {
     handleSaveField(String(value), "notificationsByPhone");
   };
 
-
   const openEditPopup = (
     fieldName: string,
     title: string,
-    value: string = ""
+    value: string = "",
   ) => {
     setEditingField({
       isOpen: true,
@@ -118,12 +117,16 @@ export default function Settings(): JSX.Element {
 
     setTimeout(() => {
       const payload = createPayload(
-          fieldName,
-          value,
-          data,
-          fieldName === "darkMode" ? parsedValue : darkMode!,
-          fieldName === "notificationsByEmail" ? parsedValue : notificationsByEmail!,
-          fieldName === "notificationsByPhone" ? parsedValue : notificationsByPhone!
+        fieldName,
+        value,
+        data,
+        fieldName === "darkMode" ? parsedValue : darkMode!,
+        fieldName === "notificationsByEmail"
+          ? parsedValue
+          : notificationsByEmail!,
+        fieldName === "notificationsByPhone"
+          ? parsedValue
+          : notificationsByPhone!,
       );
       mutation.mutate(payload, {
         onSuccess: () => {
@@ -143,7 +146,7 @@ export default function Settings(): JSX.Element {
         openEditPopup(
           "name",
           "Edytuj nazwę użytkownika",
-          data?.firstName ? `${data?.firstName} ${data?.lastName}` : ""
+          data?.firstName ? `${data?.firstName} ${data?.lastName}` : "",
         ),
       fieldName: "name",
     },
@@ -161,7 +164,7 @@ export default function Settings(): JSX.Element {
         openEditPopup(
           "phoneNumber",
           "Edytuj numer telefonu",
-          data?.phoneNumber || ""
+          data?.phoneNumber || "",
         ),
       fieldName: "phoneNumber",
     },

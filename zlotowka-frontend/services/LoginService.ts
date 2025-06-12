@@ -22,7 +22,7 @@ export function useLoginService() {
         },
         body: JSON.stringify(userData),
       },
-      "Nie udało się zarejestrować użytkownika"
+      "Nie udało się zarejestrować użytkownika",
     );
     if (res.token && res.user.userId) {
       Auth.setLogin(res.token, res.user.userId); //  Set the token in the auth context
@@ -44,7 +44,7 @@ export function useLoginService() {
         },
         body: JSON.stringify(credentials),
       },
-      "Nie udało się zalogować użytkownika"
+      "Nie udało się zalogować użytkownika",
     );
 
     if (res.token && res.user.userId) {
