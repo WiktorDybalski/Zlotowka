@@ -298,6 +298,7 @@ export default function TransactionForm({
                 type="radio"
                 checked={formData.isIncome === true}
                 onChange={() => handleTypeChange(true)}
+                className="accent-accent"
               />
             </label>
             <h3>Przychód</h3>
@@ -308,6 +309,7 @@ export default function TransactionForm({
                 type="radio"
                 checked={formData.isIncome === false}
                 onChange={() => handleTypeChange(false)}
+                className="accent-accent"
               />
             </label>
             <h3>Wydatek</h3>
