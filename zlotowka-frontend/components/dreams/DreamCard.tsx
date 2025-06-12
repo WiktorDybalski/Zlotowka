@@ -52,7 +52,7 @@ export default function DreamCard({ dream }: DreamCardProps) {
                       {
                         minimumFractionDigits: 0,
                         maximumFractionDigits: 2,
-                      }
+                      },
                     )}{" "}
                     {dream.currency.isoCode}
                   </span>

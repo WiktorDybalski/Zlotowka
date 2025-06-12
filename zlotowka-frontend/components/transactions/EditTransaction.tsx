@@ -26,7 +26,7 @@ export default function EditTransaction({
       return transaction.period === "ONCE"
         ? transaction
         : await TransactionService.getRecurringTransaction(
-            transaction.transactionId
+            transaction.transactionId,
           );
     },
   });
@@ -125,7 +125,7 @@ export default function EditTransaction({
             ...transaction,
             ...fetchedTransaction,
             frequency: getFrequency(
-              (fetchedTransaction as RecurringTransaction).interval || "ONCE"
+              (fetchedTransaction as RecurringTransaction).interval || "ONCE",
             ),
             startDate: (fetchedTransaction as RecurringTransaction)
               .firstPaymentDate,

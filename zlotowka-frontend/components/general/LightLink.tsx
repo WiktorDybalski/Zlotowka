@@ -20,7 +20,7 @@ export default function LightLink({
       <span
         className={clsx(
           "text-backgroundLightDark cursor-not-allowed",
-          className
+          className,
         )}
       >
         {children}

@@ -25,7 +25,7 @@ export function useDashboardService() {
 
   async function getMainChartData(
     startDate: string,
-    endDate: string
+    endDate: string,
   ): Promise<MainChartDataResponse> {
     return await sendToBackend(
       `general-transactions/plot-data`,
@@ -38,7 +38,7 @@ export function useDashboardService() {
           endDate,
         }),
       },
-      "Nie udało się pobrać danych do wykresu"
+      "Nie udało się pobrać danych do wykresu",
     );
   }
 
@@ -46,7 +46,7 @@ export function useDashboardService() {
     return await sendToBackend(
       `general-transactions/monthly-summary/${userId}`,
       withAuthHeader,
-      "Nie udało się pobrać danych do wykresu kołowego"
+      "Nie udało się pobrać danych do wykresu kołowego",
     );
   }
 

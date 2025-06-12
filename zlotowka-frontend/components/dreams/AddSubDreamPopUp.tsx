@@ -48,7 +48,7 @@ export default function AddSubDreamComponentPopup({
     useState<DreamComponentData>(providedSubDream);
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     if (name === "amount") {

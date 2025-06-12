@@ -17,7 +17,7 @@ export default function DeleteTransactionButton({
       onClick={onClick}
       className={clsx(
         "flex items-center justify-center rounded-lg bg-red-700 p-2 hover:bg-red-600 transition",
-        className
+        className,
       )}
     >
       <span

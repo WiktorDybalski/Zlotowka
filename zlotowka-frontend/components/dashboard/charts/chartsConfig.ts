@@ -1,8 +1,10 @@
-import type {ChartConfig} from "@/components/ui/chart";
+import type { ChartConfig } from "@/components/ui/chart";
 
-const isDark = typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
-const strokeIncome = isDark ? '#858383' : '#262626';
-const strokeExpense = isDark ? '#fafafa' : '#e9e9e9';
+const isDark =
+  typeof window !== "undefined" &&
+  document.documentElement.classList.contains("dark");
+const strokeIncome = isDark ? "#858383" : "#262626";
+const strokeExpense = isDark ? "#fafafa" : "#e9e9e9";
 
 export const MainChartConfig = {
   amount: {

@@ -63,7 +63,7 @@ export function TransactionTable({ dateRange }: TransactionTableProps) {
       return dateRange
         ? TransactionService.getTransactionsFromRange(
             dateRange.startDate,
-            dateRange.endDate
+            dateRange.endDate,
           )
         : TransactionService.getTransactions();
     },

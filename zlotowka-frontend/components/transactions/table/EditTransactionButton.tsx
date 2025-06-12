@@ -17,7 +17,7 @@ export default function EditTransactionButton({
       onClick={onClick}
       className={clsx(
         "flex items-center justify-center rounded-lg bg-accent p-2 hover:bg-[#141414] transitionb hover:cursor-pointer",
-        className
+        className,
       )}
     >
       <span

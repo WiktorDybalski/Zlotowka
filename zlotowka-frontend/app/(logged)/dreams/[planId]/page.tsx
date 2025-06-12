@@ -117,7 +117,7 @@ export default function DreamDetailsPage() {
         "Pamiętaj o usunięciu transakcji związanej z tym marzeniem jeśli potrzeba!",
         {
           duration: 5000,
-        }
+        },
       );
       router.replace(routes.dreams.pathname); // redirect to the dreams page after deletion
     },
@@ -233,7 +233,7 @@ export default function DreamDetailsPage() {
         "Pamiętaj o usunięciu transakcji związanej z tym marzeniem jeśli potrzeba!",
         {
           duration: 5000,
-        }
+        },
       );
     },
   });
@@ -390,7 +390,7 @@ export default function DreamDetailsPage() {
                   {
                     minimumFractionDigits: 0,
                     maximumFractionDigits: 2,
-                  }
+                  },
                 )}{" "}
                 {dream.currency.isoCode}
               </span>
