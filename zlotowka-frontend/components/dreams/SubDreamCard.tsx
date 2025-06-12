@@ -24,7 +24,11 @@ export default function SubDreamCard({
 }: SubDreamCardProps) {
   return (
     <div>
-      <GenericCard className={`${subdream.completed ? "bg-lightAccent" : ""}`}>
+      <GenericCard
+        className={`${
+          subdream.completed ? "bg-lightAccent dark:bg-lightAccentDark" : ""
+        }`}
+      >
         <ThreeElementsCard
           top={
             <>
@@ -45,7 +49,7 @@ export default function SubDreamCard({
                   <span>
                     {Math.min(
                       subdream.actualAmount,
-                      subdream.amount
+                      subdream.amount,
                     ).toLocaleString(undefined, {
                       minimumFractionDigits: 0,
                       maximumFractionDigits: 2,

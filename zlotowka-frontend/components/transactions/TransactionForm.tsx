@@ -48,11 +48,11 @@ export default function TransactionForm({
   const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
   const [formData, setFormData] = useState<TransactionData>(
-    transaction || defaultTransactionData
+    transaction || defaultTransactionData,
   );
   const formRef = useRef<HTMLDivElement>(null);
   const [amountInput, setAmountInput] = useState<string>(
-    (transaction?.amount ?? 0).toString()
+    (transaction?.amount ?? 0).toString(),
   );
 
   const CurrencyService = useCurrencyService();
@@ -70,7 +70,7 @@ export default function TransactionForm({
   });
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
 
@@ -85,7 +85,7 @@ export default function TransactionForm({
 
     if (name === "frequency") {
       const selectedFrequency = periodList.find(
-        (period) => period.name === value
+        (period) => period.name === value,
       );
       if (selectedFrequency) {
         setFormData((prev) => ({ ...prev, frequency: selectedFrequency }));
@@ -95,7 +95,7 @@ export default function TransactionForm({
 
     if (name === "currency") {
       const selectedCurrency = currencyList.find(
-        (currency) => currency.currencyId === Number(value)
+        (currency) => currency.currencyId === Number(value),
       );
       if (selectedCurrency) {
         setFormData((prev) => ({ ...prev, currency: selectedCurrency }));
@@ -131,7 +131,7 @@ export default function TransactionForm({
   }, []);
 
   function validateFormData(
-    data: NewOneTimeTransactionReq | NewRecurringTransactionReq
+    data: NewOneTimeTransactionReq | NewRecurringTransactionReq,
   ) {
     if (isNaN(data.amount)) {
       toast.error("Price is not a number!");
@@ -202,7 +202,7 @@ export default function TransactionForm({
               name="frequency"
               value={formData.frequency.name}
               onChange={handleInputChange}
-              className={"form-input" + " bg-background"}
+              className={"form-input" + " bg-background dark:bg-dark"}
             >
               {isPeriodListReady && periodList.length > 0
                 ? periodList.map((period: Period) => (
@@ -298,6 +298,7 @@ export default function TransactionForm({
                 type="radio"
                 checked={formData.isIncome === true}
                 onChange={() => handleTypeChange(true)}
+                className="accent-accent"
               />
             </label>
             <h3>Przychód</h3>
@@ -308,6 +309,7 @@ export default function TransactionForm({
                 type="radio"
                 checked={formData.isIncome === false}
                 onChange={() => handleTypeChange(false)}
+                className="accent-accent"
               />
             </label>
             <h3>Wydatek</h3>
@@ -330,7 +332,7 @@ export default function TransactionForm({
               name="currency"
               value={formData.currency.isoCode}
               onChange={handleInputChange}
-              className="border-[1px] border-neutral-300 rounded-[5px] px-2 text-md bg-background"
+              className="border-[1px] border-neutral-300 rounded-[5px] px-2 text-md bg-background dark:bg-dark"
             >
               {currencyList.map((currency) => (
                 <option key={currency.currencyId} value={currency.currencyId}>

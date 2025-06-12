@@ -21,43 +21,44 @@ export default function DatePicker({
   setIsOpenAction,
   setDateAction,
 }: DatePickerProps) {
-  const isDark = typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
+  const isDark =
+    typeof window !== "undefined" &&
+    document.documentElement.classList.contains("dark");
   return (
-        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pl">
-          {isOpen && (
-            <DateCalendar
-              className="border-border-color border-[1px] rounded-[5px] max-w-67 lg:max-w-76 absolute z-[9999] bg-background dark:bg-accent"
-              value={dayjs(currentDate)}
-              onChange={(newValue) => {
-                setDateAction(newValue);
-                setIsOpenAction(false);
-              }}
-              sx={{
-                width: "300",
-                overflow: "hidden",
-                color: isDark ? "#fafafa" : "#212121",
-                "& .MuiDayCalendar-weekDayLabel": {
-                  color: isDark ? "#fafafa" : "#212121",
-                },
-                "& .MuiPickersArrowSwitcher-button": {
-                  color: isDark ? "#fafafa" : "#212121",
-                },
-                "& .MuiPickersDay-root": {
-                  color: isDark ? "#fafafa" : "#212121",
-                },
-                "& .MuiPickersCalendarHeader-switchViewButton" : {
-                  color: isDark ? "#fafafa" : "#212121",
-                },
-                ".Mui-selected": {
-                  backgroundColor: "#262626 !important",
-                  "&:focus": {
-                    backgroundColor: "#262626 !important",
-                  },
-                },
-              }}
-            />
-          )}
-        </LocalizationProvider>
+    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="pl">
+      {isOpen && (
+        <DateCalendar
+          className="border-border-color border-[1px] rounded-[5px] max-w-67 lg:max-w-76 absolute z-[9999] bg-background dark:bg-accent"
+          value={dayjs(currentDate)}
+          onChange={(newValue) => {
+            setDateAction(newValue);
+            setIsOpenAction(false);
+          }}
+          sx={{
+            width: "300",
+            overflow: "hidden",
+            color: isDark ? "#fafafa" : "#212121",
+            "& .MuiDayCalendar-weekDayLabel": {
+              color: isDark ? "#fafafa" : "#212121",
+            },
+            "& .MuiPickersArrowSwitcher-button": {
+              color: isDark ? "#fafafa" : "#212121",
+            },
+            "& .MuiPickersDay-root": {
+              color: isDark ? "#fafafa" : "#212121",
+            },
+            "& .MuiPickersCalendarHeader-switchViewButton": {
+              color: isDark ? "#fafafa" : "#212121",
+            },
+            ".Mui-selected": {
+              backgroundColor: "#262626 !important",
+              "&:focus": {
+                backgroundColor: "#262626 !important",
+              },
+            },
+          }}
+        />
+      )}
+    </LocalizationProvider>
   );
 }
-

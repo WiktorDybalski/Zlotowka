@@ -4,7 +4,11 @@ import BottomLinks from "@/components/navigation/BottomLinks";
 import { MenuProps } from "@/interfaces/navigation/MenuProps";
 import Divider from "@/components/navigation/Divider";
 
-export default function MobileMenu({ isOpen, navLinks, onLinkClick }: MenuProps) {
+export default function MobileMenu({
+  isOpen,
+  navLinks,
+  onLinkClick,
+}: MenuProps) {
   const mobileContentVariants = {
     hidden: {
       opacity: 0,
@@ -24,30 +28,34 @@ export default function MobileMenu({ isOpen, navLinks, onLinkClick }: MenuProps)
   };
 
   return (
-      <AnimatePresence>
-        {isOpen && (
-            <motion.div
-                className="xl:hidden w-full h-full flex flex-col overflow-hidden"
-                variants={mobileContentVariants}
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-            >
-              <Divider />
-              <NavigationLinks links={navLinks} isMobile={true} onLinkClick={onLinkClick} />
-              <Divider />
-              <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                    transition: { delay: 0.6 },
-                  }}
-              >
-                <BottomLinks onLinkClick={onLinkClick} />
-              </motion.div>
-            </motion.div>
-        )}
-      </AnimatePresence>
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          className="xl:hidden w-full h-full flex flex-col overflow-hidden"
+          variants={mobileContentVariants}
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+        >
+          <Divider />
+          <NavigationLinks
+            links={navLinks}
+            isMobile={true}
+            onLinkClick={onLinkClick}
+          />
+          <Divider />
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              transition: { delay: 0.6 },
+            }}
+          >
+            <BottomLinks onLinkClick={onLinkClick} />
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

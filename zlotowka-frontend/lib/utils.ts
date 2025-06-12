@@ -1,23 +1,24 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import {ChartDreamsData} from "@/services/DreamsService";
-import {UserData} from "@/services/UserService";
-import {UserDetailsRequest} from "@/interfaces/settings/Settings";
+import { ChartDreamsData } from "@/services/DreamsService";
+import { UserData } from "@/services/UserService";
+import { UserDetailsRequest } from "@/interfaces/settings/Settings";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 export function getRoundedDomain(
-    dreams: ChartDreamsData[],
-    step: number = 100,
-    filterType?: 'PLAN' | 'SUBPLAN'
+  dreams: ChartDreamsData[],
+  step: number = 100,
+  filterType?: "PLAN" | "SUBPLAN",
 ): [number, number] {
   const filteredDreams = filterType
-      ? dreams.filter(d => d.planType === filterType)
-      : dreams;
+    ? dreams.filter((d) => d.planType === filterType)
+    : dreams;
 
-  const dreamAmounts = filteredDreams?.map(d => d.requiredAmount * 1.05) ?? [];
+  const dreamAmounts =
+    filteredDreams?.map((d) => d.requiredAmount * 1.05) ?? [];
 
   if (dreamAmounts.length === 0) return [0, step];
 
@@ -29,7 +30,10 @@ export function getRoundedDomain(
   return [roundedMin, roundedMax];
 }
 
-export function validateSettings(value: string, fieldName?: string): string | null {
+export function validateSettings(
+  value: string,
+  fieldName?: string,
+): string | null {
   if (!fieldName) return null;
 
   if (fieldName === "phoneNumber") {
@@ -66,14 +70,13 @@ export function validateSettings(value: string, fieldName?: string): string | nu
 }
 
 export function createPayload(
-    fieldName: string | undefined,
-    value: string,
-    data: UserData,
-    darkMode: boolean,
-    notificationsByEmail: boolean,
-    notificationsByPhone: boolean
+  fieldName: string | undefined,
+  value: string,
+  data: UserData,
+  darkMode: boolean,
+  notificationsByEmail: boolean,
+  notificationsByPhone: boolean,
 ): UserDetailsRequest {
-
   let firstName = data.firstName;
   let lastName = data.lastName;
 
@@ -83,13 +86,13 @@ export function createPayload(
     lastName = parts.slice(1).join(" ") || "";
   } else {
     if (fieldName === "firstName") firstName = value;
-    if (fieldName === "lastName")  lastName  = value;
+    if (fieldName === "lastName") lastName = value;
   }
 
   return {
     firstName,
     lastName,
-    email:       fieldName === "email"       ? value : data.email,
+    email: fieldName === "email" ? value : data.email,
     phoneNumber: fieldName === "phoneNumber" ? value : data.phoneNumber,
     darkMode: darkMode ? "true" : "false",
     notificationsByEmail: notificationsByEmail ? "true" : "false",

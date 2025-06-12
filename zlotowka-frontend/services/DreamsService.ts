@@ -73,7 +73,7 @@ export function useDreamsService() {
     return await sendToBackend(
       `general-plans/chart-data/${userId}`,
       withAuthHeader,
-      "Nie udało się pobrać danych do wykresu dla marzeń"
+      "Nie udało się pobrać danych do wykresu dla marzeń",
     );
   }
 
@@ -81,7 +81,7 @@ export function useDreamsService() {
     return await sendToBackend(
       `plan/all/${userId}`,
       withAuthHeader,
-      "Nie udało się pobrać marzeń"
+      "Nie udało się pobrać marzeń",
     );
   }
 
@@ -89,12 +89,12 @@ export function useDreamsService() {
     const dream: Dream = await sendToBackend(
       `plan/${dreamId}`,
       withAuthHeader,
-      "Failed to fetch dream"
+      "Failed to fetch dream",
     );
     const subplans: Array<SubDream> = await sendToBackend(
       `subplan/all/${dream.planId}`,
       withAuthHeader,
-      "Nie udało się pobrać subplanów"
+      "Nie udało się pobrać subplanów",
     );
     return {
       ...dream,
@@ -110,7 +110,7 @@ export function useDreamsService() {
         method: "POST",
         body: JSON.stringify({ ...dream, userId: userId }),
       },
-      "Nie udało się dodać marzenia"
+      "Nie udało się dodać marzenia",
     );
   }
 
@@ -122,7 +122,7 @@ export function useDreamsService() {
         method: "PUT",
         body: JSON.stringify({ ...dream, userId: userId }),
       },
-      "Nie udało się zmodyfikować marzenia"
+      "Nie udało się zmodyfikować marzenia",
     );
   }
 
@@ -133,7 +133,7 @@ export function useDreamsService() {
         ...withAuthHeader,
         method: "POST",
       },
-      "Nie udało się oznaczyć marzenia jako zrealizowane"
+      "Nie udało się oznaczyć marzenia jako zrealizowane",
     );
   }
 
@@ -144,7 +144,7 @@ export function useDreamsService() {
         ...withAuthHeader,
         method: "POST",
       },
-      "Nie udało się odznaczyć marzenia jako zrealizowane"
+      "Nie udało się odznaczyć marzenia jako zrealizowane",
     );
   }
 
@@ -155,7 +155,7 @@ export function useDreamsService() {
         ...withAuthHeader,
         method: "DELETE",
       },
-      "Nie udało się usunąć marzenia"
+      "Nie udało się usunąć marzenia",
     );
   }
 
@@ -167,7 +167,7 @@ export function useDreamsService() {
         method: "POST",
         body: JSON.stringify({ ...subDream, userId: userId }),
       },
-      "Nie udało się dodać subplanu"
+      "Nie udało się dodać subplanu",
     );
   }
 
@@ -178,7 +178,7 @@ export function useDreamsService() {
         ...withAuthHeader,
         method: "POST",
       },
-      "Nie udało się oznaczyć subplanu jako zrealizowany"
+      "Nie udało się oznaczyć subplanu jako zrealizowany",
     );
   }
 
@@ -189,7 +189,7 @@ export function useDreamsService() {
         ...withAuthHeader,
         method: "POST",
       },
-      "Nie udało się odznaczyć subplanu jako zrealizowany"
+      "Nie udało się odznaczyć subplanu jako zrealizowany",
     );
   }
 
@@ -200,13 +200,13 @@ export function useDreamsService() {
         ...withAuthHeader,
         method: "DELETE",
       },
-      "Nie udało się usunąć subplanu"
+      "Nie udało się usunąć subplanu",
     );
   }
 
   async function modifySubDream(
     subDream: NewSubDreamReq,
-    subDreamId: number
+    subDreamId: number,
   ): Promise<SubDream> {
     return await sendToBackend(
       `subplan/${subDreamId}`,
@@ -215,7 +215,7 @@ export function useDreamsService() {
         method: "PUT",
         body: JSON.stringify({ ...subDream, userId: userId }),
       },
-      "Nie udało się zmodyfikować subplanu"
+      "Nie udało się zmodyfikować subplanu",
     );
   }
 

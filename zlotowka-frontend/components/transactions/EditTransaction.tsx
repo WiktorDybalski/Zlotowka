@@ -26,7 +26,7 @@ export default function EditTransaction({
       return transaction.period === "ONCE"
         ? transaction
         : await TransactionService.getRecurringTransaction(
-            transaction.transactionId
+            transaction.transactionId,
           );
     },
   });
@@ -87,6 +87,36 @@ export default function EditTransaction({
     },
   });
 
+  const getFrequency = (interval: string) => {
+    switch (interval) {
+      case "DAILY":
+        return {
+          code: "p1d",
+          name: "Codziennie",
+        };
+      case "WEEKLY":
+        return {
+          code: "p1w",
+          name: "Co tydzień",
+        };
+      case "MONTHLY":
+        return {
+          code: "p1m",
+          name: "Co miesiąc",
+        };
+      case "YEARLY":
+        return {
+          code: "p1y",
+          name: "Co rok",
+        };
+      default:
+        return {
+          code: "Brak okresu",
+          name: "Raz",
+        };
+    }
+  };
+
   return (
     <>
       {fetchedTransaction && (
@@ -94,16 +124,9 @@ export default function EditTransaction({
           transaction={{
             ...transaction,
             ...fetchedTransaction,
-            frequency:
-              transaction.period != "ONCE"
-                ? {
-                    code: (fetchedTransaction as RecurringTransaction).interval,
-                    name: (fetchedTransaction as RecurringTransaction).interval,
-                  }
-                : {
-                    code: "Brak okresu",
-                    name: "Raz",
-                  },
+            frequency: getFrequency(
+              (fetchedTransaction as RecurringTransaction).interval || "ONCE",
+            ),
             startDate: (fetchedTransaction as RecurringTransaction)
               .firstPaymentDate,
             endDate: (fetchedTransaction as RecurringTransaction)

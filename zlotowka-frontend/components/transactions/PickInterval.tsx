@@ -5,39 +5,34 @@ import DatePicker from "@/components/general/DatePicker";
 import GenericPopup from "@/components/general/GenericPopup";
 import dayjs, { Dayjs } from "dayjs";
 import toast from "react-hot-toast";
-import { MainChartPopupProps } from "@/interfaces/dashboard/charts/MainChart";
-import { useQueryClient } from "@tanstack/react-query";
-import { useMainChartContext } from "@/components/providers/MainChartContext";
 import QuickDates from "@/components/dashboard/components/QuickDates";
 
 export type timePeriod = "day" | "week" | "month" | "year";
 
-export default function MainChartPopup({ onCloseAction }: MainChartPopupProps) {
-  const {
-    startDate,
-    endDate,
-    setStartDate,
-    setEndDate,
-    showDreams,
-    setShowDreams,
-    showSubDreams,
-    setShowSubDreams,
-  } = useMainChartContext();
+interface PickIntervalProps {
+  onCloseAction: () => void;
+  onConfirmDates?: (startDate: Dayjs, endDate: Dayjs) => void;
+  initialStartDate?: Dayjs;
+  initialEndDate?: Dayjs;
+  title?: string;
+}
 
+export default function PickInterval({
+  onCloseAction,
+  onConfirmDates,
+  initialStartDate,
+  initialEndDate,
+  title = "Wybierz zakres dat",
+}: PickIntervalProps) {
   const [isStartDatePickerOpen, setIsStartDatePickerOpen] = useState(false);
   const [isEndDatePickerOpen, setIsEndDatePickerOpen] = useState(false);
 
   const [tempStartDate, setTempStartDate] = useState<Dayjs>(
-    startDate || dayjs(),
+    initialStartDate || dayjs().subtract(30, "day"),
   );
   const [tempEndDate, setTempEndDate] = useState<Dayjs>(
-    endDate || dayjs().add(30, "day"),
+    initialEndDate || dayjs(),
   );
-
-  const [tempShowDreams, setTempShowDreams] = useState(showDreams);
-  const [tempShowSubDreams, setTempShowSubDreams] = useState(showSubDreams);
-
-  const queryClient = useQueryClient();
 
   const handleConfirm = () => {
     if (tempStartDate > tempEndDate) {
@@ -45,13 +40,11 @@ export default function MainChartPopup({ onCloseAction }: MainChartPopupProps) {
       return;
     }
 
-    setStartDate(dayjs(tempStartDate.toISOString()));
-    setEndDate(dayjs(tempEndDate.toISOString()));
+    // Wywołujemy callback z wybranymi datami
+    if (onConfirmDates) {
+      onConfirmDates(tempStartDate, tempEndDate);
+    }
 
-    setShowDreams(tempShowDreams);
-    setShowSubDreams(tempShowSubDreams);
-
-    queryClient.invalidateQueries({ queryKey: ["allTransactionsFromRange"] });
     onCloseAction();
   };
 
@@ -67,36 +60,12 @@ export default function MainChartPopup({ onCloseAction }: MainChartPopupProps) {
 
   return (
     <GenericPopup
-      title="Opcje wykresu"
+      title={title}
       onCloseAction={onCloseAction}
       onConfirmAction={handleConfirm}
       confirmText="Potwierdź"
     >
       <div className="text-md font-medium relative">
-        <div className="py-1 flex justify-between">
-          <h3 className="my-2">Marzenia</h3>
-          <div className="flex gap-2 flex-wrap font-lato">
-            <button
-              onClick={() => setTempShowDreams(!tempShowDreams)}
-              className={`chart-options-buttons w-28`}
-            >
-              {tempShowDreams ? "Schowaj" : "Pokaż"}
-            </button>
-          </div>
-        </div>
-
-        <div className="py-1 flex justify-between">
-          <h3 className="my-2">Podmarzenia</h3>
-          <div className="flex gap-2 flex-wrap font-lato">
-            <button
-              onClick={() => setTempShowSubDreams(!tempShowSubDreams)}
-              className={`chart-options-buttons w-28`}
-            >
-              {tempShowSubDreams ? "Schowaj" : "Pokaż"}
-            </button>
-          </div>
-        </div>
-
         <div className="py-1">
           <h3 className="my-2">Szybki wybór przedziału</h3>
           <QuickDates

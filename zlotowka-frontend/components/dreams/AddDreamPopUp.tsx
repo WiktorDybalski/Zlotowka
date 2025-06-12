@@ -52,7 +52,7 @@ export default function AddDreamComponentPopup({
     });
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value } = e.target;
     if (name === "amount") {
@@ -73,7 +73,7 @@ export default function AddDreamComponentPopup({
       }
     } else if (name === "currency") {
       const selectedCurrency = currencyList.find(
-        (currency) => currency.currencyId === Number(value)
+        (currency) => currency.currencyId === Number(value),
       );
       if (selectedCurrency) {
         setFormData((prevState) => ({

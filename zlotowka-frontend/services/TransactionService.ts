@@ -27,7 +27,7 @@ export function useTransactionService() {
     return await sendToBackend(
       `period/all`,
       withAuthHeader,
-      "Nie udało się pobrać okresów dla transakcji"
+      "Nie udało się pobrać okresów dla transakcji",
     );
   }
 
@@ -35,33 +35,33 @@ export function useTransactionService() {
     return await sendToBackend(
       `general-transactions/all/${userId}?page=1&limit=1000`,
       withAuthHeader,
-      "Nie udało się pobrać transakcji"
+      "Nie udało się pobrać transakcji",
     );
   }
 
   async function getTransactionsFromRange(
     startDate: string,
-    endDate: string
+    endDate: string,
   ): Promise<PaginatedTransactionsResponse> {
     return await sendToBackend(
       `general-transactions/all/${userId}?startDate=${startDate}&endDate=${endDate}&page=1&limit=1000`,
       withAuthHeader,
-      "Nie udało się pobrać transakcji z podanego zakresu"
+      "Nie udało się pobrać transakcji z podanego zakresu",
     );
   }
 
   async function getRecurringTransaction(
-    transactionId: number
+    transactionId: number,
   ): Promise<RecurringTransaction> {
     return await sendToBackend(
       `recurring-transaction/${transactionId}`,
       withAuthHeader,
-      "Nie udało się pobrać informacji o transakcji rekurencyjnej"
+      "Nie udało się pobrać informacji o transakcji rekurencyjnej",
     );
   }
 
   async function createNewOneTimeTransaction(
-    transaction: TransactionData
+    transaction: TransactionData,
   ): Promise<OneTimeTransaction> {
     const req = {
       userId: userId,
@@ -79,12 +79,12 @@ export function useTransactionService() {
         method: "POST",
         body: JSON.stringify(req),
       },
-      "Nie udało się dodać transakcji"
+      "Nie udało się dodać transakcji",
     );
   }
 
   async function createNewRecurringTransaction(
-    transaction: TransactionData
+    transaction: TransactionData,
   ): Promise<NewRecurringTransactionReq> {
     const recurringReq: NewRecurringTransactionReq = {
       userId: userId,
@@ -105,7 +105,7 @@ export function useTransactionService() {
         method: "POST",
         body: JSON.stringify(recurringReq),
       },
-      "Nie udało się dodać transakcji cyklicznej"
+      "Nie udało się dodać transakcji cyklicznej",
     );
   }
 
@@ -116,7 +116,7 @@ export function useTransactionService() {
         ...withAuthHeader,
         method: "DELETE",
       },
-      "Nie udało się usunąć transakcji"
+      "Nie udało się usunąć transakcji",
     );
   }
 
@@ -127,12 +127,12 @@ export function useTransactionService() {
         ...withAuthHeader,
         method: "DELETE",
       },
-      "Nie udało się usunąć transakcji cyklicznej"
+      "Nie udało się usunąć transakcji cyklicznej",
     );
   }
 
   async function editOneTimeTransaction(
-    transaction: EdittedOneTimeTransactionReq
+    transaction: EdittedOneTimeTransactionReq,
   ): Promise<OneTimeTransaction> {
     const req = {
       userId: userId,
@@ -150,12 +150,12 @@ export function useTransactionService() {
         method: "PUT",
         body: JSON.stringify(req),
       },
-      "Nie udało się edytować transakcji"
+      "Nie udało się edytować transakcji",
     );
   }
 
   async function editRecurringTransaction(
-    transaction: TransactionData
+    transaction: TransactionData,
   ): Promise<EdittedRecurringTransactionReq> {
     const req: NewRecurringTransactionReq = {
       userId: userId,
@@ -175,7 +175,7 @@ export function useTransactionService() {
         method: "PUT",
         body: JSON.stringify(req),
       },
-      "Nie udało się edytować transakcji cyklicznej"
+      "Nie udało się edytować transakcji cyklicznej",
     );
   }
 

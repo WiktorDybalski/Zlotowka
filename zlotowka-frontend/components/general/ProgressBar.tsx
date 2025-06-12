@@ -7,7 +7,7 @@ export const ProgressBar = ({ progress }: ProgressBarProps) => {
   return (
     <div className="w-full h-5 bg-neutral-200 dark:bg-accent rounded-xl mt-4">
       <div
-        className="h-full bg-accent dark:bg-veryDark rounded-xl"
+        className="h-full bg-accent dark:bg-backgroundLightDark rounded-xl"
         style={{ width: `${percentage}%` }}
       ></div>
     </div>

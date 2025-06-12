@@ -5,7 +5,7 @@ import { API_HOST } from "@/lib/config";
 export async function sendToBackendWithoutReturningJson(
   input: RequestInfo,
   init?: RequestInit,
-  errorMessage: string = "Error fetching data"
+  errorMessage: string = "Error fetching data",
 ) {
   input = API_HOST + "/" + input;
   try {
@@ -23,7 +23,7 @@ export async function sendToBackendWithoutReturningJson(
 export default async function sendToBackend(
   input: RequestInfo,
   init?: RequestInit,
-  errorMessage: string = "Error fetching data"
+  errorMessage: string = "Error fetching data",
 ) {
   input = API_HOST + "/" + input;
   try {

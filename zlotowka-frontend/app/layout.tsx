@@ -49,7 +49,7 @@ export default function RootLayout({
   return (
       <html lang="pl" className="custom-scroll">
       <body
-          className={`
+        className={`
           ${raleway.variable} ${lato.variable}
           ${materialSymbols.variable} ${materialSymbolsOutlined.variable}
           font-(family-name:--font-raleway) bg-background
