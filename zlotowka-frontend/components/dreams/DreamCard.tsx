@@ -24,7 +24,9 @@ export default function DreamCard({ dream }: DreamCardProps) {
   return (
     <figure>
       <GenericCard
-        className={`pt-1 ${dream.completed ? "bg-lightAccent" : ""}`}
+        className={`pt-1 ${
+          dream.completed ? "bg-lightAccent dark:bg-lightAccentDark" : ""
+        }`}
       >
         <Link href={`/dreams/${dream.planId}`}>
           <ThreeElementsCard

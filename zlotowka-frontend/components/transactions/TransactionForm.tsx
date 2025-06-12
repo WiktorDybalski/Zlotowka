@@ -202,7 +202,7 @@ export default function TransactionForm({
               name="frequency"
               value={formData.frequency.name}
               onChange={handleInputChange}
-              className={"form-input" + " bg-background"}
+              className={"form-input" + " bg-background dark:bg-dark"}
             >
               {isPeriodListReady && periodList.length > 0
                 ? periodList.map((period: Period) => (
@@ -330,7 +330,7 @@ export default function TransactionForm({
               name="currency"
               value={formData.currency.isoCode}
               onChange={handleInputChange}
-              className="border-[1px] border-neutral-300 rounded-[5px] px-2 text-md bg-background"
+              className="border-[1px] border-neutral-300 rounded-[5px] px-2 text-md bg-background dark:bg-dark"
             >
               {currencyList.map((currency) => (
                 <option key={currency.currencyId} value={currency.currencyId}>
