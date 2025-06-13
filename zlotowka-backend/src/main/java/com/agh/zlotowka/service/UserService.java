@@ -30,6 +30,8 @@ public class UserService {
     private final CurrencyService currencyService;
     private final CurrencyRepository currencyRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserNotificationService userNotificationService;
+    private final AppUserNotificationService appUserNotificationService;
 
     @PostConstruct
     public void initializeCurrencies() {
@@ -46,7 +48,6 @@ public class UserService {
 
         Currency defaultCurrency = currencyRepository.findByIsoCode("PLN")
                 .orElseThrow(() -> new EntityNotFoundException("Domyślna waluta PLN nie została znaleziona"));
-
 
         User newUser = User.builder()
                 .firstName(request.firstName())
@@ -103,7 +104,6 @@ public class UserService {
         );
     }
 
-
     public void addTransactionAmountToBudget(int currencyId, BigDecimal amount, boolean isIncome, User user) {
         BigDecimal budget = user.getCurrentBudget();
         BigDecimal amountInUserCurrency;
@@ -153,13 +153,18 @@ public class UserService {
             validateAndUpdateName("Last", request.lastName(), user);
         }
 
-        if (request.phoneNumber() == null || request.phoneNumber().isBlank()) {
+        if (request.phoneNumber() == null || request.phoneNumber().trim().isEmpty()) {
             user.setPhoneNumber(null);
-        } else {
-            if (!request.phoneNumber().matches("^\\d{9}$")) {
-                throw new IllegalArgumentException("Numer telefonu musi składać się dokładnie z 9 cyfr");
+        }
+        else {
+            String phoneNumber = request.phoneNumber().replaceAll("[\\s-]+", "").trim();
+            if (!phoneNumber.startsWith("+")) {
+                phoneNumber = "+48" + phoneNumber; // Poland by default
             }
-            user.setPhoneNumber(request.phoneNumber());
+            if (!phoneNumber.matches("^\\+?[1-9]\\d{1,14}$")) { // E.164 standard
+                throw new IllegalArgumentException("Numer telefonu musi być w formacie międzynarodowym, zaczynając od '+' i używając tylko cyfr (np. +48 123 456 789).");
+            }
+            user.setPhoneNumber(phoneNumber);
         }
 
         if (request.darkMode() != null) {
@@ -173,14 +178,25 @@ public class UserService {
             if (!request.notificationsByEmail().matches("^(true|false)$")) {
                 throw new IllegalArgumentException("Wartość powiadomień e-mail musi być 'true' lub 'false'");
             }
-            user.setNotificationsByEmail(Boolean.parseBoolean(request.notificationsByEmail()));
+            boolean oldValueEmail = user.getNotificationsByEmail();
+            boolean newValueEmail = Boolean.parseBoolean(request.notificationsByEmail());
+            user.setNotificationsByEmail(newValueEmail);
+
+            if (!oldValueEmail && newValueEmail) {
+                userNotificationService.sendUserEmailChangeNotification(user);
+            }
         }
 
         if (request.notificationsByPhone() != null) {
             if (!request.notificationsByPhone().matches("^(true|false)$")) {
                 throw new IllegalArgumentException("Wartość powiadomień telefonicznych musi być 'true' lub 'false'");
             }
-            user.setNotificationsByPhone(Boolean.parseBoolean(request.notificationsByPhone()));
+            boolean oldValuePhone = user.getNotificationsByPhone();
+            boolean newValuePhone= Boolean.parseBoolean(request.notificationsByPhone());
+            user.setNotificationsByPhone(newValuePhone);
+            if (!oldValuePhone && newValuePhone) {
+                userNotificationService.sendUserPhoneChangeNotification(user);
+            }
         }
 
         User updatedUser = userRepository.save(user);
@@ -259,6 +275,18 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
 
-        log.info("Hasło zostało pomyślnie zaktualizowane dla użytkownika o ID: {}", user.getUserId());
+        userNotificationService.sendUserPasswordChangedEmail(user.getEmail(), user.getFirstName());
+    }
+
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Nie znaleziono użytkownika o emailu: " + email)
+                );
+    }
+
+    public void updatePassword(User user, String rawPassword) {
+        user.setPassword(passwordEncoder.encode(rawPassword));
+        userRepository.save(user);
     }
 }

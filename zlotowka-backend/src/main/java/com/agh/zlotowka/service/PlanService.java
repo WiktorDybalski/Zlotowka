@@ -2,9 +2,22 @@ package com.agh.zlotowka.service;
 
 import com.agh.zlotowka.dto.PlanDTO;
 import com.agh.zlotowka.dto.PlanRequest;
-import com.agh.zlotowka.exception.*;
-import com.agh.zlotowka.model.*;
-import com.agh.zlotowka.repository.*;
+import com.agh.zlotowka.exception.BudgetInsufficientException;
+import com.agh.zlotowka.exception.CurrencyConversionException;
+import com.agh.zlotowka.exception.PlanAmountExceededException;
+import com.agh.zlotowka.exception.PlanCompletionException;
+import com.agh.zlotowka.exception.PlanOwnershipException;
+import com.agh.zlotowka.model.Currency;
+import com.agh.zlotowka.model.OneTimeTransaction;
+import com.agh.zlotowka.model.Plan;
+import com.agh.zlotowka.model.Subplan;
+import com.agh.zlotowka.model.User;
+import com.agh.zlotowka.repository.CurrencyRepository;
+import com.agh.zlotowka.repository.OneTimeTransactionRepository;
+import com.agh.zlotowka.repository.PlanRepository;
+import com.agh.zlotowka.repository.SubPlanRepository;
+import com.agh.zlotowka.repository.UserRepository;
+import com.agh.zlotowka.security.CustomUserDetails;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,13 +42,13 @@ public class PlanService {
     private final GeneralPlansService generalPlansService;
 
     @Transactional
-    public PlanDTO createPlan(PlanRequest request){
+    public PlanDTO createPlan(PlanRequest request) {
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono użytkownika o ID %d", request.userId())));
-        
+
         Currency currency = currencyRepository.findById(request.currencyId())
-                .orElseThrow( () -> new EntityNotFoundException(String.format("Nie znaleziono waluty o ID %d", request.currencyId())));
-        
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono waluty o ID %d", request.currencyId())));
+
         Plan plan = Plan.builder()
                 .user(user)
                 .name(request.name())
@@ -51,13 +64,13 @@ public class PlanService {
         return getPlanDTO(plan);
     }
 
-    public PlanDTO getPlan(Integer Id) {
-        return getPlanDTO(planRepository.findById(Id)
-                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono planu o ID %d", Id))));
+    public PlanDTO getPlan(Integer id) {
+        return getPlanDTO(planRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono planu o ID %d", id))));
     }
 
     @Transactional
-    public PlanDTO updatePlan(PlanRequest request, Integer planId){
+    public PlanDTO updatePlan(PlanRequest request, Integer planId) {
         Plan plan = planRepository.findById(planId)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono planu o ID %d", planId)));
 
@@ -79,7 +92,6 @@ public class PlanService {
                 .map(this::getPlanDTO)
                 .collect(Collectors.toList());
     }
-
 
     private PlanDTO getPlanDTO(Plan plan) {
         BigDecimal currentAmount = calculateCurrentBudget(plan);
@@ -105,7 +117,6 @@ public class PlanService {
                 estimatedCompletionDate
         );
     }
-
 
     @Transactional
     public void deletePlan(Integer id) {
@@ -218,7 +229,7 @@ public class PlanService {
     }
 
     private PlanDTO updatePlanLogic(PlanRequest request, Plan plan) {
-        if(!request.currencyId().equals(plan.getCurrency().getCurrencyId())) {
+        if (!request.currencyId().equals(plan.getCurrency().getCurrencyId())) {
             Currency currency = currencyRepository.findById(request.currencyId())
                     .orElseThrow(() -> new EntityNotFoundException(String.format("Nie znaleziono waluty o ID %d", request.currencyId())));
             plan.setCurrency(currency);
@@ -233,7 +244,7 @@ public class PlanService {
     }
 
     private void validateCompletedPlanModification(PlanRequest request, Plan plan) {
-        if(plan.getCompleted()) {
+        if (plan.getCompleted()) {
             boolean isAmountChanged = !request.amount().equals(plan.getRequiredAmount());
             boolean isCurrencyChanged = !request.currencyId().equals(plan.getCurrency().getCurrencyId());
 
@@ -261,10 +272,23 @@ public class PlanService {
             );
 
             return currentBudget.add(subPlanRepository.getTotalSubPlanAmountCompleted(plan.getPlanId()));
-        }
-        catch (CurrencyConversionException e) {
+        } catch (CurrencyConversionException e) {
             log.error("Nieoczekiwany błąd w CurrencyService", e);
         }
         return BigDecimal.ZERO;
+    }
+
+    public void validateUserId(Integer userId, CustomUserDetails userDetails) {
+        if (!userId.equals(userDetails.getUser().getUserId())) {
+            throw new IllegalArgumentException("Dostęp zabroniony");
+        }
+    }
+
+    public void validateOwnershipByPlanId(Integer planId, CustomUserDetails userDetails) {
+        Plan plan = planRepository.findById(planId)
+                .orElseThrow(() -> new EntityNotFoundException("Plan nie został znaleziony"));
+        if (!plan.getUser().getUserId().equals(userDetails.getUser().getUserId())) {
+            throw new IllegalArgumentException("Dostęp zabroniony");
+        }
     }
 }

@@ -37,12 +37,18 @@ export function validateSettings(
   if (!fieldName) return null;
 
   if (fieldName === "phoneNumber") {
-    if (!/^\d+$/.test(value)) {
-      return "Numer telefonu może zawierać tylko cyfry!";
+    if (!value || typeof value !== "string" || !value.trim()) {
+      return;
     }
 
-    if (value.length !== 9) {
-      return "Numer telefonu musi mieć dokładnie dziewięć cyfr!";
+    let phoneNumber = value.replaceAll("[\\s-]+", "").trim();
+
+    if (!phoneNumber.startsWith("+")) {
+      phoneNumber = "+48" + phoneNumber; // Poland by default
+    }
+
+    if (!/^\+?[1-9]\d{1,14}$/.test(phoneNumber)) { // E.164 standard
+      return "Numer telefonu musi być w formacie międzynarodowym, zaczynając od '+' i używając tylko cyfr (np. +48 123 456 789).";
     }
   }
 

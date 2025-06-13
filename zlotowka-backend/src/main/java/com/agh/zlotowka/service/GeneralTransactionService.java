@@ -153,6 +153,18 @@ public class GeneralTransactionService {
         return new ArrayList<>(uniqueByDateMap.values());
     }
 
+    public BigDecimal getEstimatedBalanceForDate(int userId, LocalDate date) {
+        LocalDate today = LocalDate.now();
+        if (date.isBefore(today)) {
+            return getCurrentBalance(userId);
+        }
+        List<SinglePlotData> budgetData = getEstimatedBudgetInDateRange(new UserDataInDateRangeRequest(userId, today, date));
+        if (budgetData.isEmpty()) {
+            return getCurrentBalance(userId);
+        }
+        return budgetData.getLast().amount();
+    }
+
     public void validateUserId(Integer userId, CustomUserDetails userDetails) {
         if (!userId.equals(userDetails.getUser().getUserId())) {
             throw new IllegalArgumentException("Dostęp zabroniony");

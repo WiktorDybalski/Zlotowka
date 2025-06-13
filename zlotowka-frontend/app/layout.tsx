@@ -42,20 +42,27 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-  children,
-}: {
+                                     children,
+                                   }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pl" className="custom-scroll">
+      <html lang="pl" className="custom-scroll">
       <body
-        className={`${raleway.variable} ${lato.variable} ${materialSymbols.variable} ${materialSymbolsOutlined.variable} font-(family-name:--font-raleway) bg-background`}
+        className={`
+          ${raleway.variable} ${lato.variable}
+          ${materialSymbols.variable} ${materialSymbolsOutlined.variable}
+          font-(family-name:--font-raleway) bg-background
+        `}
       >
-        <Toaster position="top-center" reverseOrder={false} />
-        <ReactQuerryProvider>
-          <AuthProvider>{children}</AuthProvider>
-        </ReactQuerryProvider>
+      <Toaster position="top-center" reverseOrder={false} />
+
+      <div id="notifications-root" />
+
+      <ReactQuerryProvider>
+        <AuthProvider>{children}</AuthProvider>
+      </ReactQuerryProvider>
       </body>
-    </html>
+      </html>
   );
 }

@@ -25,6 +25,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.2",
+    "react-toastify": "^11.0.5",
     "recharts": "^2.15.1",
     "tailwind-merge": "^3.0.2",
     "tw-animate-css": "^1.2.5"

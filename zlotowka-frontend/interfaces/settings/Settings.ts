@@ -10,6 +10,7 @@ export interface AccountFieldProps {
 export interface AccountFieldProps {
   text: string;
   value?: string;
+  placeholder?: string;
   avatar?: ReactNode;
   onClick?: () => void;
 }
@@ -23,8 +24,9 @@ export interface ToggleOptionProps {
 export interface AccountOption {
   text: string;
   value?: string;
+  placeholder?: string;
   avatar?: ReactNode;
-  onClick: () => void;
+  onClick?: () => void;
   fieldName: string;
 }
 
