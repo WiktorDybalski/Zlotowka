@@ -32,7 +32,7 @@ public class SystemNotificationService {
     private final BigDecimal THRESHOLD = BigDecimal.ZERO;
 
     @Scheduled(cron = "0 0 8 * * ?")
-    public void sendBalanceWarningEmail() {
+    public void sendBalanceWarningNotification() {
         LocalDate today = LocalDate.now();
         LocalDate tomorrow = today.plusDays(1);
 
@@ -41,13 +41,13 @@ public class SystemNotificationService {
             try {
                 BigDecimal todayBalance = generalTransactionService.getEstimatedBalanceForDate(user.getUserId(), today);
                 if (todayBalance.compareTo(THRESHOLD) < 0) {
-                    sendBalanceEmailToUser(user, todayBalance, "dzisiaj");
+                    sendBalanceNotificationToUser(user, todayBalance, "dzisiaj");
                     continue;
                 }
 
                 BigDecimal tomorrowBalance = generalTransactionService.getEstimatedBalanceForDate(user.getUserId(), tomorrow);
                 if (tomorrowBalance.compareTo(THRESHOLD) < 0) {
-                    sendBalanceEmailToUser(user, tomorrowBalance, "jutro");
+                    sendBalanceNotificationToUser(user, tomorrowBalance, "jutro");
                 }
             } catch (Exception e) {
                 log.error("Błąd podczas sprawdzania salda użytkownika " + user.getUserId(), e);
@@ -62,13 +62,13 @@ public class SystemNotificationService {
         try {
             BigDecimal todayBalance = generalTransactionService.getEstimatedBalanceForDate(user.getUserId(), today);
             if (todayBalance.compareTo(THRESHOLD) < 0) {
-                sendBalanceEmailToUser(user, todayBalance, "dzisiaj");
+                sendBalanceNotificationToUser(user, todayBalance, "dzisiaj");
                 return;
             }
 
             BigDecimal tomorrowBalance = generalTransactionService.getEstimatedBalanceForDate(user.getUserId(), tomorrow);
             if (tomorrowBalance.compareTo(THRESHOLD) < 0) {
-                sendBalanceEmailToUser(user, tomorrowBalance, "jutro");
+                sendBalanceNotificationToUser(user, tomorrowBalance, "jutro");
             }
         } catch (Exception e) {
             log.error("Błąd podczas sprawdzania salda użytkownika " + user.getUserId(), e);
@@ -84,9 +84,9 @@ public class SystemNotificationService {
         for (Plan plan : plans) {
             if (!plan.getCompleted() && plan.getDate() != null) {
                 if (plan.getDate().isBefore(today)) {
-                    sendPlanDeadlineEmail(plan, "przekroczony termin");
+                    sendPlanDeadlineNotification(plan, "przekroczony termin");
                 } else if (plan.getDate().isEqual(weekAhead)) {
-                    sendPlanDeadlineEmail(plan, "termin za tydzień");
+                    sendPlanDeadlineNotification(plan, "termin za tydzień");
                 }
             }
         }
@@ -95,9 +95,9 @@ public class SystemNotificationService {
         for (Subplan subplan : subplans) {
             if (!subplan.getCompleted() && subplan.getDate() != null) {
                 if (subplan.getDate().isBefore(today)) {
-                    sendSubplanDeadlineEmail(subplan, "przekroczony termin");
+                    sendSubplanDeadlineNotification(subplan, "przekroczony termin");
                 } else if (subplan.getDate().isEqual(weekAhead)) {
-                    sendSubplanDeadlineEmail(subplan, "termin za tydzień");
+                    sendSubplanDeadlineNotification(subplan, "termin za tydzień");
                 }
             }
         }
@@ -117,7 +117,7 @@ public class SystemNotificationService {
                 : text;
     }
 
-    private void sendBalanceEmailToUser(User user, BigDecimal balance, String day) {
+    private void sendBalanceNotificationToUser(User user, BigDecimal balance, String day) {
         boolean sendEmail = Boolean.TRUE.equals(user.getNotificationsByEmail());
         boolean sendSms = Boolean.TRUE.equals(user.getNotificationsByPhone());
 
@@ -138,18 +138,30 @@ public class SystemNotificationService {
         }
 
         if (sendSms) {
+            String smsVerb = "wyniesie";
+            if ("dzisiaj".equals(day)) {
+                smsVerb = "wynosi";
+            }
+
             String smsText = String.format(
-                    "Złotówka: saldo %s wyniesie %s PLN. Sprawdź budżet!",
-                    day, formattedBalance);
+                    "Złotówka: saldo %s %s %s PLN. Sprawdź budżet!",
+                    day, smsVerb, formattedBalance
+            );
+
             sendSms(user.getPhoneNumber(), smsText);
         }
 
+        String verb = "wyniesie";
+        if ("dzisiaj".equals(day)) {
+            verb = "wynosi";
+        }
+
         createNotification(user, "Saldo",
-                String.format("Saldo %s wyniesie: %s PLN", day, formattedBalance),
+                String.format("Saldo %s %s: %s PLN", day, verb, formattedBalance),
                 sendEmail, sendSms);
     }
 
-    private void sendPlanDeadlineEmail(Plan plan, String messageSuffix) {
+    private void sendPlanDeadlineNotification(Plan plan, String messageSuffix) {
         User user = plan.getUser();
         boolean sendEmail = Boolean.TRUE.equals(user.getNotificationsByEmail());
         boolean sendSms = Boolean.TRUE.equals(user.getNotificationsByPhone());
@@ -183,7 +195,7 @@ public class SystemNotificationService {
                 sendEmail, sendSms);
     }
 
-    private void sendSubplanDeadlineEmail(Subplan subplan, String messageSuffix) {
+    private void sendSubplanDeadlineNotification(Subplan subplan, String messageSuffix) {
         User user = subplan.getPlan().getUser();
         boolean sendEmail = Boolean.TRUE.equals(user.getNotificationsByEmail());
         boolean sendSms = Boolean.TRUE.equals(user.getNotificationsByPhone());

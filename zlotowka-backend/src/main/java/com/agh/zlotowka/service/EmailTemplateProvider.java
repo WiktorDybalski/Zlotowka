@@ -30,11 +30,18 @@ public class EmailTemplateProvider {
         String color = formattedBalance.trim().startsWith("-")
                 ? "#e63946"
                 : "#2a9d8f";
+
+        String verb = "wyniesie";
+        if ("dzisiaj".equals(day)) {
+            verb = "wynosi";
+        }
+
         String body = String.format("""
             <p>Cześć %s,</p>
-            <p>Twoje saldo %s wyniesie: <strong>%s PLN</strong>.</p>
+            <p>Twoje saldo %s %s: <strong>%s PLN</strong>.</p>
             <p>Prosimy o uważne zarządzanie finansami, aby uniknąć niedoboru środków.</p>
-            """, firstName, day, formattedBalance);
+            """, firstName, day, verb, formattedBalance);
+
         return buildTemplate(color, "Ostrzeżenie o stanie konta", body);
     }
 
