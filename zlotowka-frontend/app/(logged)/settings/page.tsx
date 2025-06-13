@@ -141,27 +141,19 @@ export default function Settings(): JSX.Element {
         return;
       }
       changePasswordMutation.mutate({ oldPassword, newPassword, confirmNewPassword });
+      return;
     }
 
-    setTimeout(() => {
-      const payload = createPayload(
+    const payload = createPayload(
         fieldName,
         value,
         data,
         fieldName === "darkMode" ? parsedValue : darkMode!,
-        fieldName === "notificationsByEmail"
-          ? parsedValue
-          : notificationsByEmail!,
-        fieldName === "notificationsByPhone"
-          ? parsedValue
-          : notificationsByPhone!,
-      );
-      mutation.mutate(payload, {
-        onSuccess: () => {
-          toast.success("Udało się zmienić dane!");
-        },
-      });
-    }, 50);
+        fieldName === "notificationsByEmail" ? parsedValue : notificationsByEmail!,
+        fieldName === "notificationsByPhone" ? parsedValue : notificationsByPhone!
+    );
+
+    mutation.mutate(payload);
   };
 
   const accountOptions: AccountOption[] = [
